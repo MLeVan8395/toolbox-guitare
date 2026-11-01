@@ -812,12 +812,14 @@ const LKEYS=[['C',0,0,0],['G',7,4,1],['D',2,1,2],['A',9,5,3],['E',4,2,4],['F',5,
 const SIG_S=[38,35,39,36,33,37,34],SIG_F=[34,37,33,36,32,35,31]; // positions sur la portée (clé de sol)
 const LAREAS=[['p0','1re position : cordes à vide et cases 1 à 3',0,3],['p2','Cases 2 à 5',2,5],['p5','5e position : cases 5 à 8',5,8],['p7','7e position : cases 7 à 10',7,10],['p9','Cases 9 à 12',9,12],
   ['s6','Corde de Mi grave (cases 0 à 12)'],['s5','Corde de La (cases 0 à 12)'],['s4','Corde de Ré (cases 0 à 12)'],['s3','Corde de Sol (cases 0 à 12)'],['s2','Corde de Si (cases 0 à 12)'],['s1','Corde de Mi aigu (cases 0 à 12)']];
-const LRYTO=[[1,'Rondes'],[2,'Blanches'],[3,'Noires'],[4,'Croches'],[5,'Valeurs mélangées']];
+const LRYTO=[[1,'Rondes'],[2,'Blanches'],[3,'Noires'],[4,'Croches'],[6,'Triolets de croches'],[7,'Doubles croches'],[5,'Valeurs mélangées (blanches, noires, croches)'],[8,'Tout mélangé (avec triolets et doubles croches)']];
 const LINTO=[[1,'Seconde'],[2,'Tierce'],[3,'Quarte'],[4,'Quinte'],[5,'Sixte'],[6,'Septième'],[7,'Octave']];
 // pas mélodiques (en degrés : 1 = seconde, 2 = tierce…) et leur poids, selon le niveau
 const LSTEPW=[0,8,3.5,1.6,1.1,.7,.45,.4]; // poids des pas (1 = seconde … 7 = octave) : les petits intervalles restent les plus fréquents
-const LRYT={1:()=>[4],2:()=>[2,2],3:()=>[1,1,1,1],4:()=>[.5,.5,.5,.5,.5,.5,.5,.5],
-  5:()=>{const P=[[2,1,1],[1,1,2],[1,1,1,1],[2,2],[1,.5,.5,2],[.5,.5,1,1,1],[1,.5,.5,1,1],[2,.5,.5,1],[1,1,.5,.5,1]];return P[Math.floor(Math.random()*P.length)];}};
+const rnd=a=>a[Math.floor(Math.random()*a.length)],repv=(v,n)=>Array(n).fill(v);
+const LRYT={1:()=>[4],2:()=>[2,2],3:()=>[1,1,1,1],4:()=>repv(.5,8),6:()=>repv(1/3,12),7:()=>repv(.25,16),
+  5:()=>rnd([[2,1,1],[1,1,2],[1,1,1,1],[2,2],[1,.5,.5,2],[.5,.5,1,1,1],[1,.5,.5,1,1],[2,.5,.5,1],[1,1,.5,.5,1]]),
+  8:()=>{const out=[];let b=0;while(b<4){const c=rnd(b%2===0&&Math.random()<.2?[[2]]:[[1],[.5,.5],[1/3,1/3,1/3],[.25,.25,.25,.25],[.5,.5],[1/3,1/3,1/3]]);out.push(...c);b+=Math.round(c.reduce((a,x)=>a+x,0));}return out;}};
 function wpick(ws){let t=ws.reduce((a,w)=>a+w[1],0),r=Math.random()*t;for(const w of ws){r-=w[1];if(r<=0)return w[0];}return ws[0][0];}
 function lectureMelody(area,key,chrom,niv,maxi){
   // notes jouables dans la zone, regroupées par hauteur
@@ -847,9 +849,9 @@ function lectureMelody(area,key,chrom,niv,maxi){
           if(sl.used[L]!==undefined)a=sl.used[L];else if(Math.random()<.3){const aa=Math.random()<.5?1:-1;if(by[m+aa]){a=aa;}}
           if(!by[pool[idx]+a])a=0;sl.used[L]=a;m=pool[idx]+a;}
         const wm=m+12,o=Math.round((wm-a-NAT[L])/12)-1;
-        notes.push({i:notes.length,m,L,a,p:o*7+L,d:sl.d,bar:b,beat,name:LET[L]+accTxt(a),locs:by[m]||[],showAcc:chrom&&a!==0&&!sl[('shown'+L)]});
+        notes.push({i:notes.length,m,L,a,p:o*7+L,d:sl.d,d12:Math.round(sl.d*12),bar:b,beat,name:LET[L]+accTxt(a),locs:by[m]||[],showAcc:chrom&&a!==0&&!sl[('shown'+L)]});
         if(chrom&&a!==0)slots.forEach(x=>x['shown'+L]=1);
-        beat+=sl.d;});
+        beat=Math.round((beat+sl.d)*12)/12;});
     }
     return notes[i];};
 }
@@ -886,7 +888,7 @@ function drawStaff(get,curIdx,key,chrom,swing){
     const open=n.d>=2;
     o.push(`<ellipse cx="${x}" cy="${y}" rx="6.6" ry="4.6" transform="rotate(-18 ${x} ${y})" ${open?`fill="none" stroke="${col}" stroke-width="2.4"`:`fill="${col}"`}/>`);
     if(n.showAcc)o.push(`<g style="color:${col}">`+glyph(n.a>0?'sharp':'flat',x-(n.a>0?30:27),y+(n.a>0?10:6),30)+'</g>');
-    if(n.d<4){if(n.d===.5){const g=Math.floor(n.beat);const key2=n.bar+':'+g;let G=groups.find(z=>z.k===key2);if(!G){G={k:key2,ns:[],top,col:[]};groups.push(G);}G.ns.push({x,y,p:n.p,col});}
+    if(n.d<4){if(n.d12<12){const g=Math.floor(n.beat+1e-6);const key2=n.bar+':'+g;let G=groups.find(z=>z.k===key2);if(!G){G={k:key2,ns:[],top,col:[]};groups.push(G);}G.ns.push({x,y,p:n.p,col,d12:n.d12});}
       else{const up=n.p<34;o.push(`<line x1="${up?x+6:x-6}" y1="${y}" x2="${up?x+6:x-6}" y2="${up?y-34:y+34}" stroke="${col}" stroke-width="1.5"/>`);}}
     i++;
   }
@@ -894,7 +896,10 @@ function drawStaff(get,curIdx,key,chrom,swing){
   groups.forEach(G=>{const avg=G.ns.reduce((a,n)=>a+n.p,0)/G.ns.length,up=avg<34;
     const ys=G.ns.map(n=>n.y),end=up?Math.min(...ys)-30:Math.max(...ys)+30;
     G.ns.forEach(n=>o.push(`<line x1="${up?n.x+6:n.x-6}" y1="${n.y}" x2="${up?n.x+6:n.x-6}" y2="${end}" stroke="${n.col}" stroke-width="1.5"/>`));
-    if(G.ns.length>1){const a=G.ns[0],b=G.ns[G.ns.length-1];o.push(`<line x1="${up?a.x+6:a.x-6}" y1="${end}" x2="${up?b.x+6:b.x-6}" y2="${end}" stroke="${b.col}" stroke-width="5"/>`);}
+    if(G.ns.length>1){const a=G.ns[0],b=G.ns[G.ns.length-1],sx=n=>up?n.x+6:n.x-6;
+      o.push(`<line x1="${sx(a)}" y1="${end}" x2="${sx(b)}" y2="${end}" stroke="${b.col}" stroke-width="5"/>`);
+      if(G.ns.every(n=>n.d12===3))o.push(`<line x1="${sx(a)}" y1="${end+(up?8:-8)}" x2="${sx(b)}" y2="${end+(up?8:-8)}" stroke="${b.col}" stroke-width="5"/>`); // doubles croches : deux barres
+      if(G.ns.every(n=>n.d12===4))o.push(`<text x="${(sx(a)+sx(b))/2}" y="${up?end-6:end+16}" text-anchor="middle" font-size="13" font-style="italic" font-weight="700" font-family="Georgia,serif" fill="${b.col}">3</text>`);}
     else{const n=G.ns[0],sx=up?n.x+6:n.x-6;o.push(`<path d="M${sx} ${end} q 3 ${up?8:-8} 9 ${up?12:-12} q 2 ${up?4:-4} -1 ${up?10:-10}" fill="none" stroke="${n.col}" stroke-width="1.6"/>`);}
   });
   return `<svg viewBox="0 0 ${W} ${34+NL*LH-30}" role="img" aria-label="Partition : ${NB} mesures à lire">${o.join('')}</svg>`;
@@ -908,13 +913,13 @@ GAMES.push({id:'lecture',titre:'Lecture de notes',
     const A=LAREAS.find(a=>a[0]===val('gArea'));
     const board=(n,show)=>{const notes=show?n.locs.map(c=>({s:c.s,fr:c.fr,m:TUN[c.s]+c.fr,root:true,txt:n.name})):[];
       const s=A[0][0]==='s'?+A[0][1]:null;drawBoard($('gBoard'),{from:0,to:Math.max(12,A[3]||0),notes,hlString:s,label:'Manche',focus:show&&n.locs.length?n.locs[0].fr:(A[2]||6)});};
-    return {sub:2,items:get,len:n=>n.d*2,label:()=>'lis la première ligne',
+    return {sub:12,items:get,len:n=>n.d12,label:()=>'lis la première ligne',
       prepare:n=>{$('gStaff').innerHTML=drawStaff(get,0,key,chrom,swing);board(n,false);},
       show:(n)=>{const idx=n.i;$('gStaff').innerHTML=drawStaff(get,idx,key,chrom,swing);
         $('gLab').textContent='Mesure';$('gNow').className='now cur';$('gNow').textContent=n.bar+1;$('gWhere').textContent='Lis la note en corail';$('gNext').innerHTML='';board(n,false);},
       revealFrac:revealFracOpt(),
       reveal:n=>{if(+val('gRev')<0)return;board(n,true);$('gWhere').textContent=n.name+' : '+n.locs.map(c=>'case '+c.fr+' '+CORDE_DE[c.s]).join(', ou ');},
-      step:(n,k,t,dur)=>{if(k!==0||!$('gSnd').checked)return;const bd=60/BPMV;if(SWING&&n.d===.5){const a=swingArt(n.beat,n.beat%1!==0,bd);pluck(n.m,t,a.vel,a.len);}else pluck(n.m,t,.5,Math.max(.25,n.d*bd*.9));}};
+      step:(n,k,t,dur)=>{if(k!==0||!$('gSnd').checked)return;const bd=60/BPMV;if(SWING&&n.d12===6){const off=n.beat%1!==0;const a=swingArt(n.beat,off,bd);pluck(n.m,t+(off?bd/6:0),a.vel,a.len);}else pluck(n.m,t,.5,Math.max(.25,n.d*bd*.9));}};
   }});
 
 let GI=0;
