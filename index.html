@@ -82,6 +82,8 @@ label.chk input{width:18px;height:18px;accent-color:var(--accent)}
 .stage{display:grid;grid-template-columns:auto 1fr;gap:6px 22px;align-items:center;padding:14px 18px;border-radius:10px;background:var(--paper);border:1px solid var(--line);margin-top:14px}
 .now{font-family:var(--chord);font-weight:700;font-size:3.2rem;line-height:1.05;min-width:3.2em;color:var(--ink)}
 .now.wait{color:var(--muted);font-size:2.2rem}
+.now.cur{color:var(--root)}
+.next .nx{font-family:var(--chord);font-weight:700;font-size:1.6rem;color:var(--ink);letter-spacing:.02em}
 .now.many{font-size:2.1rem;word-spacing:.35em}
 .lab{font-size:.85rem;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:var(--root);min-height:1.3em}
 .side{display:grid;gap:6px}
@@ -254,15 +256,27 @@ let AC=null,MASTER=null;
 function ctx(){
   if(!AC){try{AC=new (window.AudioContext||window.webkitAudioContext)();MASTER=AC.createGain();MASTER.gain.value=.75;const lim=AC.createDynamicsCompressor();lim.threshold.value=-10;lim.knee.value=6;lim.ratio.value=12;lim.attack.value=.003;lim.release.value=.15;MASTER.connect(lim);lim.connect(AC.destination);}catch(e){return null;}}
   if(AC.state==='suspended')AC.resume();
+  loadGuitar();
   return AC;
 }
+// Échantillons de guitare électrique en son clair (Karoryfer, CC BY 3.0, via tonejs-instruments) ; sinon son de synthèse
+const GT_FILES=['E2','Fs2','A2','C3','Ds3','Fs3','A3','C4','Ds4','Fs4','A4','C5','Ds5','Fs5','A5','C6'];
+const GT={};let GT_LOADING=false;
+function noteMidi(n){const L={C:0,D:2,E:4,F:5,G:7,A:9,B:11}[n[0]],sh=n[1]==='s'?1:0;return 12*(+n.slice(1+sh)+1)+L+sh;}
+function loadGuitar(){
+  if(GT_LOADING||!AC||!/^https?:$/.test(location.protocol))return;GT_LOADING=true;
+  GT_FILES.forEach(n=>fetch('sons/guitare/'+n+'.mp3').then(r=>{if(!r.ok)throw 0;return r.arrayBuffer();})
+    .then(b=>new Promise((ok,ko)=>AC.decodeAudioData(b,ok,ko))).then(buf=>{GT[noteMidi(n)]=buf;}).catch(()=>{}));
+}
+function gtSample(m){let best=null;for(const k in GT){const d=Math.abs(k-m);if(d<=2&&(best===null||d<Math.abs(best-m)))best=+k;}return best;}
 const KS={};
 function pluckBuf(m){
   if(KS[m])return KS[m];
   const ac=ctx(),sr=ac.sampleRate,f=440*Math.pow(2,(m-69)/12),N=Math.max(2,Math.round(sr/f)),len=Math.floor(sr*2.4);
   const b=ac.createBuffer(1,len,sr),d=b.getChannelData(0),w=new Float32Array(N);
-  let prev=0;for(let i=0;i<N;i++){const r=Math.random()*2-1;prev=.55*r+.45*prev;w[i]=prev;}
-  const dec=.9965+Math.min(.003,(N/sr)*.9);
+  // excitation adoucie (attaque ronde, comme au micro manche)
+  let p1=0,p2=0;for(let i=0;i<N;i++){const r=Math.random()*2-1;p1=.3*r+.7*p1;p2=.3*p1+.7*p2;w[i]=p2;}
+  const dec=.9975+Math.min(.002,(N/sr)*.9);
   let j=0,peak=0;
   for(let i=0;i<len;i++){const a=w[j],k=(j+1)%N;w[j]=dec*.5*(a+w[k]);d[i]=a;j=k;if(Math.abs(a)>peak)peak=Math.abs(a);}
   const fade=Math.floor(sr*.25);for(let i=0;i<len;i++){d[i]/=peak||1;if(i>len-fade)d[i]*=(len-i)/fade;}
@@ -274,10 +288,11 @@ function cutAt(t){VOICES=VOICES.filter(v=>v.end>t);VOICES.forEach(v=>{if(v.start
 function pluck(m,t,vel,dur,keep){
   const ac=ctx();if(!ac)return;t=t||ac.currentTime;vel=vel||.55;dur=dur||1.6;
   if(!keep)cutAt(t);
-  const s=ac.createBufferSource();s.buffer=pluckBuf(m);
-  const lp=ac.createBiquadFilter();lp.type='lowpass';lp.frequency.value=2600+ (m-40)*40;
+  const s=ac.createBufferSource(),sm=gtSample(m);let off=0;
+  if(sm!==null){s.buffer=GT[sm];s.playbackRate.value=Math.pow(2,(m-sm)/12);off=.02;vel*=1.6;}else s.buffer=pluckBuf(m);
+  const lp=ac.createBiquadFilter();lp.type='lowpass';lp.frequency.value=sm!==null?4200:1300+(m-40)*28;lp.Q.value=.5;
   const g=ac.createGain();g.gain.setValueAtTime(vel,t);g.gain.setTargetAtTime(0,t+dur,.07);
-  s.connect(lp);lp.connect(g);g.connect(MASTER);s.start(t);s.stop(t+dur+.6);
+  s.connect(lp);lp.connect(g);g.connect(MASTER);s.start(t,off);s.stop(t+dur+.6);
   VOICES.push({g,start:t,end:t+dur+.6});
 }
 function strum(midis,t,gap){const ac=ctx();if(!ac)return;t=t||ac.currentTime+.02;gap=gap===undefined?.035:gap;cutAt(t);[...midis].sort((a,b)=>a-b).forEach((m,i)=>pluck(m,t+i*gap,.42,2,true));}
@@ -569,7 +584,7 @@ function startGame(g){
         const held=list.length?null:g.items(Math.floor(s0/L));
         at(t,()=>g.announce(list,b<0,held));}
       if(step<count){
-        if(step%sub===0){const n=bpb-step/sub;at(t,()=>{if(g.announce){$('gNext').innerHTML='Décompte : <b>'+n+'</b>';return;}$('gNow').className='now wait';$('gNow').textContent=n;$('gWhere').textContent='Décompte';$('gNext').innerHTML='Pour commencer : <b>'+esc(g.label(item))+'</b>';});}
+        if(step%sub===0){const n=bpb-step/sub;at(t,()=>{if(g.announce){$('gLab').textContent='Décompte';$('gNow').className='now wait';$('gNow').textContent=n;$('gWhere').textContent='';return;}$('gNow').className='now wait';$('gNow').textContent=n;$('gWhere').textContent='Décompte';$('gNext').innerHTML='Pour commencer : <b>'+esc(g.label(item))+'</b>';});}
         if(step===0&&g.prepare)at(t,()=>g.prepare(item));
       }else{
         if(k===0){const it=item,nx=nextItem;at(t,()=>g.show(it,nx));
@@ -596,19 +611,21 @@ const val=id=>{const e=$(id);return e?e.value:null;};
 const STR_OPTS=[[6,'Mi grave (6)'],[5,'La (5)'],[4,'Ré (4)'],[3,'Sol (3)'],[2,'Si (2)'],[1,'Mi aigu (1)']];
 const RYT=[[4,'1 note par mesure'],[2,'1 note tous les 2 temps'],[1,'1 note par temps']];
 const REV=[['0.5','au milieu'],['0.75','juste avant la suivante'],['0','tout de suite'],['-1','jamais']];
-function stringBoard(s,marks,cur){ // un seul repère de corde, manche 0-12
-  const notes=(marks||[]).map(fr=>({s,fr,m:TUN[s]+fr,root:true,txt:''}));
+function stringBoard(s,marks,name){ // un seul repère de corde, manche 0-12
+  const notes=(marks||[]).map(fr=>({s,fr,m:TUN[s]+fr,root:true,txt:name||''}));
   drawBoard($('gBoard'),{from:0,to:12,notes,hlString:s,label:'Manche',focus:(marks&&marks.length)?marks[marks.length-1]:6});
 }
 function fretsOf(s,pc){const r=[];for(let fr=0;fr<=12;fr++)if(mod(TUN[s]+fr,12)===pc)r.push(fr);return r;}
 function revealFracOpt(){return ()=>{const v=+val('gRev');return v<0?0:v;};}
 const cap=t=>t.charAt(0).toUpperCase()+t.slice(1);
+// En gros et en corail : ce qu'on joue maintenant. En petit à côté : ce qui vient à la mesure suivante.
+let NEXTWORD='Note suivante';
 function announceNotes(list,first,held,name,where){
-  const L=list.length?list:[held];
-  $('gLab').textContent=first?'Première mesure':(list.length?'Mesure suivante':'Mesure suivante : on garde');
-  $('gNow').className='now'+(L.length>1?' many':'');$('gNow').textContent=L.map(name).join(' ');
-  $('gWhere').textContent=where?where(L):'';
+  const L=list.length?list:[held],w=where?where(L):'';
+  const lab=first?(NEXTWORD.startsWith('Accord')?'Premier accord':'Première note'):list.length?(L.length>1?NEXTWORD.replace(/(\S+) (\S+)/,'$1s $2s'):NEXTWORD):'Mesure suivante, on garde';
+  $('gNext').innerHTML=esc(lab)+' : <span class="nx">'+esc(L.map(name).join('  '))+'</span>'+(w?'<br><span class="meta">'+esc(w)+'</span>':'');
 }
+function showNow(name,where){$('gLab').textContent='À jouer';$('gNow').className='now cur';$('gNow').textContent=name;$('gWhere').textContent=where||'';}
 function noteGame(make){ // jeu « une note à trouver sur une corde »
   return {
     sub:1,
@@ -616,10 +633,10 @@ function noteGame(make){ // jeu « une note à trouver sur une corde »
     prepare:it=>stringBoard(it.s,[]),
     announce:(list,first,held)=>{announceNotes(list,first,held,it=>it.name,
         L=>{const ss=[...new Set(L.map(x=>x.s))];return ss.length===1?cap(CORDE_DE[ss[0]]):'Cordes '+L.map(x=>CORDE[x.s]).join(' → ');});},
-    show:it=>{$('gNext').innerHTML='Maintenant : <b>'+esc(it.name)+'</b> '+esc(CORDE_DE[it.s]);stringBoard(it.s,[]);},
+    show:it=>{NEXTWORD='Note suivante';showNow(it.name,cap(CORDE_DE[it.s]));stringBoard(it.s,[]);},
     revealFrac:revealFracOpt(),
-    reveal:it=>{if(+val('gRev')<0)return;stringBoard(it.s,fretsOf(it.s,it.pc));
-      $('gNext').innerHTML='Maintenant : <b>'+esc(it.name)+'</b> '+esc(CORDE_DE[it.s])+' → case '+fretsOf(it.s,it.pc).join(' ou ');},
+    reveal:it=>{if(+val('gRev')<0)return;stringBoard(it.s,fretsOf(it.s,it.pc),it.name);
+      $('gWhere').textContent=cap(CORDE_DE[it.s])+' : case '+fretsOf(it.s,it.pc).join(' ou ');},
     revealSound:(it,t)=>{if(+val('gRev')>=0&&$('gSnd')&&$('gSnd').checked){const fr=fretsOf(it.s,it.pc).find(f=>f>0)||0;pluck(TUN[it.s]+fr,t,.5,1.2);}}
   };
 }
@@ -668,7 +685,7 @@ const GAMES=[
     return {sub,items:item,len:()=>1,label:lbl,
       prepare:it=>drawT(it.T,null),
       show:(it,nx)=>{
-        $('gNow').className='now';$('gNow').textContent=it.n?spell(it.T.key,it.n.l):'—';
+        $('gLab').textContent='À jouer';$('gNow').className='now cur';$('gNow').textContent=it.n?spell(it.T.key,it.n.l):'—';
         $('gWhere').textContent=lbl(it)+' · '+(it.n?(it.n.l==='1'?'tonique':it.n.l)+', case '+it.n.fr+' '+CORDE_DE[it.n.s]:'silence, prépare la suite');
         const nT=tour(tours.indexOf(it.T)+1);
         $('gNext').innerHTML=cyc?'Tour suivant : <b>'+esc(lbl({T:nT}))+'</b>':'';
@@ -746,7 +763,7 @@ function chordGame(item,len,sound,gap,mode,style,pad){
   const rootOf=it=>{const rs=rootString(it.f);return {rs,rn:it.pl.find(n=>n.l==='1'&&n.s===rs)};};
   const info=it=>{if(mode==='impro')return 'gamme conseillée : '+it.scale;if(mode==='lire')return '';const {rs,rn}=rootOf(it);return 'fondamentale case '+rn.fr+' '+CORDE_DE[rs];};
   const show=(it,nx,pre)=>{
-    const inf=info(it);$('gNext').innerHTML=(pre?'':'Maintenant : <b>'+esc(it.name)+'</b>'+(inf?' — ':''))+esc(pre?cap(inf):inf);
+    const inf=info(it);NEXTWORD='Accord suivant';if(!pre)showNow(it.name,cap(inf));
     if(mode==='lire'){drawBoard($('gBoard'),{from:0,to:12,notes:[],label:'Manche'});return;}
     if(mode==='impro'){const pl=it.spl;drawBoard($('gBoard'),{from:Math.max(0,Math.min(...pl.map(n=>n.fr))-1),to:Math.max(...pl.map(n=>n.fr))+1,
       notes:pl.map(n=>({s:n.s,fr:n.fr,m:n.m,root:n.l==='1',txt:n.l})),label:it.scale});return;}
@@ -772,7 +789,7 @@ function renderGame(){
 }
 function preview(){ // aperçu du premier élément, sans démarrer
   if(RUN.on)return;
-  try{const gm=GAMES[GI].make();const it=gm.items(0);if(gm.prepare)gm.prepare(it);$('gLab').textContent='';$('gNext').innerHTML='Pour commencer : <b>'+esc(gm.label(it))+'</b>';}catch(e){console.error(e);}
+  try{const gm=GAMES[GI].make();const it=gm.items(0);if(gm.prepare)gm.prepare(it);$('gLab').textContent='';$('gNow').className='now wait';$('gNow').textContent='Prêt ?';$('gWhere').textContent='';$('gNext').innerHTML='Pour commencer : <span class="nx">'+esc(gm.label(it))+'</span>';}catch(e){console.error(e);}
 }
 function setTempo(t){TEMPO=t;if(BPM[t])BPMV=BPM[t];store.set('tempo',t);store.set('bpm',BPMV);showTempo();}
 function showTempo(){document.querySelectorAll('.tempo [data-t]').forEach(b=>b.setAttribute('aria-pressed',b.dataset.t===TEMPO&&BPMV===BPM[TEMPO]));$('bpmVal').textContent=BPMV+' à la noire';}
@@ -790,6 +807,7 @@ function setHand(g){LEFTY=g;store.set('main',g?'G':'D');$('hD').setAttribute('ar
 function setThemeBtn(){const l=document.documentElement.getAttribute('data-theme')==='light';$('theme').textContent=l?'☾ Sombre':'☀ Clair';}
 
 function start(){
+  const warm=()=>{ctx();document.removeEventListener('pointerdown',warm);};document.addEventListener('pointerdown',warm);
   // tonalités
   $('keySel').innerHTML=KEYS.map((k,i)=>`<option value="${i}">${k[0]} (${keyName(k)})</option>`).join('');
   $('keySel').value=SH.key;

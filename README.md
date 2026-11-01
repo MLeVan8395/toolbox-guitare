@@ -12,7 +12,7 @@ C'est la version interactive de la « Boîte à outils guitare » (fiches PDF), 
 - **iPhone / iPad** (Safari) : bouton Partager → **Sur l'écran d'accueil**.
 - **Ordinateur** (Chrome, Edge) : icône d'installation dans la barre d'adresse.
 
-L'appli fonctionne ensuite **hors ligne**, son compris : le son de guitare, le métronome et l'accompagnement sont fabriqués par l'appli, sans fichier audio. Elle se met à jour toute seule à chaque ouverture avec une connexion.
+L'appli fonctionne ensuite **hors ligne**, son compris. Elle se met à jour toute seule à chaque ouverture avec une connexion.
 
 ## Ce qu'on y trouve
 
@@ -30,6 +30,10 @@ Un bouton **Droitier / Gaucher** retourne tous les manches.
 - **Aucune donnée collectée.** Pas de compte, pas de publicité ; les réglages restent dans le navigateur.
 - **Notation française** : notes seules en Do, Ré, Mi… ; accords et tonalités en lettres (C, Am7, « en G ») ; intervalles notés ♭2, 2, ♭3, 3…
 - **Contenu séparé du code** : tous les schémas sont dans `contenu/formes.js`, lisibles et modifiables sans toucher à l'appli (voir `CONTRIBUER.md`).
+
+## Crédits des sons
+
+Guitare électrique en son clair : échantillons de [Karoryfer Samples](https://www.karoryfer.com/karoryfer-samples), mis en forme par Nicholaus Brosowsky ([tonejs-instruments](https://github.com/nbrosowsky/tonejs-instruments)), licence [CC BY 3.0](https://creativecommons.org/licenses/by/3.0/deed.fr). Fichiers raccourcis et convertis en mono. Le métronome, la batterie, la basse, le pad et l'orgue sont des sons de synthèse fabriqués par l'appli.
 
 ## Licences
 

@@ -1,10 +1,10 @@
 // Boîte à outils guitare : fonctionnement hors ligne.
 // Page, contenu et manifeste : on demande d'abord la version en ligne (les modifications faites sur GitHub
 // arrivent tout de suite), et on se rabat sur la copie enregistrée sans connexion.
-// Images, icônes et polices : copie enregistrée d'abord. Les sons sont fabriqués par l'appli : aucun fichier.
-// Si tu ajoutes une image, ajoute-la à FICHIERS et change VERSION.
-const VERSION='boite-guitare-4';
-const FICHIERS=["./","index.html","contenu/formes.js","manifest.webmanifest","images/mains.jpg","icones/icone-192.png","icones/icone-512.png"];
+// Images, sons de guitare, icônes et polices : copie enregistrée d'abord (batterie, basse et orgue sont fabriqués par l'appli).
+// Si tu ajoutes une image ou un son, ajoute-le à FICHIERS et change VERSION.
+const VERSION='boite-guitare-5';
+const FICHIERS=["./","index.html","contenu/formes.js","manifest.webmanifest","images/mains.jpg","icones/icone-192.png","icones/icone-512.png","sons/guitare/E2.mp3","sons/guitare/Fs2.mp3","sons/guitare/A2.mp3","sons/guitare/C3.mp3","sons/guitare/Ds3.mp3","sons/guitare/Fs3.mp3","sons/guitare/A3.mp3","sons/guitare/C4.mp3","sons/guitare/Ds4.mp3","sons/guitare/Fs4.mp3","sons/guitare/A4.mp3","sons/guitare/C5.mp3","sons/guitare/Ds5.mp3","sons/guitare/Fs5.mp3","sons/guitare/A5.mp3","sons/guitare/C6.mp3"];
 self.addEventListener('install',e=>{ e.waitUntil(caches.open(VERSION).then(c=>c.addAll(FICHIERS)).then(()=>self.skipWaiting())); });
 self.addEventListener('activate',e=>{ e.waitUntil(caches.keys().then(ks=>Promise.all(ks.filter(k=>k!==VERSION).map(k=>caches.delete(k)))).then(()=>self.clients.claim())); });
 const enLigneDabord=req=>fetch(req,{cache:'no-store'}).then(r=>{ if(r.ok){ const c=r.clone(); caches.open(VERSION).then(x=>x.put(req,c)); } return r; }).catch(()=>caches.match(req,{ignoreSearch:true}).then(r=>r||caches.match('./')));
