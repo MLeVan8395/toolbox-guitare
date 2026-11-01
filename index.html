@@ -230,7 +230,7 @@ label.chk input{width:18px;height:18px;accent-color:var(--accent)}
 </section>
 
 </main>
-<footer class="meta" style="max-width:1100px;margin:0 auto;padding:0 20px 30px;text-align:center">Boîte à outils guitare · <span id="appver">version 22</span></footer>
+<footer class="meta" style="max-width:1100px;margin:0 auto;padding:0 20px 30px;text-align:center">Boîte à outils guitare · <span id="appver">version 23</span></footer>
 <script src="contenu/formes.js"></script>
 <script>
 'use strict';
@@ -1057,7 +1057,7 @@ GAMES.push({id:'grille',titre:'Lecture de grille',
   desc:'Une grille d\'accords en notation rythmique : le nom de l\'accord au-dessus, le rythme à jouer en barres obliques. Joue chaque accord sur le rythme écrit, en suivant le métronome.',
   opts:()=>opt('gGLv','Accords',GLEV,1)+opt('gNiv','Valeurs rythmiques',GRYT,3)+opt('gPer','Accords par mesure',[[1,'1 accord par mesure'],[2,'2 accords par mesure']],1)
     +opt('gArt','Articulations',LARTO,'none')+opt('gPick','Sens du médiator',[['show','Affiché (⊓ vers le bas, V vers le haut)'],['hide','Caché']],'show')
-    +opt('gAcc','Accompagnement',[['none','Aucun : métronome seul'],['pop','Pop : basse et batterie'],['swing','Swing : walking bass et batterie'],['swing2','Swing : basse à la blanche et batterie']],'none')
+    +opt('gAcc','Accompagnement',[['none','Aucun : métronome seul'],['pop','Pop : pad, basse, batterie'],['swing','Swing : orgue, walking bass, batterie'],['swing2','Swing : orgue, basse à la blanche, batterie']],'none')
     +opt('gDiag','Position de l\'accord sur le manche',[['show','Affichée'],['hide','Cachée']],'show')
     +'<label class="chk" style="align-self:end;padding-bottom:8px"><input type="checkbox" id="gSnd" checked> Entendre la grille (jouée en même temps que toi)</label>',
   make:()=>{
@@ -1073,7 +1073,9 @@ GAMES.push({id:'grille',titre:'Lecture de grille',
       show:n=>{$('gStaff').innerHTML=drawStaff(get,n.i,LKEYS[0],true,SWING,pk);
         $('gLab').textContent='Accord';$('gNow').className='now cur';$('gNow').textContent=n.name;$('gWhere').textContent='Mesure '+(n.bar+1)+(n.rest?' · silence':'');$('gNext').innerHTML='';board(n);},
       step:(n,k,t,dur,r)=>{const bd=60/BPMV;
-        if(accSt!=='none'&&r%12===0){const bb=(r/12)%4,len=4/per,kb=bb%len;accomp(accSt,accOf(n.chord),accOf(nextChord(n)),kb,t,bd,len);}
+        if(accSt!=='none'&&r%12===0){const bb=(r/12)%4,len=4/per,kb=bb%len;
+          if(kb===0)(accSt==='pop'?padChord:organChord)(n.chord.pl.map(x=>x.m),t,len*bd); // son tenu : pad en pop, orgue en swing
+          accomp(accSt,accOf(n.chord),accOf(nextChord(n)),kb,t,bd,len);}
         if(k!==0||n.rest||n.tied||!$('gSnd').checked)return;const off=SWING&&n.d12===6&&n.beat%1?bd/6:0;
         const L=(n.tieNext?n.d+.5:n.d)*bd,ms=n.chord.pl.map(x=>x.m),up=n.pick==='up',short=n.d12<=6&&!n.tieNext;
         const vel=n.art==='acc'?.62:n.art==='marc'?.66:up?.32:.42,len=n.art==='stacc'?.13:n.art==='marc'?Math.min(L,bd*.55):Math.max(.2,L);
