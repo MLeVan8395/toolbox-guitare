@@ -585,7 +585,7 @@ function startGame(g){
         if(step===0&&g.prepare)at(t,()=>g.prepare(item));
       }else{
         if(k===0){const it=item,nx=nextItem;at(t,()=>g.show(it,nx));
-          if(g.reveal){const rt=t+g.len(it)*dur*(g.revealFrac===undefined?.5:g.revealFrac());const it2=it;g.revealSound&&g.revealSound(it2,rt);at(rt,()=>g.reveal(it2));}}
+          if(g.reveal){const rt=t+g.len(it)*dur*(g.revealFrac===undefined?.5:g.revealFrac());const it2=it;if(g.revealSound){const fr=(g.revealFrac===undefined?.5:g.revealFrac()),st=Math.floor(g.len(it)*fr/sub)*sub;g.revealSound(it2,t+st*dur);} /* le son tombe toujours sur un temps */at(rt,()=>g.reveal(it2));}}
         if(g.step)g.step(item,k,t,dur);
         k++;
         if(k>=left){i++;item=nextItem;nextItem=g.items(i+1);left=g.len(item);k=0;}
@@ -842,11 +842,10 @@ function lectureMelody(area,key,chrom,niv){
     return notes[i];};
 }
 function drawStaff(get,curIdx,key,chrom){
-  const compact=$('gStaff').clientWidth>0&&$('gStaff').clientWidth<560,NL=compact?1:2,NB=NL*2;
-  // 4 mesures à partir de la mesure courante, en 2 lignes de 2 mesures
-  const cur=get(curIdx),b0=cur.bar,SPc=10,BOT=30,BW=compact?150:210;
+  // toujours 4 mesures par ligne : la ligne en cours et la suivante ; on tourne la page toutes les 4 mesures
+  const NL=2,NB=8,cur=get(curIdx),b0=Math.floor(cur.bar/4)*4,SPc=10,BOT=30,BW=165;
   const sig=chrom?0:key[3],nsig=Math.abs(sig),left=62+nsig*10+(b0===0?22:0);
-  const W=left+2*BW+12,LH=118,o=[];
+  const W=left+4*BW+12,LH=118,o=[];
   const firstIdx=(()=>{let i=curIdx;while(i>0&&get(i-1).bar>=b0)i--;return i;})();
   for(let line=0;line<NL;line++){
     const top=34+line*LH,yP=p=>top+4*SPc-(p-BOT)*SPc/2;
@@ -855,13 +854,13 @@ function drawStaff(get,curIdx,key,chrom){
     o.push(`<text x="22" y="${top+54}" font-size="9" font-family="Georgia,serif" fill="currentColor">8</text>`);
     for(let k=0;k<nsig;k++)o.push(glyph(sig>0?'sharp':'flat',48+k*10,yP(sig>0?SIG_S[k]:SIG_F[k])+(sig>0?5:3),15));
     if(b0===0&&line===0)o.push(`<text x="${left-16}" y="${top+19}" font-size="21" font-weight="700" font-family="Georgia,serif" text-anchor="middle" fill="currentColor">4</text><text x="${left-16}" y="${top+39}" font-size="21" font-weight="700" font-family="Georgia,serif" text-anchor="middle" fill="currentColor">4</text>`);
-    for(let k=0;k<=2;k++){const x=left+k*BW-(k===0?6:0);if(k>0||line>0||true)o.push(`<line x1="${k===0?left-4:x}" y1="${top}" x2="${k===0?left-4:x}" y2="${top+40}" stroke="currentColor" stroke-width="${k===0?0:1.2}"/>`);}
+    for(let k=0;k<=4;k++){const x=left+k*BW-(k===0?6:0);o.push(`<line x1="${k===0?left-4:x}" y1="${top}" x2="${k===0?left-4:x}" y2="${top+40}" stroke="currentColor" stroke-width="${k===0?0:1.2}"/>`);}
   }
   // notes
   let i=firstIdx;const groups=[];
   while(true){const n=get(i);if(n.bar>b0+NB-1)break;
-    const bi=n.bar-b0,line=bi>>1,top=34+line*LH,yP=p=>top+4*SPc-(p-BOT)*SPc/2,bx=left+(bi%2)*BW;
-    const x=bx+22+n.beat*(BW-36)/4,y=yP(n.p),past=i<curIdx,now=i===curIdx;
+    const bi=n.bar-b0,line=bi>>2,top=34+line*LH,yP=p=>top+4*SPc-(p-BOT)*SPc/2,bx=left+(bi%4)*BW;
+    const x=bx+20+n.beat*(BW-30)/4,y=yP(n.p),past=i<curIdx,now=i===curIdx;
     const col=now?'var(--root)':past?'var(--muted)':'currentColor';
     for(let q=BOT-2;q>=n.p;q-=2)o.push(`<line x1="${x-11}" y1="${yP(q)}" x2="${x+11}" y2="${yP(q)}" stroke="${col}" stroke-width="1.2"/>`);
     for(let q=BOT+10;q<=n.p;q+=2)o.push(`<line x1="${x-11}" y1="${yP(q)}" x2="${x+11}" y2="${yP(q)}" stroke="${col}" stroke-width="1.2"/>`);
@@ -884,19 +883,19 @@ function drawStaff(get,curIdx,key,chrom){
 GAMES.push({id:'lecture',titre:'Lecture de notes',
   desc:'Une partition générée au hasard, avec peu de sauts aux premiers niveaux. Lis et joue chaque note en rythme : la note en cours est en corail, la réponse s\'affiche ensuite sur le manche. Quatre mesures sont toujours visibles, pour lire en avance.',
   opts:()=>opt('gArea','Où jouer',LAREAS.map(a=>[a[0],a[1]]),'p0')+opt('gTon','Notes',LKEYS.map((k,i)=>[i,k[3]===0?'Tonalité de C (sans altération)':'Tonalité de '+k[0]+' ('+Math.abs(k[3])+(k[3]>0?' dièse':' bémol')+(Math.abs(k[3])>1?'s':'')+')']).concat([['chrom','Au hasard, avec altérations']]),0)
-    +opt('gNiv','Niveau',LNIV,1)+opt('gRev','Réponse',REV,'0.5')+SND,
+    +opt('gNiv','Niveau',LNIV,1)+opt('gRev','Réponse sur le manche',REV,'0.5')+'<label class="chk" style="align-self:end;padding-bottom:8px"><input type="checkbox" id="gSnd" checked> Entendre la note (jouée en même temps que toi)</label>',
   make:()=>{
     const chrom=val('gTon')==='chrom',key=chrom?LKEYS[0]:LKEYS[+val('gTon')],niv=+val('gNiv'),get=lectureMelody(val('gArea'),key,chrom,niv);
     const A=LAREAS.find(a=>a[0]===val('gArea'));
     const board=(n,show)=>{const notes=show?n.locs.map(c=>({s:c.s,fr:c.fr,m:TUN[c.s]+c.fr,root:true,txt:n.name})):[];
       const s=A[0][0]==='s'?+A[0][1]:null;drawBoard($('gBoard'),{from:0,to:Math.max(12,A[3]||0),notes,hlString:s,label:'Manche',focus:show&&n.locs.length?n.locs[0].fr:(A[2]||6)});};
-    return {sub:2,items:get,len:n=>n.d*2,label:()=>'lis la première mesure',
+    return {sub:2,items:get,len:n=>n.d*2,label:()=>'lis la première ligne',
       prepare:n=>{$('gStaff').innerHTML=drawStaff(get,0,key,chrom);board(n,false);},
       show:(n)=>{const idx=n.i;$('gStaff').innerHTML=drawStaff(get,idx,key,chrom);
         $('gLab').textContent='Mesure';$('gNow').className='now cur';$('gNow').textContent=n.bar+1;$('gWhere').textContent='Lis la note en corail';$('gNext').innerHTML='';board(n,false);},
       revealFrac:revealFracOpt(),
       reveal:n=>{if(+val('gRev')<0)return;board(n,true);$('gWhere').textContent=n.name+' : '+n.locs.map(c=>'case '+c.fr+' '+CORDE_DE[c.s]).join(', ou ');},
-      revealSound:(n,t)=>{if(+val('gRev')>=0&&$('gSnd').checked)pluck(n.m,t,.5,Math.max(.4,n.d*60/BPMV));}};
+      step:(n,k,t,dur)=>{if(k===0&&$('gSnd').checked)pluck(n.m,t,.5,Math.max(.3,n.d*60/BPMV*.95));}};
   }});
 
 let GI=0;
