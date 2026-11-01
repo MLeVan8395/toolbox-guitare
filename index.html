@@ -815,11 +815,23 @@ const LAREAS=[['p0','1re position : cordes à vide et cases 1 à 3',0,3],['p2','
 const LRYTO=[[1,'Rondes'],[2,'Blanches'],[3,'Noires'],[4,'Croches'],[6,'Triolets de croches'],[7,'Doubles croches'],[5,'Valeurs mélangées (blanches, noires, croches)'],[8,'Tout mélangé (avec triolets et doubles croches)']];
 const LINTO=[[1,'Seconde'],[2,'Tierce'],[3,'Quarte'],[4,'Quinte'],[5,'Sixte'],[6,'Septième'],[7,'Octave']];
 // pas mélodiques (en degrés : 1 = seconde, 2 = tierce…) et leur poids, selon le niveau
+const QR_Y=15,QR_S=40,ER_Y=19,ER_S=36; // position et taille des glyphes de silence
 const LSTEPW=[0,8,3.5,1.6,1.1,.7,.45,.4]; // poids des pas (1 = seconde … 7 = octave) : les petits intervalles restent les plus fréquents
 const rnd=a=>a[Math.floor(Math.random()*a.length)],repv=(v,n)=>Array(n).fill(v);
-const LRYT={1:()=>[4],2:()=>[2,2],3:()=>[1,1,1,1],4:()=>repv(.5,8),6:()=>repv(1/3,12),7:()=>repv(.25,16),
-  5:()=>rnd([[2,1,1],[1,1,2],[1,1,1,1],[2,2],[1,.5,.5,2],[.5,.5,1,1,1],[1,.5,.5,1,1],[2,.5,.5,1],[1,1,.5,.5,1]]),
-  8:()=>{const out=[];let b=0;while(b<4){const c=rnd(b%2===0&&Math.random()<.2?[[2]]:[[1],[.5,.5],[1/3,1/3,1/3],[.25,.25,.25,.25],[.5,.5],[1/3,1/3,1/3]]);out.push(...c);b+=Math.round(c.reduce((a,x)=>a+x,0));}return out;}};
+// Rythmes : motifs d'un temps en douzièmes de temps (noire 12, croche 6, triolet 4, double 3, croche pointée 9) ; négatif = silence
+const PB={
+ 3:[[[12],9],[[-12],1]],
+ 4:[[[6,6],8],[[12],2],[[-6,6],2],[[6,-6],1.2],[[-12],.6]],
+ 6:[[[4,4,4],8],[[8,4],2],[[4,8],2],[[-4,4,4],1.5],[[4,-4,4],1],[[4,4,-4],1],[[12],1.2],[[-12],.4]],
+ 7:[[[3,3,3,3],6],[[6,3,3],2.5],[[3,3,6],2.5],[[9,3],2],[[3,9],.7],[[3,6,3],1],[[-3,3,3,3],1.5],[[-6,3,3],1],[[3,3,-6],.8],[[12],1],[[-12],.4]],
+ 5:[[[12],6],[[6,6],4],[[-6,6],1.5],[[6,-6],1],[[-12],1]]};
+PB[8]=[].concat(PB[4],PB[6],PB[7],[[[12],3],[[-12],.8]]);
+function barRyt(niv){
+  if(niv===1)return [4];if(niv===2)return [2,2];
+  const out=[];let b=0;
+  while(b<4){if((niv===5||niv===8)&&b%2===0&&Math.random()<.15){out.push(Math.random()<.15?-2:2);b+=2;continue;}
+    wpick(PB[niv]).forEach(x=>out.push(x/12));b++;}
+  return out;}
 function wpick(ws){let t=ws.reduce((a,w)=>a+w[1],0),r=Math.random()*t;for(const w of ws){r-=w[1];if(r<=0)return w[0];}return ws[0][0];}
 function lectureMelody(area,key,chrom,niv,maxi){
   // notes jouables dans la zone, regroupées par hauteur
@@ -831,7 +843,7 @@ function lectureMelody(area,key,chrom,niv,maxi){
   const pool=Object.keys(by).map(Number).filter(m=>scale.includes(mod(m,12))).sort((a,b)=>a-b);
   const PP=pool.map(m=>{const d=mod(m-k[1],12),deg=[0,2,4,5,7,9,11].indexOf(d),L=(k[2]+deg)%7;let a=mod(mod(m,12)-NAT[L],12);if(a>6)a-=12;return (Math.round((m+12-a-NAT[L])/12)-1)*7+L;});
   const notes=[];let bars=0;
-  const bar=()=>{const ryt=LRYT[niv](),used={};return ryt.map(d=>({d,used}));};
+  const bar=()=>{const ryt=barRyt(niv),used={};return ryt.map(d=>({d:Math.abs(d),rest:d<0,used}));};
   // départ sur la tonique la plus proche du milieu
   let idx=pool.length>>1;const ton=pool.map((m,i)=>[i,m]).filter(([i,m])=>mod(m,12)===k[1]);if(ton.length)idx=ton.reduce((a,b)=>Math.abs(b[0]-pool.length/2)<Math.abs(a[0]-pool.length/2)?b:a)[0];
   let dir=Math.random()<.5?1:-1;
@@ -839,7 +851,8 @@ function lectureMelody(area,key,chrom,niv,maxi){
     while(notes.length<=i){
       const slots=bar();const b=bars++;let beat=0;
       slots.forEach((sl,j)=>{
-        if(notes.length){ // pas mesuré en degrés réels (une note absente de la zone ne crée pas de saut caché)
+        if(sl.rest){notes.push({i:notes.length,rest:true,p:34,d:sl.d,d12:Math.round(sl.d*12),bar:b,beat,name:'silence',locs:[]});beat=Math.round((beat+sl.d)*12)/12;return;}
+        if(notes.some(n=>!n.rest)){ // pas mesuré en degrés réels (une note absente de la zone ne crée pas de saut caché)
           if(Math.random()<.3)dir=-dir;
           const ok=[];for(let st=1;st<=maxi;st++){const w=LSTEPW[st];pool.forEach((m,j)=>{const dd=PP[j]-PP[idx];if(Math.abs(dd)===st)ok.push([j,w*(Math.sign(dd)===dir?1.6:1)]);});}
           if(ok.length){idx=wpick(ok);dir=Math.sign(PP[idx]-PP[Math.max(0,Math.min(pool.length-1,idx))])||dir;}
@@ -883,24 +896,39 @@ function drawStaff(get,curIdx,key,chrom,swing){
     const bi=n.bar-b0,line=bi>>2,top=34+line*LH,yP=p=>top+4*SPc-(p-BOT)*SPc/2,bx=left+(bi%4)*BW;
     const x=bx+XS[i],y=yP(n.p),past=i<curIdx,now=i===curIdx;
     const col=now?'var(--root)':past?'var(--muted)':'currentColor';
+    if(n.rest){const mid=top+20;
+      if(n.d12>=48)o.push(`<rect x="${x-7}" y="${top+10}" width="14" height="5" fill="${col}"/>`);
+      else if(n.d12>=24)o.push(`<rect x="${x-7}" y="${top+15}" width="14" height="5" fill="${col}"/>`);
+      else o.push(`<g style="color:${col}">`+(n.d12===12||n.d12===8?glyph('qrest',x-6,mid+QR_Y,QR_S):n.d12===3?glyph('erest',x-4,mid+ER_Y,ER_S)+glyph('erest',x-7,mid+ER_Y+10,ER_S):glyph('erest',x-5,mid+ER_Y,ER_S))+'</g>');
+      const g=Math.floor(n.beat+1e-6),key2=n.bar+':'+g;let G=groups.find(z=>z.k===key2);if(!G){G={k:key2,ns:[],top,trip:false};groups.push(G);}if(n.d12===4||n.d12===8)G.trip=true;G.rests=(G.rests||[]).concat([{x}]);
+      i++;continue;}
     for(let q=BOT-2;q>=n.p;q-=2)o.push(`<line x1="${x-11}" y1="${yP(q)}" x2="${x+11}" y2="${yP(q)}" stroke="${col}" stroke-width="1.2"/>`);
     for(let q=BOT+10;q<=n.p;q+=2)o.push(`<line x1="${x-11}" y1="${yP(q)}" x2="${x+11}" y2="${yP(q)}" stroke="${col}" stroke-width="1.2"/>`);
     const open=n.d>=2;
     o.push(`<ellipse cx="${x}" cy="${y}" rx="6.6" ry="4.6" transform="rotate(-18 ${x} ${y})" ${open?`fill="none" stroke="${col}" stroke-width="2.4"`:`fill="${col}"`}/>`);
     if(n.showAcc)o.push(`<g style="color:${col}">`+glyph(n.a>0?'sharp':'flat',x-(n.a>0?30:27),y+(n.a>0?10:6),30)+'</g>');
-    if(n.d<4){if(n.d12<12){const g=Math.floor(n.beat+1e-6);const key2=n.bar+':'+g;let G=groups.find(z=>z.k===key2);if(!G){G={k:key2,ns:[],top,col:[]};groups.push(G);}G.ns.push({x,y,p:n.p,col,d12:n.d12});}
+    if(n.d12===9)o.push(`<circle cx="${x+11}" cy="${n.p%2?y:y-5}" r="2" fill="${col}"/>`); // croche pointée
+    if(n.d<4){const g=Math.floor(n.beat+1e-6),key2=n.bar+':'+g;let G=groups.find(z=>z.k===key2);if(!G&&n.d12<12){G={k:key2,ns:[],top,trip:false};groups.push(G);}
+      if(G&&(n.d12===4||n.d12===8))G.trip=true;
+      if(n.d12<12&&n.d12!==8){G.ns.push({x,y,p:n.p,col,d12:n.d12});}
       else{const up=n.p<34;o.push(`<line x1="${up?x+6:x-6}" y1="${y}" x2="${up?x+6:x-6}" y2="${up?y-34:y+34}" stroke="${col}" stroke-width="1.5"/>`);}}
     i++;
   }
   // croches : ligatures par temps
-  groups.forEach(G=>{const avg=G.ns.reduce((a,n)=>a+n.p,0)/G.ns.length,up=avg<34;
-    const ys=G.ns.map(n=>n.y),end=up?Math.min(...ys)-30:Math.max(...ys)+30;
-    G.ns.forEach(n=>o.push(`<line x1="${up?n.x+6:n.x-6}" y1="${n.y}" x2="${up?n.x+6:n.x-6}" y2="${end}" stroke="${n.col}" stroke-width="1.5"/>`));
-    if(G.ns.length>1){const a=G.ns[0],b=G.ns[G.ns.length-1],sx=n=>up?n.x+6:n.x-6;
-      o.push(`<line x1="${sx(a)}" y1="${end}" x2="${sx(b)}" y2="${end}" stroke="${b.col}" stroke-width="5"/>`);
-      if(G.ns.every(n=>n.d12===3))o.push(`<line x1="${sx(a)}" y1="${end+(up?8:-8)}" x2="${sx(b)}" y2="${end+(up?8:-8)}" stroke="${b.col}" stroke-width="5"/>`); // doubles croches : deux barres
-      if(G.ns.every(n=>n.d12===4))o.push(`<text x="${(sx(a)+sx(b))/2}" y="${up?end-6:end+16}" text-anchor="middle" font-size="13" font-style="italic" font-weight="700" font-family="Georgia,serif" fill="${b.col}">3</text>`);}
-    else{const n=G.ns[0],sx=up?n.x+6:n.x-6;o.push(`<path d="M${sx} ${end} q 3 ${up?8:-8} 9 ${up?12:-12} q 2 ${up?4:-4} -1 ${up?10:-10}" fill="none" stroke="${n.col}" stroke-width="1.6"/>`);}
+  groups.forEach(G=>{
+    if(G.ns.length){const avg=G.ns.reduce((a,n)=>a+n.p,0)/G.ns.length,up=avg<34,sx=n=>up?n.x+6:n.x-6;
+      const ys=G.ns.map(n=>n.y),end=up?Math.min(...ys)-30:Math.max(...ys)+30;G.up=up;G.end=end;
+      G.ns.forEach(n=>o.push(`<line x1="${sx(n)}" y1="${n.y}" x2="${sx(n)}" y2="${end}" stroke="${n.col}" stroke-width="1.5"/>`));
+      if(G.ns.length>1){const a=G.ns[0],b=G.ns[G.ns.length-1];
+        o.push(`<line x1="${sx(a)}" y1="${end}" x2="${sx(b)}" y2="${end}" stroke="${b.col}" stroke-width="5"/>`);
+        const e2=end+(up?8:-8); // deuxième barre : doubles croches (segment entre deux doubles voisines, sinon petite barre)
+        G.ns.forEach((n,q)=>{if(n.d12!==3)return;const nx=G.ns[q+1],pv=G.ns[q-1];
+          if(nx&&nx.d12===3)o.push(`<line x1="${sx(n)}" y1="${e2}" x2="${sx(nx)}" y2="${e2}" stroke="${n.col}" stroke-width="5"/>`);
+          else if(!(pv&&pv.d12===3)){const L=nx?9:-9;o.push(`<line x1="${sx(n)}" y1="${e2}" x2="${sx(n)+L}" y2="${e2}" stroke="${n.col}" stroke-width="5"/>`);}});}
+      else{const n=G.ns[0],x0=sx(n);o.push(`<path d="M${x0} ${end} q 3 ${up?8:-8} 9 ${up?12:-12} q 2 ${up?4:-4} -1 ${up?10:-10}" fill="none" stroke="${n.col}" stroke-width="1.6"/>`);
+        if(n.d12===3)o.push(`<path d="M${x0} ${end+(up?8:-8)} q 3 ${up?8:-8} 9 ${up?12:-12} q 2 ${up?4:-4} -1 ${up?10:-10}" fill="none" stroke="${n.col}" stroke-width="1.6"/>`);}}
+    if(G.trip){const xs=G.ns.map(n=>n.x).concat((G.rests||[]).map(r=>r.x));const xa=Math.min(...xs)-4,xb=Math.max(...xs)+10,yy=G.ns.length?(G.up?Math.min(G.end-10,G.top-6):Math.max(G.end+12,G.top+52)):G.top-8;
+      o.push(`<text x="${(xa+xb)/2}" y="${yy+4}" text-anchor="middle" font-size="13" font-style="italic" font-weight="700" font-family="Georgia,serif" fill="currentColor">3</text>`);}
   });
   return `<svg viewBox="0 0 ${W} ${34+NL*LH-30}" role="img" aria-label="Partition : ${NB} mesures à lire">${o.join('')}</svg>`;
 }
@@ -916,10 +944,10 @@ GAMES.push({id:'lecture',titre:'Lecture de notes',
     return {sub:12,items:get,len:n=>n.d12,label:()=>'lis la première ligne',
       prepare:n=>{$('gStaff').innerHTML=drawStaff(get,0,key,chrom,swing);board(n,false);},
       show:(n)=>{const idx=n.i;$('gStaff').innerHTML=drawStaff(get,idx,key,chrom,swing);
-        $('gLab').textContent='Mesure';$('gNow').className='now cur';$('gNow').textContent=n.bar+1;$('gWhere').textContent='Lis la note en corail';$('gNext').innerHTML='';board(n,false);},
+        $('gLab').textContent='Mesure';$('gNow').className='now cur';$('gNow').textContent=n.bar+1;$('gWhere').textContent=n.rest?'Silence':'Lis la note en corail';$('gNext').innerHTML='';board(n,false);},
       revealFrac:revealFracOpt(),
-      reveal:n=>{if(+val('gRev')<0)return;board(n,true);$('gWhere').textContent=n.name+' : '+n.locs.map(c=>'case '+c.fr+' '+CORDE_DE[c.s]).join(', ou ');},
-      step:(n,k,t,dur)=>{if(k!==0||!$('gSnd').checked)return;const bd=60/BPMV;if(SWING&&n.d12===6){const off=n.beat%1!==0;const a=swingArt(n.beat,off,bd);pluck(n.m,t+(off?bd/6:0),a.vel,a.len);}else pluck(n.m,t,.5,Math.max(.25,n.d*bd*.9));}};
+      reveal:n=>{if(+val('gRev')<0||n.rest)return;board(n,true);$('gWhere').textContent=n.name+' : '+n.locs.map(c=>'case '+c.fr+' '+CORDE_DE[c.s]).join(', ou ');},
+      step:(n,k,t,dur)=>{if(k!==0||n.rest||!$('gSnd').checked)return;const bd=60/BPMV;if(SWING&&n.d12===6){const off=n.beat%1!==0;const a=swingArt(n.beat,off,bd);pluck(n.m,t+(off?bd/6:0),a.vel,a.len);}else pluck(n.m,t,.5,Math.max(.25,n.d*bd*.9));}};
   }});
 
 let GI=0;
