@@ -588,7 +588,7 @@ function startGame(g){
       if(g.announce&&step%(bpb*sub)===0){ // à chaque début de mesure : ce qu'il faudra jouer à la mesure suivante
         const bar=bpb*sub,b=step/bar-1,L=g.len(),s0=(b+1)*bar,list=[];
         for(let j=Math.ceil(s0/L);j*L<s0+bar;j++)list.push(g.items(j));
-        const held=list.length?null:g.items(Math.floor(s0/L));
+        const held=list.length?null:g.items(Math.floor(s0/L)+1); // rien ne change à la mesure suivante : on annonce le prochain changement
         at(t,()=>g.announce(list,b<0,held));}
       if(step<count){
         if(step%sub===0){const n=bpb-step/sub;at(t,()=>{if(g.announce){$('gLab').textContent='Décompte';$('gNow').className='now wait';$('gNow').textContent=n;$('gWhere').textContent='';return;}$('gNow').className='now wait';$('gNow').textContent=n;$('gWhere').textContent='Décompte';$('gNext').innerHTML='Pour commencer : <b>'+esc(g.label(item))+'</b>';});}
@@ -629,7 +629,7 @@ const cap=t=>t.charAt(0).toUpperCase()+t.slice(1);
 let NEXTWORD='Note suivante';
 function announceNotes(list,first,held,name,where){
   const L=list.length?list:[held],w=where?where(L):'';
-  const lab=first?(NEXTWORD.startsWith('Accord')?'Premier accord':'Première note'):list.length?(L.length>1?NEXTWORD.replace(/(\S+) (\S+)/,'$1s $2s'):NEXTWORD):'Mesure suivante, on garde';
+  const lab=first?(NEXTWORD.startsWith('Accord')?'Premier accord':'Première note'):(L.length>1?NEXTWORD.replace(/(\S+) (\S+)/,'$1s $2s'):NEXTWORD);
   $('gNext').innerHTML=esc(lab)+' : <span class="nx">'+esc(L.map(name).join('  '))+'</span>'+(w?'<br><span class="meta">'+esc(w)+'</span>':'');
 }
 function showNow(name,where){$('gLab').textContent='À jouer';$('gNow').className='now cur';$('gNow').textContent=name;$('gWhere').textContent=where||'';}
@@ -812,13 +812,14 @@ const LKEYS=[['C',0,0,0],['G',7,4,1],['D',2,1,2],['A',9,5,3],['E',4,2,4],['F',5,
 const SIG_S=[38,35,39,36,33,37,34],SIG_F=[34,37,33,36,32,35,31]; // positions sur la portée (clé de sol)
 const LAREAS=[['p0','1re position : cordes à vide et cases 1 à 3',0,3],['p2','Cases 2 à 5',2,5],['p5','5e position : cases 5 à 8',5,8],['p7','7e position : cases 7 à 10',7,10],['p9','Cases 9 à 12',9,12],
   ['s6','Corde de Mi grave (cases 0 à 12)'],['s5','Corde de La (cases 0 à 12)'],['s4','Corde de Ré (cases 0 à 12)'],['s3','Corde de Sol (cases 0 à 12)'],['s2','Corde de Si (cases 0 à 12)'],['s1','Corde de Mi aigu (cases 0 à 12)']];
-const LNIV=[[1,'1 · Rondes (secondes et tierces)'],[2,'2 · Blanches (secondes et tierces)'],[3,'3 · Noires (jusqu\'à la quarte)'],[4,'4 · Croches (jusqu\'à la quinte)'],[5,'5 · Valeurs mélangées (jusqu\'à la sixte)']];
+const LRYTO=[[1,'Rondes'],[2,'Blanches'],[3,'Noires'],[4,'Croches'],[5,'Valeurs mélangées']];
+const LINTO=[[1,'Seconde'],[2,'Tierce'],[3,'Quarte'],[4,'Quinte'],[5,'Sixte'],[6,'Septième'],[7,'Octave']];
 // pas mélodiques (en degrés : 1 = seconde, 2 = tierce…) et leur poids, selon le niveau
-const LSTEPS={1:[[1,8],[2,2]],2:[[1,7],[2,3]],3:[[1,6],[2,3],[3,1]],4:[[1,5],[2,3],[3,1.5],[4,1]],5:[[1,5],[2,3],[3,1.5],[4,1],[5,.6]]};
+const LSTEPW=[0,8,3.5,1.6,1.1,.7,.45,.4]; // poids des pas (1 = seconde … 7 = octave) : les petits intervalles restent les plus fréquents
 const LRYT={1:()=>[4],2:()=>[2,2],3:()=>[1,1,1,1],4:()=>[.5,.5,.5,.5,.5,.5,.5,.5],
   5:()=>{const P=[[2,1,1],[1,1,2],[1,1,1,1],[2,2],[1,.5,.5,2],[.5,.5,1,1,1],[1,.5,.5,1,1],[2,.5,.5,1],[1,1,.5,.5,1]];return P[Math.floor(Math.random()*P.length)];}};
 function wpick(ws){let t=ws.reduce((a,w)=>a+w[1],0),r=Math.random()*t;for(const w of ws){r-=w[1];if(r<=0)return w[0];}return ws[0][0];}
-function lectureMelody(area,key,chrom,niv){
+function lectureMelody(area,key,chrom,niv,maxi){
   // notes jouables dans la zone, regroupées par hauteur
   const A=LAREAS.find(a=>a[0]===area)||LAREAS[0],cells=[];
   if(A[0][0]==='s'){const s=+A[0][1];for(let fr=0;fr<=12;fr++)cells.push({s,fr});}
@@ -838,7 +839,7 @@ function lectureMelody(area,key,chrom,niv){
       slots.forEach((sl,j)=>{
         if(notes.length){ // pas mesuré en degrés réels (une note absente de la zone ne crée pas de saut caché)
           if(Math.random()<.3)dir=-dir;
-          const ok=[];for(const [st,w] of LSTEPS[niv])pool.forEach((m,j)=>{const dd=PP[j]-PP[idx];if(Math.abs(dd)===st)ok.push([j,w*(Math.sign(dd)===dir?1.6:1)]);});
+          const ok=[];for(let st=1;st<=maxi;st++){const w=LSTEPW[st];pool.forEach((m,j)=>{const dd=PP[j]-PP[idx];if(Math.abs(dd)===st)ok.push([j,w*(Math.sign(dd)===dir?1.6:1)]);});}
           if(ok.length){idx=wpick(ok);dir=Math.sign(PP[idx]-PP[Math.max(0,Math.min(pool.length-1,idx))])||dir;}
           if(idx<=0)dir=1;if(idx>=pool.length-1)dir=-1;}
         let m=pool[idx];const d=mod(m-k[1],12),deg=[0,2,4,5,7,9,11].indexOf(d),L=(k[2]+deg)%7;let a=mod(mod(m,12)-NAT[L],12);if(a>6)a-=12;
@@ -899,11 +900,11 @@ function drawStaff(get,curIdx,key,chrom,swing){
   return `<svg viewBox="0 0 ${W} ${34+NL*LH-30}" role="img" aria-label="Partition : ${NB} mesures à lire">${o.join('')}</svg>`;
 }
 GAMES.push({id:'lecture',titre:'Lecture de notes',
-  desc:'Une partition générée au hasard, avec peu de sauts aux premiers niveaux. Lis et joue chaque note en rythme : la note en cours est en corail, la réponse s\'affiche ensuite sur le manche. Quatre mesures sont toujours visibles, pour lire en avance.',
+  desc:'Une partition générée au hasard : choisis les valeurs rythmiques et l\'intervalle le plus grand autorisé. Lis et joue chaque note en rythme : la note en cours est en corail, la réponse s\'affiche ensuite sur le manche. Quatre mesures sont toujours visibles, pour lire en avance.',
   opts:()=>opt('gArea','Où jouer',LAREAS.map(a=>[a[0],a[1]]),'p0')+opt('gTon','Notes',LKEYS.map((k,i)=>[i,k[3]===0?'Tonalité de C (sans altération)':'Tonalité de '+k[0]+' ('+Math.abs(k[3])+(k[3]>0?' dièse':' bémol')+(Math.abs(k[3])>1?'s':'')+')']).concat([['chrom','Au hasard, avec altérations']]),0)
-    +opt('gNiv','Niveau',LNIV,1)+opt('gRev','Réponse sur le manche',REV,'0.5')+'<label class="chk" style="align-self:end;padding-bottom:8px"><input type="checkbox" id="gSnd" checked> Entendre la note (jouée en même temps que toi)</label>',
+    +opt('gNiv','Valeurs rythmiques',LRYTO,1)+opt('gInt','Intervalle maximal',LINTO,2)+opt('gRev','Réponse sur le manche',REV,'0.5')+'<label class="chk" style="align-self:end;padding-bottom:8px"><input type="checkbox" id="gSnd" checked> Entendre la note (jouée en même temps que toi)</label>',
   make:()=>{
-    const swing=SWING,chrom=val('gTon')==='chrom',key=chrom?LKEYS[0]:LKEYS[+val('gTon')],niv=+val('gNiv'),get=lectureMelody(val('gArea'),key,chrom,niv);
+    const swing=SWING,chrom=val('gTon')==='chrom',key=chrom?LKEYS[0]:LKEYS[+val('gTon')],niv=+val('gNiv'),get=lectureMelody(val('gArea'),key,chrom,niv,+val('gInt'));
     const A=LAREAS.find(a=>a[0]===val('gArea'));
     const board=(n,show)=>{const notes=show?n.locs.map(c=>({s:c.s,fr:c.fr,m:TUN[c.s]+c.fr,root:true,txt:n.name})):[];
       const s=A[0][0]==='s'?+A[0][1]:null;drawBoard($('gBoard'),{from:0,to:Math.max(12,A[3]||0),notes,hlString:s,label:'Manche',focus:show&&n.locs.length?n.locs[0].fr:(A[2]||6)});};
