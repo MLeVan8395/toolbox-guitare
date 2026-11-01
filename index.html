@@ -463,19 +463,20 @@ function fillShapes(){
   sel.value=SH.f;
 }
 function shapeNotes(f,ch,key,lbl){
-  return place(f,key,{floor:ch.id==='power'?0:1}).map(n=>({s:n.s,fr:n.fr,m:n.m,root:n.l==='1',txt:f.fixe?'':(lbl==='note'?spell(key,n.l):n.l),hollow:f.fixe&&n.fr===0}));
+  if(f.fixe)key=KEYS.find(k=>k[0]===f.n[0]);
+  return place(f,key,{floor:ch.id==='power'?0:1}).map(n=>({s:n.s,fr:n.fr,m:n.m,root:n.l==='1',txt:lbl==='note'?spell(key,n.l):n.l}));
 }
 function renderShape(){
   const ch=CHAPITRES[SH.ch],f=ch.formes[SH.f],key=KEYS[SH.key],lbl=$('lblSel').value;
   const scale=!isChord(f,ch)&&!f.arp&&ch.id!=='power';
   $('keyWrap').hidden=!!f.fixe;$('viewWrap').hidden=!scale;
-  $('lblSel').parentNode.hidden=!!f.fixe;
+  
   const corde=scale&&$('viewSel').value==='corde';
   $('shTitle').textContent=shapeName(f,ch,key);
   const ints=f.fixe?[]:intervalsOf(f);
   $('shInts').textContent=ints.length?ints.join('  '):'';
   $('legX').hidden=!(f.x&&f.x.length)&&!f.fixe;
-  $('legX').textContent=f.fixe?'○ = corde à vide, × = corde étouffée':'× = corde non jouée';
+  $('legX').textContent=f.fixe?'case 0 = corde à vide, × = corde étouffée':'× = corde non jouée';
   let notes,from,to,fingers=null,info='';
   if(corde){ // la gamme sur une corde : corde de La, tonique entre 1 et 12
     const s=5;let base=mod(key[1]-TUN[s],12);if(base<1)base+=12;
