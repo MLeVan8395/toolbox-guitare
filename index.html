@@ -580,41 +580,94 @@ const GAMES=[
         drawT(it.T,it.n);},
       step:(it,k,t,dur)=>{if(it.n&&$('gSnd').checked)pluck(it.n.m,t,.5,Math.max(.25,dur*1.6));}};
   }},
- {id:'accords',titre:'Accords en cycle des quartes',
-  desc:'Un accord par mesure (ou toutes les 2 mesures), en suivant le cycle des quartes : C, F, B♭, E♭… L\'appli choisit le voicing le plus proche du précédent, comme on le ferait en jouant.',
-  opts:()=>opt('gFam','Accords',[['shell:7','Shell 7 (1 3 ♭7)'],['shell:Maj7','Shell Maj7 (1 3 7)'],['shell:m7','Shell m7 (1 ♭3 ♭7)'],['shell:6','Shell 6 (1 3 6)'],['shell:m6','Shell m6 (1 ♭3 6)'],
-      ['positions:','Majeur (positions transposables)'],['positions:m','Mineur'],['positions:7','7'],['positions:Maj7','Maj7'],['positions:m7','m7'],['positions:m7b5','m7♭5'],['positions:dim7','dim7'],
-      ['enrichis:9','9 (enrichi)'],['enrichis:13','13 (enrichi)'],['enrichis:Maj9','Maj9'],['enrichis:m9','m9'],['power:','Power chords']],'shell:7')
-    +opt('gLen','Durée',[[4,'1 mesure par accord'],[8,'2 mesures par accord'],[2,'2 temps par accord']],4)+opt('gKey','Départ',KEYS.map((k,i)=>[i,k[0]]),0)
-    +'<label class="chk" style="align-self:end;padding-bottom:8px"><input type="checkbox" id="gSnd" checked> Entendre l\'accord</label>',
+ {id:'accords',titre:'Enchaînements d\'accords',
+  desc:'Un même type d\'accord, enchaîné en cycle des quartes (C, F, B♭, E♭…) ou au hasard. Choisis la position (corde de Mi, corde de La, groupe de cordes, renversement) ou laisse l\'appli prendre à chaque fois la plus proche de la précédente.',
+  opts:()=>{
+    const fam=val0('gFam','shell:7'),F=chordFamily(fam),grps=[...new Set(F.fs.map(f=>f.groupe).filter(Boolean))];
+    let o=opt('gFam','Accords',FAMILLES,'shell:7');
+    if(grps.length>1)o+=opt('gGrp',F.cid.startsWith('triades')?'Cordes':'Position',[['*','Toutes : la plus proche']].concat(grps.map(g=>[g,g])),'*');
+    const gv=grps.includes(val0('gGrp','*'))?val0('gGrp','*'):'*';
+    const inG=F.fs.filter(f=>grps.length<2||gv==='*'||f.groupe===gv);
+    if(grps.length<2||gv!=='*'){const inv=inG.map(f=>restName(f.n)).filter(Boolean);if(inG.length>1&&inv.length===inG.length)o+=opt('gInv','Renversement',[['*','Le plus proche']].concat(inv.map(n=>[n,n])),'*');}
+    return o+opt('gOrd','Ordre',[['q','Cycle des quartes'],['r','Au hasard']],'q')+opt('gLen','Durée',LENS,4)+opt('gKey','Départ (cycle)',KEYS.map((k,i)=>[i,k[0]]),0)
+      +'<label class="chk" style="align-self:end;padding-bottom:8px"><input type="checkbox" id="gSnd" checked> Entendre l\'accord</label>';},
   make:()=>{
-    const [cid,acc]=val('gFam').split(':'),ch=CHAPITRES.find(c=>c.id===cid);
-    const accN=acc.replace('b5','♭5');
-    const fs=cid==='power'?ch.formes.slice(0,2):ch.formes.filter(f=>(f.acc||'')===accN);
-    const len=+val('gLen'),startQ=KEYQ.findIndex(k=>k===KEYS[+val('gKey')]);
+    const F=chordFamily(val('gFam')),g=val('gGrp')||'*',iv=val('gInv')||'*';
+    let fs=F.fs.filter(f=>(g==='*'||f.groupe===g)&&(iv==='*'||restName(f.n)===iv));
+    if(!fs.length)fs=F.fs.filter(f=>g==='*'||f.groupe===g);if(!fs.length)fs=F.fs;
+    const keys=keySeq(val('gOrd'),+val('gKey'));
     const list=[];let pos=null;
-    const item=i=>{while(list.length<=i){const key=KEYQ[(startQ+list.length)%12];
-      let best=null;fs.forEach(f=>{[0].forEach(sh=>{const pl=place(f,key);
-        const c=pl.reduce((a,b)=>a+b.fr,0)/pl.length,d=Math.abs(c-(pos===null?5:pos));if(!best||d<best.d)best={d,pl,f,c};});});
-      pos=best.c;list.push({key,pl:best.pl,f:best.f,name:cid==='power'?key[0]+'5':chordName(key,best.f.acc||'')});}return list[i];};
-    const show=(it,nx,pre)=>{
-      const rs=rootString(it.f),rn=it.pl.find(n=>n.l==='1'&&n.s===rs);
-      $('gNext').innerHTML=(pre?'':'Maintenant : <b>'+esc(it.name)+'</b> — ')+'fondamentale '+spell(it.key,'1')+', case '+rn.fr+' '+CORDE_DE[rs];
-      const all=it.pl.map(n=>({s:n.s,fr:n.fr,m:n.m,root:n.l==='1',txt:n.l})).concat(nx?nx.pl.map(n=>({s:n.s,fr:n.fr,m:n.m,root:false,txt:'',dim:true,hollow:true})):[]);
-      drawBoard($('gBoard'),{from:0,to:15,notes:all,x:it.f.x,label:it.name,focus:Math.round(rn.fr)});};
-    const where=L=>{const it=L[0],rs=rootString(it.f),rn=it.pl.find(n=>n.l==='1'&&n.s===rs);return L.length>1?'':'Fondamentale case '+rn.fr+' '+CORDE_DE[rs];};
-    return {sub:1,items:item,len:()=>len,label:it=>it.name,prepare:it=>show(it,null,true),show,
-      announce:(list,first,held)=>announceNotes(list,first,held,it=>it.name,where),
-      step:(it,k,t)=>{if(k===0&&$('gSnd').checked)strum(it.pl.map(n=>n.m),t,cid==='power'?.012:.03);}};
+    const item=i=>{while(list.length<=i){const key=keys(list.length);const b=nearest(fs,key,pos);pos=b.c;
+      list.push({key,pl:b.pl,f:b.f,name:chordName(key,F.cid==='power'?'5':(b.f.acc!==undefined?b.f.acc:F.suf))});}return list[i];};
+    return chordGame(item,+val('gLen'),it=>$('gSnd').checked&&it,F.cid==='power'?.012:.03,'voicing');
+  }},
+ {id:'generateur',titre:'Générateur d\'accords',
+  desc:'Des accords tirés au hasard, dans toutes les tonalités, annoncés une mesure à l\'avance. Joue l\'accord, ou improvise par-dessus avec la gamme conseillée. Laisse-toi 2 ou 4 mesures par accord pour improviser.',
+  opts:()=>opt('gLvl','Accords',[[1,'Majeurs et mineurs'],[2,'Majeurs, mineurs et 7'],[3,'Maj7, 7, m7'],[4,'Maj7, 7, m7, m7♭5, dim7'],[5,'Tous : triades et accords à 4 sons']],2)
+    +opt('gMode','Consigne',[['jouer','Jouer l\'accord'],['impro','Improviser par-dessus'],['lire','Lire seulement (rien sur le manche)']],'jouer')
+    +opt('gLen','Durée',LENS.slice(1),8)
+    +opt('gSon','Son',[['bar','L\'accord à chaque mesure'],['chg','L\'accord au changement'],['none','Métronome seul']],'bar'),
+  make:()=>{
+    const lv=+val('gLvl'),mode=val('gMode'),son=val('gSon');
+    const types={1:['','m'],2:['','m','7'],3:['Maj7','7','m7'],4:['Maj7','7','m7','m7♭5','dim7'],5:['','m','7','Maj7','m7','m7♭5','dim7']}[lv];
+    const pos=CHAPITRES.find(c=>c.id==='positions');
+    const list=[];let p=null,last='';
+    const item=i=>{while(list.length<=i){let key,acc,nm;
+        do{key=KEYS[Math.floor(Math.random()*12)];acc=types[Math.floor(Math.random()*types.length)];nm=chordName(key,acc);}while(nm===last);last=nm;
+        const fs=pos.formes.filter(f=>f.acc===acc),b=nearest(fs,key,p);
+        const sc=SCALE_FOR[acc],sf=findShape(sc[0],sc[1]);
+        const spl=place(sf,key,{near:b.c});
+        p=b.c;list.push({key,pl:b.pl,f:b.f,name:nm,scale:sc[1]+' de '+keyName(key),spl});}return list[i];};
+    return chordGame(item,+val('gLen'),(it,k)=>(son==='bar'&&k%4===0||son==='chg'&&k===0)&&it,.03,mode);
   }}
 ];
+const FAMILLES=[['shell:7','Shell 7 (1 3 ♭7)'],['shell:Maj7','Shell Maj7 (1 3 7)'],['shell:m7','Shell m7 (1 ♭3 ♭7)'],['shell:6','Shell 6 (1 3 6)'],['shell:m6','Shell m6 (1 ♭3 6)'],
+  ['triades:','Triades majeures'],['triades-min:','Triades mineures'],
+  ['positions:','Majeur (accord complet)'],['positions:m','Mineur (accord complet)'],['positions:7','7 (accord complet)'],['positions:Maj7','Maj7 (accord complet)'],['positions:m7','m7 (accord complet)'],['positions:m7b5','m7♭5 (accord complet)'],['positions:dim7','dim7 (accord complet)'],
+  ['cordes1234:Maj7','Maj7 sur les cordes 1 à 4'],['cordes1234:7','7 sur les cordes 1 à 4'],['cordes1234:m7','m7 sur les cordes 1 à 4'],['cordes1234:m7b5','m7♭5 sur les cordes 1 à 4'],['cordes1234:dim7','dim7 sur les cordes 1 à 4'],
+  ['enrichis:7','7 (corde 6 ou 5)'],['enrichis:9','9 (enrichi)'],['enrichis:13','13 (enrichi)'],['enrichis:Maj9','Maj9'],['enrichis:m9','m9'],['power:','Power chords']];
+const LENS=[[2,'2 temps par accord'],[4,'1 mesure par accord'],[8,'2 mesures par accord'],[16,'4 mesures par accord']];
+const SCALE_FOR={'':['gammes','Pentatonique majeure'],'m':['gammes','Pentatonique mineure'],'7':['modes','Mixolydien'],'Maj7':['modes','Ionien'],'m7':['modes','Dorien'],'m7♭5':['modes','Locrien'],'dim7':['modes','Diminuée ton/demi-ton']};
+function findShape(cid,n){return CHAPITRES.find(c=>c.id===cid).formes.find(f=>f.n===n);}
+function val0(id,d){const e=$(id);return e?e.value:store.get('g-'+id,d);}
+function restName(n){if(n.includes(' : '))return n.split(' : ').pop();const r=restOf(n);return r.includes('(')&&!r.includes(')')?r+')':r;}
+function chordFamily(fam){
+  const [cid,acc]=(fam||'shell:7').split(':'),ch=CHAPITRES.find(c=>c.id===cid),accN=acc.replace('b5','♭5');
+  const fs=cid==='power'?ch.formes.slice(0,2):cid.startsWith('triades')?ch.formes:ch.formes.filter(f=>(f.acc||'')===accN);
+  return {cid,ch,fs,suf:cid==='triades-min'?'m':accN};
+}
+function nearest(fs,key,pos){let best=null;
+  fs.forEach(f=>{const pl=place(f,key,pos===null?{}:{near:pos});const c=pl.reduce((a,b)=>a+b.fr,0)/pl.length,d=Math.abs(c-(pos===null?5:pos));if(!best||d<best.d)best={d,pl,f,c};});
+  return best;}
+function keySeq(ord,k0){
+  if(ord==='r'){const seq=[];return i=>{while(seq.length<=i){let k;do{k=KEYS[Math.floor(Math.random()*12)];}while(seq.length&&k===seq[seq.length-1]);seq.push(k);}return seq[i];};}
+  const s0=KEYQ.findIndex(k=>k===KEYS[k0]);return i=>KEYQ[(s0+i)%12];
+}
+// Affichage commun aux jeux d'accords : mode 'voicing' / 'jouer' (accord + suivant en creux), 'impro' (gamme conseillée), 'lire' (rien)
+function chordGame(item,len,sound,gap,mode){
+  const rootOf=it=>{const rs=rootString(it.f);return {rs,rn:it.pl.find(n=>n.l==='1'&&n.s===rs)};};
+  const info=it=>{if(mode==='impro')return 'gamme conseillée : '+it.scale;if(mode==='lire')return '';const {rs,rn}=rootOf(it);return 'fondamentale case '+rn.fr+' '+CORDE_DE[rs];};
+  const show=(it,nx,pre)=>{
+    const inf=info(it);$('gNext').innerHTML=(pre?'':'Maintenant : <b>'+esc(it.name)+'</b>'+(inf?' — ':''))+esc(pre?cap(inf):inf);
+    if(mode==='lire'){drawBoard($('gBoard'),{from:0,to:12,notes:[],label:'Manche'});return;}
+    if(mode==='impro'){const pl=it.spl;drawBoard($('gBoard'),{from:Math.max(0,Math.min(...pl.map(n=>n.fr))-1),to:Math.max(...pl.map(n=>n.fr))+1,
+      notes:pl.map(n=>({s:n.s,fr:n.fr,m:n.m,root:n.l==='1',txt:n.l})),label:it.scale});return;}
+    const {rn}=rootOf(it);
+    const cur=it.pl.map(n=>({s:n.s,fr:n.fr,m:n.m,root:n.l==='1',txt:n.l}));
+    const all=(nx?nx.pl.filter(n=>!it.pl.some(c=>c.s===n.s&&c.fr===n.fr)).map(n=>({s:n.s,fr:n.fr,m:n.m,root:false,txt:'',dim:true,hollow:true})):[]).concat(cur);
+    drawBoard($('gBoard'),{from:0,to:15,notes:all,x:it.f.x,label:it.name,focus:Math.round(rn.fr)});};
+  const where=L=>L.length>1?'':cap(info(L[0]));
+  return {sub:1,items:item,len:()=>len,label:it=>it.name,prepare:it=>show(it,null,true),show,
+    announce:(list,first,held)=>announceNotes(list,first,held,it=>it.name,where),
+    step:(it,k,t)=>{if(sound(it,k))strum(it.pl.map(n=>n.m),t,gap);}};
+}
 function chordLbl(f,ch,key){return shapeName(f,ch,key);}
 let GI=0;
 function gameBtns(){const box=$('gameBtns');box.innerHTML='';GAMES.forEach((g,i)=>{const b=document.createElement('button');b.type='button';b.textContent=g.titre;b.setAttribute('aria-pressed',i===GI);b.onclick=()=>{stopGame();GI=i;store.set('game',g.id);gameBtns();renderGame();};box.appendChild(b);});}
 function renderGame(){
   const g=GAMES[GI];$('gTitle').textContent=g.titre;$('gDesc').textContent=g.desc;$('gOpts').innerHTML=g.opts();
   if(g.after)g.after();
-  $('gOpts').querySelectorAll('select').forEach(s=>s.addEventListener('change',()=>{store.set('g-'+s.id,s.value);if(RUN.on)stopGame();preview();}));
+  $('gOpts').querySelectorAll('select').forEach(s=>s.addEventListener('change',()=>{store.set('g-'+s.id,s.value);if(RUN.on)stopGame();if(s.id==='gFam'||s.id==='gGrp'){renderGame();return;}preview();}));
   $('gInfo').textContent='';preview();
 }
 function preview(){ // aperçu du premier élément, sans démarrer
@@ -650,7 +703,8 @@ function start(){
   $('shPlay').onclick=playShape;
   $('shGame').onclick=()=>{const c=CHAPITRES[SH.ch],f=c.formes[SH.f];
     if(['gammes','arpeges','modes'].includes(c.id)){GI=3;store.set('g-gShape',c.id+':'+SH.f);store.set('g-gKey',SH.key);}
-    else if(f.acc!==undefined&&['shell','positions','enrichis'].includes(c.id)){GI=4;store.set('g-gFam',c.id+':'+f.acc.replace('♭5','b5'));store.set('g-gKey',SH.key);}
+    else if(f.acc!==undefined&&['shell','positions','enrichis','cordes1234'].includes(c.id)){GI=4;store.set('g-gFam',c.id+':'+f.acc.replace('♭5','b5'));store.set('g-gKey',SH.key);if(f.groupe)store.set('g-gGrp',f.groupe);store.set('g-gInv',restName(f.n)||'*');}
+    else if(c.id.startsWith('triades')){GI=4;store.set('g-gFam',c.id+':');store.set('g-gGrp',f.groupe);store.set('g-gInv',restName(f.n));store.set('g-gKey',SH.key);}
     else if(c.id==='power'){GI=4;store.set('g-gFam','power:');}
     else GI=0;
     location.hash='#jeux';gameBtns();renderGame();};
