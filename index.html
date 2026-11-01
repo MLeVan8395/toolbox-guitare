@@ -644,7 +644,7 @@ const GAMES=[
     const list=[];let pos=null;
     const item=i=>{while(list.length<=i){const key=keys(list.length);const b=nearest(fs,key,pos);pos=b.c;
       list.push({key,pl:b.pl,f:b.f,name:chordName(key,F.cid==='power'?'5':(b.f.acc!==undefined?b.f.acc:F.suf))});}return list[i];};
-    return chordGame(item,+val('gLen'),it=>$('gSnd').checked&&it,F.cid==='power'?.012:.03,'voicing');
+    return chordGame(item,+val('gLen'),(it,k)=>k===0&&$('gSnd').checked&&it,F.cid==='power'?.012:.03,'voicing');
   }},
  {id:'generateur',titre:'Générateur d\'accords',
   desc:'Des accords tirés au hasard, dans toutes les tonalités, annoncés une mesure à l\'avance. Joue l\'accord, ou improvise par-dessus avec la gamme conseillée. Laisse-toi 2 ou 4 mesures par accord pour improviser.',
