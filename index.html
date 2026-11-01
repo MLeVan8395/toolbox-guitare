@@ -471,7 +471,7 @@ function intervalsOf(f){const seen=[];[...f.notes].map(n=>n[2]).sort((a,b)=>SEMI
 function restOf(n){const m=n.match(/[(:,]\s*(.*?)\)?$/);return m?m[1]:'';}
 function shapeName(f,ch,key){
   if(f.fixe)return f.n;
-  if(f.arp)return 'Arpège '+chordName(key,f.acc)+' — '+restOf(f.n);
+  if(f.arp)return 'Arpège '+chordName(key,f.acc)+' — '+(f.n.includes(', ')?f.n.split(', ').slice(1).join(', '):restOf(f.n));
   if(f.acc!==undefined){const r=restOf(f.n);return chordName(key,f.acc)+(r?' — '+r:'');}
   if(ch.id==='triades')return chordName(key,'')+' — '+f.n;
   if(ch.id==='triades-min')return chordName(key,'m')+' — '+f.n;
@@ -521,7 +521,7 @@ function renderShape(){
     if($('shFull').checked){from=0;to=Math.max(15,mx);}
     if(f.doigts){const base=notes.find(n=>n.root&&n.s===rootString(f)).fr-f.doigts;fingers={};for(let k=1;k<=4;k++)fingers[base+k]=k;}
     if(!f.fixe){const rs=rootString(f),rn=notes.find(n=>n.root&&n.s===rs);
-      info=`Tonique : ${keyName(key)}, case ${rn.fr} ${CORDE_DE[rs]}.`+(ch.id==='arpeges'&&(to-from)>5?' Cette position demande un léger étirement.':'');}
+      info=`Tonique : ${keyName(key)}, case ${rn.fr} ${CORDE_DE[rs]}.`+(ch.id.startsWith('arp')&&(to-from)>5&&!/2 octaves/.test(f.n)?' Cette position demande un léger étirement.':'');}
     else info='Accord en position ouverte : il ne se transpose pas.';
   }
   drawBoard($('shBoard'),{from,to,notes,x:corde?null:f.x,fingers,label:$('shTitle').textContent,focus:Math.round((from+to)/2)});
@@ -551,6 +551,12 @@ function showTip(t){let el=$('ntTip');if(!el){el=document.createElement('div');e
 
 // ===================== Métronome et moteur de jeu =====================
 const BPM={lent:60,moyen:90,rapide:120};
+// Articulation des croches en swing : la croche du temps est plus longue (liée) et plus douce,
+// celle du « et » plus courte et plus accentuée, surtout le « et » de 2 et de 4.
+function swingArt(beatInBar,off,beatDur){
+  if(!off)return {vel:.36,len:beatDur*2/3};
+  const b=Math.floor(beatInBar)%4;return {vel:(b===1||b===3)?.66:.5,len:beatDur/3*.92};
+}
 let SWING=store.get('swing','0')==='1',CLIC24=store.get('clic24','0')==='1';
 let TEMPO=store.get('tempo','moyen'),BPMV=+store.get('bpm',BPM[TEMPO]||90);
 if(!(BPMV>=30&&BPMV<=240))BPMV=90;
@@ -590,7 +596,7 @@ function startGame(g){
       }else{
         if(k===0){const it=item,nx=nextItem;at(t,()=>g.show(it,nx));
           if(g.reveal){const rt=t+g.len(it)*dur*(g.revealFrac===undefined?.5:g.revealFrac());const it2=it;if(g.revealSound){const fr=(g.revealFrac===undefined?.5:g.revealFrac()),st=Math.floor(g.len(it)*fr/sub)*sub;g.revealSound(it2,t+st*dur);} /* le son tombe toujours sur un temps */at(rt,()=>g.reveal(it2));}}
-        if(g.step)g.step(item,k,t,dur);
+        if(g.step)g.step(item,k,t,dur,step-count);
         k++;
         if(k>=left){i++;item=nextItem;nextItem=g.items(i+1);left=g.len(item);k=0;}
       }
@@ -657,7 +663,7 @@ const GAMES=[
   desc:'Le schéma choisi, monté puis descendu au métronome : la note à jouer s\'allume sur le manche. Avec l\'option cycle des quartes, la tonalité change à chaque tour.',
   opts:()=>{const ch=CHAPITRES.filter(c=>(CUR.filter||['gammes','arpeges','modes']).includes(c.id));
     let o='<label class="f" style="grid-column:span 2">Schéma <select id="gShape">';
-    ch.forEach(c=>{let grp=null;o+=`<optgroup label="${esc(c.titre)}">`;c.formes.forEach((f,j)=>{o+=`<option value="${c.id}:${j}">${esc(f.n+(f.groupe&&c.id!=='modes'&&c.id!=='gammes'?' ('+f.groupe.toLowerCase()+')':''))}</option>`;});o+='</optgroup>';});
+    ch.forEach(c=>{let grp=null;o+=`<optgroup label="${esc(c.titre)}">`;c.formes.forEach((f,j)=>{o+=`<option value="${c.id}:${j}">${esc(f.n+(f.groupe&&c.id==='arpeges'?' ('+f.groupe.toLowerCase()+')':''))}</option>`;});o+='</optgroup>';});
     o+='</select></label>';
     return o+opt('gKey','Tonalité de départ',KEYS.map((k,i)=>[i,k[0]]),0)+opt('gSub','Valeurs',[[1,'Noires (1 note par temps)'],[2,'Croches (2 notes par temps)']],1)+opt('gNxt','Après chaque tour',[['same','Même tonalité'],['q','Cycle des quartes']],'same')
       +'<label class="chk" style="align-self:end;padding-bottom:8px"><input type="checkbox" id="gSnd" checked> Entendre les notes</label>';},
@@ -684,7 +690,7 @@ const GAMES=[
         const nT=tour(tours.indexOf(it.T)+1);
         $('gNext').innerHTML=cyc?'Tour suivant : <b>'+esc(lbl({T:nT}))+'</b>':'';
         drawT(it.T,it.n);},
-      step:(it,k,t,dur)=>{if(it.n&&$('gSnd').checked)pluck(it.n.m,t,.5,Math.max(.25,dur*1.6));}};
+      step:(it,k,t,dur,r)=>{if(!(it.n&&$('gSnd').checked))return;if(SWING&&sub===2){const a=swingArt((r>>1)%4,r%2,dur*2);pluck(it.n.m,t,a.vel,a.len);}else pluck(it.n.m,t,.5,Math.max(.25,dur*1.6));}};
   }},
  {id:'accords',titre:'Enchaînements d\'accords',
   desc:'Un même type d\'accord, enchaîné en cycle des quartes (C, F, B♭, E♭…) ou au hasard. Choisis la position (corde de Mi, corde de La, groupe de cordes, renversement) ou laisse l\'appli prendre à chaque fois la plus proche de la précédente.',
@@ -907,7 +913,7 @@ GAMES.push({id:'lecture',titre:'Lecture de notes',
         $('gLab').textContent='Mesure';$('gNow').className='now cur';$('gNow').textContent=n.bar+1;$('gWhere').textContent='Lis la note en corail';$('gNext').innerHTML='';board(n,false);},
       revealFrac:revealFracOpt(),
       reveal:n=>{if(+val('gRev')<0)return;board(n,true);$('gWhere').textContent=n.name+' : '+n.locs.map(c=>'case '+c.fr+' '+CORDE_DE[c.s]).join(', ou ');},
-      step:(n,k,t,dur)=>{if(k===0&&$('gSnd').checked)pluck(n.m,t,.5,Math.max(.25,n.d*60/BPMV*.9));}};
+      step:(n,k,t,dur)=>{if(k!==0||!$('gSnd').checked)return;const bd=60/BPMV;if(SWING&&n.d===.5){const a=swingArt(n.beat,n.beat%1!==0,bd);pluck(n.m,t,a.vel,a.len);}else pluck(n.m,t,.5,Math.max(.25,n.d*bd*.9));}};
   }});
 
 let GI=0;
@@ -939,8 +945,8 @@ const MENU=[
    {id:'shell',t:'Jazz shells',view:'schema',chap:'shell'},{id:'positions',t:'Positions transposables',view:'schema',chap:'positions'},
    {id:'renversements',t:'Renversements (cordes 1 à 4)',view:'schema',chap:'cordes1234'},{id:'enrichis',t:'Accords enrichis',view:'schema',chap:'enrichis'},
    {id:'enchainements',t:'Enchaînements d\'accords',view:'game',game:'accords'},{id:'generateur',t:'Générateur d\'accords',view:'game',game:'generateur'}]},
- {id:'arpeges',t:'Arpèges',items:[{id:'quatre-sons',t:'Arpèges à 4 sons',view:'schema',chap:'arpeges'},
-   {id:'rythme',t:'Arpèges en rythme',view:'game',game:'gamme',filter:['arpeges'],desc:'L\'arpège choisi, monté puis descendu au métronome : la note à jouer s\'allume sur le manche. Avec l\'option cycle des quartes, la tonalité change à chaque tour.'}]}
+ {id:'arpeges',t:'Arpèges',items:[{id:'maj7',t:'Maj7',view:'schema',chap:'arp-maj7'},{id:'7',t:'7',view:'schema',chap:'arp-7'},{id:'m7',t:'m7',view:'schema',chap:'arp-m7'},{id:'m7b5',t:'m7♭5',view:'schema',chap:'arp-m7b5'},{id:'dim7',t:'dim7',view:'schema',chap:'arp-dim7'},
+   {id:'rythme',t:'Arpèges en rythme',view:'game',game:'gamme',filter:['arp-maj7','arp-7','arp-m7','arp-m7b5','arp-dim7'],desc:'L\'arpège choisi, monté puis descendu au métronome : la note à jouer s\'allume sur le manche. Avec l\'option cycle des quartes, la tonalité change à chaque tour.'}]}
 ];
 let CUR={};
 const PANELS=['schemas','jeux','notes','presentation','mains'];
@@ -982,7 +988,7 @@ function start(){
   $('shPlay').onclick=playShape;
   $('shGame').onclick=()=>{const c=CHAPITRES[SH.ch],f=c.formes[SH.f];let to='#accords-enchainements';
     if(['gammes','modes'].includes(c.id)){to='#gammes-rythme';store.set('g-gShape',c.id+':'+SH.f);store.set('g-gKey',SH.key);}
-    else if(c.id==='arpeges'){to='#arpeges-rythme';store.set('g-gShape',c.id+':'+SH.f);store.set('g-gKey',SH.key);}
+    else if(c.id.startsWith('arp')){to='#arpeges-rythme';store.set('g-gShape',c.id+':'+SH.f);store.set('g-gKey',SH.key);}
     else if(f.acc!==undefined&&['shell','positions','enrichis','cordes1234'].includes(c.id)){store.set('g-gFam',c.id+':'+f.acc.replace('♭5','b5'));store.set('g-gKey',SH.key);if(f.groupe)store.set('g-gGrp',f.groupe);store.set('g-gInv',restName(f.n)||'*');}
     else if(c.id.startsWith('triades')){store.set('g-gFam',c.id+':');store.set('g-gGrp',f.groupe);store.set('g-gInv','monter');store.set('g-gKey',SH.key);}
     else if(c.id==='power'){store.set('g-gFam','power:');}

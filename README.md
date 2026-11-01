@@ -24,7 +24,7 @@ Cinq onglets, chacun avec son sous-menu (les jeux au métronome sont marqués d'
 | **Manche** | Toutes les notes (de 0 à 12) ; les mains ; **lecture de notes** (partition générée au hasard, en position ou le long d'une corde, dans une tonalité ou avec altérations, 5 niveaux : rondes, blanches, noires, croches, valeurs mélangées, avec des intervalles de plus en plus grands) ; cycle des quartes sur une corde ; une note sur toutes les cordes |
 | **Gammes** | Premières gammes (avec les doigts), modes et gammes dérivés ; gammes en rythme |
 | **Accords** | Accords ouverts, power chords et octaves, triades majeures et mineures, jazz shells, positions transposables, renversements sur les cordes 1 à 4, accords enrichis ; enchaînements d'accords (cycle des quartes ou hasard, choix de la position, montée des renversements pour les triades, accompagnement swing ou pop avec orgue, walking bass et batterie) ; générateur d'accords pour jouer ou improviser, jusqu'aux accords enrichis |
-| **Arpèges** | Arpèges à 4 sons ; arpèges en rythme |
+| **Arpèges** | Un sous-menu par accord (Maj7, 7, m7, m7♭5, dim7) : sur une octave en position (cordes 6-5-4, 5-4-3, 4-3-2, 3-2-1), puis sur deux octaves (en position, en enchaînant deux positions, en diagonale) ; arpèges en rythme |
 
 Tous les schémas se placent dans la tonalité choisie, avec les intervalles ou les noms des notes. Dans les jeux, la note ou l'accord à jouer s'affiche en gros, et le suivant est annoncé une mesure à l'avance. Tempo lent, moyen ou rapide, réglable de 5 en 5 ; croches droites ou swing, et clic sur 2 et 4 en option.
 
