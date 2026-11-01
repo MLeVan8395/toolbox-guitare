@@ -252,7 +252,7 @@ const chordName=(k,acc)=>k[0]+(acc||'');
 // ===================== Son : corde pincée (Karplus-Strong), métronome =====================
 let AC=null,MASTER=null;
 function ctx(){
-  if(!AC){try{AC=new (window.AudioContext||window.webkitAudioContext)();MASTER=AC.createGain();MASTER.gain.value=.9;MASTER.connect(AC.destination);}catch(e){return null;}}
+  if(!AC){try{AC=new (window.AudioContext||window.webkitAudioContext)();MASTER=AC.createGain();MASTER.gain.value=.75;const lim=AC.createDynamicsCompressor();lim.threshold.value=-10;lim.knee.value=6;lim.ratio.value=12;lim.attack.value=.003;lim.release.value=.15;MASTER.connect(lim);lim.connect(AC.destination);}catch(e){return null;}}
   if(AC.state==='suspended')AC.resume();
   return AC;
 }
@@ -281,6 +281,51 @@ function pluck(m,t,vel,dur,keep){
   VOICES.push({g,start:t,end:t+dur+.6});
 }
 function strum(midis,t,gap){const ac=ctx();if(!ac)return;t=t||ac.currentTime+.02;gap=gap===undefined?.035:gap;cutAt(t);[...midis].sort((a,b)=>a-b).forEach((m,i)=>pluck(m,t+i*gap,.42,2,true));}
+// ===== Accompagnement : pad, basse, batterie (sons de synthèse) =====
+let ACCV=[];
+function track(g,end){ACCV=ACCV.filter(v=>v.end>AC.currentTime);ACCV.push({g,end});}
+function stopAcc(){if(!AC)return;const t=AC.currentTime;ACCV.forEach(v=>{try{v.g.gain.cancelScheduledValues(t);v.g.gain.setTargetAtTime(0,t,.03);}catch(e){}});ACCV=[];}
+function padChord(midis,t,dur){
+  const ac=ctx();if(!ac)return;
+  const pcs=[...new Set(midis.map(m=>mod(m,12)))],notes=pcs.map(pc=>55+mod(pc-55,12)); // entre Sol 3 et Fa♯ 4
+  const out=ac.createGain(),lp=ac.createBiquadFilter();lp.type='lowpass';lp.frequency.value=1100;lp.Q.value=.4;
+  out.gain.setValueAtTime(0,t);out.gain.linearRampToValueAtTime(.16/Math.sqrt(notes.length),t+.25);
+  out.gain.setValueAtTime(.16/Math.sqrt(notes.length),t+Math.max(.3,dur-.12));out.gain.linearRampToValueAtTime(0,t+dur+.05);
+  lp.connect(out);out.connect(MASTER);
+  notes.forEach(m=>[-7,7].forEach(c=>{const o=ac.createOscillator();o.type='sawtooth';o.frequency.value=440*Math.pow(2,(m-69)/12);o.detune.value=c;
+    const g=ac.createGain();g.gain.value=.5;o.connect(g);g.connect(lp);o.start(t);o.stop(t+dur+.1);}));
+  track(out,t+dur+.1);
+}
+function bassNote(m,t,dur){
+  const ac=ctx();if(!ac)return;const o=ac.createOscillator(),o2=ac.createOscillator(),lp=ac.createBiquadFilter(),g=ac.createGain();
+  o.type='triangle';o2.type='square';o.frequency.value=o2.frequency.value=440*Math.pow(2,(m-69)/12);
+  const g2=ac.createGain();g2.gain.value=.12;lp.type='lowpass';lp.frequency.setValueAtTime(900,t);lp.frequency.exponentialRampToValueAtTime(260,t+.25);
+  g.gain.setValueAtTime(0,t);g.gain.linearRampToValueAtTime(.5,t+.008);g.gain.setTargetAtTime(.3,t+.05,.15);g.gain.setValueAtTime(.3,t+dur*.85);g.gain.linearRampToValueAtTime(0,t+dur*.95);
+  o.connect(lp);o2.connect(g2);g2.connect(lp);lp.connect(g);g.connect(MASTER);o.start(t);o2.start(t);o.stop(t+dur);o2.stop(t+dur);track(g,t+dur);
+}
+let NOISE=null;
+function noiseBuf(){if(NOISE)return NOISE;const ac=ctx(),n=ac.sampleRate,b=ac.createBuffer(1,n,n),d=b.getChannelData(0);for(let i=0;i<n;i++)d[i]=Math.random()*2-1;return NOISE=b;}
+function drum(kind,t){
+  const ac=ctx();if(!ac)return;const g=ac.createGain();g.connect(MASTER);
+  if(kind==='kick'){const o=ac.createOscillator();o.frequency.setValueAtTime(140,t);o.frequency.exponentialRampToValueAtTime(45,t+.12);
+    g.gain.setValueAtTime(.9,t);g.gain.exponentialRampToValueAtTime(.001,t+.35);o.connect(g);o.start(t);o.stop(t+.4);}
+  else if(kind==='snare'){const n=ac.createBufferSource();n.buffer=noiseBuf();const bp=ac.createBiquadFilter();bp.type='bandpass';bp.frequency.value=1800;bp.Q.value=.7;
+    g.gain.setValueAtTime(.45,t);g.gain.exponentialRampToValueAtTime(.001,t+.18);n.connect(bp);bp.connect(g);n.start(t);n.stop(t+.2);
+    const o=ac.createOscillator(),g2=ac.createGain();o.frequency.value=190;g2.gain.setValueAtTime(.25,t);g2.gain.exponentialRampToValueAtTime(.001,t+.08);o.connect(g2);g2.connect(MASTER);o.start(t);o.stop(t+.1);}
+  else{const n=ac.createBufferSource();n.buffer=noiseBuf();const hp=ac.createBiquadFilter();hp.type='highpass';hp.frequency.value=7000;
+    const v=kind==='hh2'?.07:.12;g.gain.setValueAtTime(v,t);g.gain.exponentialRampToValueAtTime(.001,t+.05);n.connect(hp);hp.connect(g);n.start(t);n.stop(t+.06);}
+  track(g,t+.4);
+}
+// Un temps d'accompagnement : batterie (grosse caisse 1 et 3, caisse claire 2 et 4, charleston en croches) et basse
+function accBeat(it,k,t,dur,len){
+  const b=k%4;drum('hh',t);drum('hh2',t+dur/2);
+  if(b===0||b===2)drum('kick',t);else drum('snare',t);
+  if(b===2&&len>=4)drum('kick',t+dur*1.5);
+  const r=it.key[1],fifth=/dim|♭5/.test(it.name)?6:7,root=36+mod(r-36,12)-(mod(r-36,12)>7?12:0);
+  if(b===0)bassNote(root,t,dur*1.5);
+  else if(b===2&&len>=4)bassNote(root+fifth,t,dur*.95);
+  else if(b===3&&len>=4)bassNote(root+(k%8===7?fifth:12),t+dur/2,dur*.45);
+}
 function click(t,accent){
   const ac=ctx();if(!ac)return;
   const o=ac.createOscillator(),g=ac.createGain();o.type='square';o.frequency.value=accent?1760:1180;
@@ -449,7 +494,7 @@ function at(t,fn){const ms=Math.max(0,(t-AC.currentTime)*1000);RUN.tos.push(setT
 function setBeats(n,on){const b=$('gBeats');if(b.children.length!==n){b.innerHTML='';for(let i=0;i<n;i++){const e=document.createElement('i');if(i===0)e.className='first';b.appendChild(e);}}
   [...b.children].forEach((e,i)=>e.classList.toggle('on',i===on));}
 function stopGame(){
-  RUN.on=false;clearInterval(RUN.timer);RUN.tos.forEach(clearTimeout);RUN.tos=[];
+  RUN.on=false;stopAcc();clearInterval(RUN.timer);RUN.tos.forEach(clearTimeout);RUN.tos=[];
   $('gGo').textContent='▶ Démarrer';$('gGo').className='primary';setBeats(4,-1);
   if(RUN.g&&RUN.g.stop)RUN.g.stop();
   $('gNow').textContent='Prêt ?';$('gNow').className='now wait';$('gWhere').textContent='';$('gNext').textContent='';$('gLab').textContent='';
@@ -465,7 +510,7 @@ function startGame(g){
   const sched=()=>{
     while(RUN.on&&RUN.next<ac.currentTime+.12){
       const t=RUN.next,dur=60/BPMV/sub;
-      if(step%sub===0)click(t,(step/sub)%bpb===0);
+      if(step%sub===0&&(!g.noClick||step<count))click(t,(step/sub)%bpb===0);
       const beat=Math.floor(step/sub)%bpb;
       if(step%sub===0)at(t,()=>setBeats(bpb,beat));
       if(g.announce&&step%(bpb*sub)===0){ // à chaque début de mesure : ce qu'il faudra jouer à la mesure suivante
@@ -606,7 +651,7 @@ const GAMES=[
   opts:()=>opt('gLvl','Accords',[[1,'Majeurs et mineurs'],[2,'Majeurs, mineurs et 7'],[3,'Maj7, 7, m7'],[4,'Maj7, 7, m7, m7♭5, dim7'],[5,'Tous : triades et accords à 4 sons']],2)
     +opt('gMode','Consigne',[['jouer','Jouer l\'accord'],['impro','Improviser par-dessus'],['lire','Lire seulement (rien sur le manche)']],'jouer')
     +opt('gLen','Durée',LENS.slice(1),8)
-    +opt('gSon','Son',[['bar','L\'accord à chaque mesure'],['chg','L\'accord au changement'],['none','Métronome seul']],'bar'),
+    +opt('gSon','Son',[['acc','Accompagnement : pad, basse, batterie'],['bar','Guitare : l\'accord à chaque mesure'],['chg','Guitare : l\'accord au changement'],['none','Métronome seul']],'acc'),
   make:()=>{
     const lv=+val('gLvl'),mode=val('gMode'),son=val('gSon');
     const types={1:['','m'],2:['','m','7'],3:['Maj7','7','m7'],4:['Maj7','7','m7','m7♭5','dim7'],5:['','m','7','Maj7','m7','m7♭5','dim7']}[lv];
@@ -618,7 +663,9 @@ const GAMES=[
         const sc=SCALE_FOR[acc],sf=findShape(sc[0],sc[1]);
         const spl=place(sf,key,{near:b.c});
         p=b.c;list.push({key,pl:b.pl,f:b.f,name:nm,scale:sc[1]+' de '+keyName(key),spl});}return list[i];};
-    return chordGame(item,+val('gLen'),(it,k)=>(son==='bar'&&k%4===0||son==='chg'&&k===0)&&it,.03,mode);
+    const len=+val('gLen'),g=chordGame(item,len,(it,k)=>(son==='bar'&&k%4===0||son==='chg'&&k===0)&&it,.03,mode);
+    if(son==='acc'){g.noClick=true;g.step=(it,k,t,dur)=>{if(k===0)padChord(it.pl.map(n=>n.m),t,len*dur);accBeat(it,k,t,dur,len);};}
+    return g;
   }}
 ];
 const FAMILLES=[['shell:7','Shell 7 (1 3 ♭7)'],['shell:Maj7','Shell Maj7 (1 3 7)'],['shell:m7','Shell m7 (1 ♭3 ♭7)'],['shell:6','Shell 6 (1 3 6)'],['shell:m6','Shell m6 (1 ♭3 6)'],
