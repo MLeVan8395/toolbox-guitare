@@ -296,6 +296,18 @@ function padChord(midis,t,dur){
     const g=ac.createGain();g.gain.value=.5;o.connect(g);g.connect(lp);o.start(t);o.stop(t+dur+.1);}));
   track(out,t+dur+.1);
 }
+// Orgue type Hammond : tirettes 16', 8', 5 1/3', 4', 2 2/3' (sinusoïdes) et léger effet Leslie
+function organChord(midis,t,dur){
+  const ac=ctx();if(!ac)return;
+  const pcs=[...new Set(midis.map(m=>mod(m,12)))],notes=pcs.map(pc=>53+mod(pc-53,12)); // entre Fa 3 et Mi 4
+  const out=ac.createGain(),v=.2/Math.sqrt(notes.length);
+  out.gain.setValueAtTime(0,t);out.gain.linearRampToValueAtTime(v,t+.03);out.gain.setValueAtTime(v,t+Math.max(.1,dur-.06));out.gain.linearRampToValueAtTime(0,t+dur);
+  const trem=ac.createGain();trem.gain.value=1;const lfo=ac.createOscillator(),lg=ac.createGain();lfo.frequency.value=5.8;lg.gain.value=.12;lfo.connect(lg);lg.connect(trem.gain);lfo.start(t);lfo.stop(t+dur+.05);
+  trem.connect(out);out.connect(MASTER);
+  const bars=[[.5,.6],[1,.8],[1.5,.55],[2,.45],[3,.25]];
+  notes.forEach(m=>{const f=440*Math.pow(2,(m-69)/12);bars.forEach(([h,a])=>{const o=ac.createOscillator(),g=ac.createGain();o.frequency.value=f*h;g.gain.value=a*.4;o.connect(g);g.connect(trem);o.start(t);o.stop(t+dur+.05);});});
+  track(out,t+dur+.05);
+}
 function bassNote(m,t,dur){
   const ac=ctx();if(!ac)return;const o=ac.createOscillator(),o2=ac.createOscillator(),lp=ac.createBiquadFilter(),g=ac.createGain();
   o.type='triangle';o2.type='square';o.frequency.value=o2.frequency.value=440*Math.pow(2,(m-69)/12);
@@ -358,6 +370,7 @@ function walkBeat(it,nx,k,t,dur,len){
 function halfBeat(it,k,t,dur,len){const q=quality(it),r=bassRoot(it.key[1]),b=k%4;
   if(b===0)bassNote(r,t,dur*1.9);else if(b===2&&len>=4)bassNote(r+q.fifth-(r+q.fifth>45?12:0),t,dur*1.9);}
 function accomp(style,it,nx,k,t,dur,len){
+  if(style==='orgue-seul')return;
   if(style==='pop'){accBeat(it,k,t,dur,len);return;}
   swingDrums(k,t,dur);
   if(style==='swing')walkBeat(it,nx,k,t,dur,len);else halfBeat(it,k,t,dur,len);
@@ -673,7 +686,7 @@ const GAMES=[
     if(grps.length<2||gv!=='*'){const inv=inG.map(f=>restName(f.n)).filter(Boolean);if(inG.length>1&&inv.length===inG.length)o+=opt('gInv','Renversement',[['*','Le plus proche']].concat(inv.map(n=>[n,n])),'*');}
     return o+opt('gOrd','Ordre',[['q','Cycle des quartes'],['r','Au hasard']],'q')+opt('gLen','Durée',LENS,4)+opt('gKey','Départ (cycle)',KEYS.map((k,i)=>[i,k[0]]),0)
       +opt('gAcc','Accompagnement',[['none','Aucun : métronome seul'],['swing','Swing : batterie et walking bass'],['swing2','Swing : batterie et basse à la blanche'],['pop','Pop : batterie et basse']],['shell','enrichis','cordes1234'].includes(F.cid)?'swing':'none')
-      +'<label class="chk" style="align-self:end;padding-bottom:8px"><input type="checkbox" id="gSnd" checked> Entendre l\'accord (1er temps de chaque mesure)</label>';},
+      +opt('gInst','Les accords joués par',[['orgue','L\'orgue (son tenu)'],['guitare','La guitare (1er temps de chaque mesure)'],['none','Personne : je les joue seul']],['shell','enrichis','cordes1234'].includes(F.cid)?'orgue':'guitare');},
   make:()=>{
     const F=chordFamily(val('gFam')),g=val('gGrp')||'*',iv=val('gInv')||'*';
     let fs=F.fs.filter(f=>(g==='*'||f.groupe===g)&&(iv==='*'||restName(f.n)===iv));
@@ -682,14 +695,15 @@ const GAMES=[
     const list=[];let pos=null;
     const item=i=>{while(list.length<=i){const key=keys(list.length);const b=nearest(fs,key,pos);pos=b.c;
       list.push({idx:list.length,key,pl:b.pl,f:b.f,name:chordName(key,F.cid==='power'?'5':(b.f.acc!==undefined?b.f.acc:F.suf))});}return list[i];};
-    return chordGame(item,+val('gLen'),(it,k)=>k%4===0&&$('gSnd').checked&&it,F.cid==='power'?.012:.03,'voicing',val('gAcc'),false);
+    const inst=val('gInst'),acc=val('gAcc');
+    return chordGame(item,+val('gLen'),(it,k)=>k%4===0&&inst==='guitare'&&it,F.cid==='power'?.012:.03,'voicing',inst==='orgue'&&acc==='none'?'orgue-seul':acc,inst==='orgue'?'orgue':false);
   }},
  {id:'generateur',titre:'Générateur d\'accords',
   desc:'Des accords tirés au hasard, dans toutes les tonalités, annoncés une mesure à l\'avance. Joue l\'accord, ou improvise par-dessus avec la gamme conseillée. Laisse-toi 2 ou 4 mesures par accord pour improviser.',
   opts:()=>opt('gLvl','Accords',[[1,'Majeurs et mineurs'],[2,'Majeurs, mineurs et 7'],[3,'Maj7, 7, m7'],[4,'Maj7, 7, m7, m7♭5, dim7'],[5,'Tous : triades et accords à 4 sons']],2)
     +opt('gMode','Consigne',[['jouer','Jouer l\'accord'],['impro','Improviser par-dessus'],['lire','Lire seulement (rien sur le manche)']],'jouer')
     +opt('gLen','Durée',LENS.slice(1),8)
-    +opt('gSon','Son',[['acc','Accompagnement pop : pad, basse, batterie'],['swing','Accompagnement swing : pad, walking bass, batterie'],['swing2','Swing : pad, basse à la blanche, batterie'],['bar','Guitare : l\'accord à chaque mesure'],['chg','Guitare : l\'accord au changement'],['none','Métronome seul']],'acc'),
+    +opt('gSon','Son',[['acc','Accompagnement pop : pad, basse, batterie'],['swing','Accompagnement swing : orgue, walking bass, batterie'],['swing2','Swing : orgue, basse à la blanche, batterie'],['bar','Guitare : l\'accord à chaque mesure'],['chg','Guitare : l\'accord au changement'],['none','Métronome seul']],'acc'),
   make:()=>{
     const lv=+val('gLvl'),mode=val('gMode'),son=val('gSon');
     const types={1:['','m'],2:['','m','7'],3:['Maj7','7','m7'],4:['Maj7','7','m7','m7♭5','dim7'],5:['','m','7','Maj7','m7','m7♭5','dim7']}[lv];
@@ -702,7 +716,7 @@ const GAMES=[
         const spl=place(sf,key,{near:b.c});
         p=b.c;list.push({idx:list.length,key,pl:b.pl,f:b.f,name:nm,scale:sc[1]+' de '+keyName(key),spl});}return list[i];};
     const len=+val('gLen'),style={acc:'pop',swing:'swing',swing2:'swing2'}[son]||'none';
-    return chordGame(item,len,(it,k)=>(son==='bar'&&k%4===0||son==='chg'&&k===0)&&it,.03,mode,style,style!=='none');
+    return chordGame(item,len,(it,k)=>(son==='bar'&&k%4===0||son==='chg'&&k===0)&&it,.03,mode,style,style==='none'?false:style==='pop'?'pad':'orgue');
   }}
 ];
 const FAMILLES=[['shell:7','Shell 7 (1 3 ♭7)'],['shell:Maj7','Shell Maj7 (1 3 7)'],['shell:m7','Shell m7 (1 ♭3 ♭7)'],['shell:6','Shell 6 (1 3 6)'],['shell:m6','Shell m6 (1 ♭3 6)'],
@@ -743,9 +757,9 @@ function chordGame(item,len,sound,gap,mode,style,pad){
   const where=L=>L.length>1?'':cap(info(L[0]));
   return {sub:1,items:item,len:()=>len,label:it=>it.name,prepare:it=>show(it,null,true),show,
     announce:(list,first,held)=>announceNotes(list,first,held,it=>it.name,where),
-    noClick:!!style&&style!=='none',
+    noClick:!!style&&style!=='none'&&style!=='orgue-seul',
     step:(it,k,t,dur)=>{if(sound(it,k))strum(it.pl.map(n=>n.m),t,gap);
-      if(style&&style!=='none'){if(pad&&k===0)padChord(it.pl.map(n=>n.m),t,len*dur);accomp(style,it,item(it.idx+1),k,t,dur,len);}}};
+      if(style&&style!=='none'){if(pad&&k===0)(pad==='orgue'?organChord:padChord)(it.pl.map(n=>n.m),t,len*dur);accomp(style,it,item(it.idx+1),k,t,dur,len);}}};
 }
 function chordLbl(f,ch,key){return shapeName(f,ch,key);}
 let GI=0;
