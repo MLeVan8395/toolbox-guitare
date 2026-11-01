@@ -841,7 +841,7 @@ function lectureMelody(area,key,chrom,niv){
     }
     return notes[i];};
 }
-function drawStaff(get,curIdx,key,chrom){
+function drawStaff(get,curIdx,key,chrom,swing){
   // toujours 4 mesures par ligne : la ligne en cours et la suivante ; on tourne la page toutes les 4 mesures
   const NL=2,NB=8,cur=get(curIdx),b0=Math.floor(cur.bar/4)*4,SPc=10,BOT=30,BW=165;
   const sig=chrom?0:key[3],nsig=Math.abs(sig),left=62+nsig*10+(b0===0?22:0);
@@ -853,6 +853,7 @@ function drawStaff(get,curIdx,key,chrom){
     o.push(glyph('treble',12,top+31,40));
     o.push(`<text x="22" y="${top+54}" font-size="9" font-family="Georgia,serif" fill="currentColor">8</text>`);
     for(let k=0;k<nsig;k++)o.push(glyph(sig>0?'sharp':'flat',48+k*10,yP(sig>0?SIG_S[k]:SIG_F[k])+(sig>0?5:3),15));
+    if(swing&&line===0)o.push(`<text x="${left+4}" y="${top-21}" font-size="13" font-weight="700" font-style="italic" font-family="Georgia,serif" fill="currentColor">Swing (croches ternaires)</text>`);
     if(b0===0&&line===0)o.push(`<text x="${left-16}" y="${top+19}" font-size="21" font-weight="700" font-family="Georgia,serif" text-anchor="middle" fill="currentColor">4</text><text x="${left-16}" y="${top+39}" font-size="21" font-weight="700" font-family="Georgia,serif" text-anchor="middle" fill="currentColor">4</text>`);
     for(let k=0;k<=4;k++){const x=left+k*BW-(k===0?6:0);o.push(`<line x1="${k===0?left-4:x}" y1="${top}" x2="${k===0?left-4:x}" y2="${top+40}" stroke="currentColor" stroke-width="${k===0?0:1.2}"/>`);}
   }
@@ -860,13 +861,13 @@ function drawStaff(get,curIdx,key,chrom){
   let i=firstIdx;const groups=[];
   while(true){const n=get(i);if(n.bar>b0+NB-1)break;
     const bi=n.bar-b0,line=bi>>2,top=34+line*LH,yP=p=>top+4*SPc-(p-BOT)*SPc/2,bx=left+(bi%4)*BW;
-    const x=bx+20+n.beat*(BW-30)/4,y=yP(n.p),past=i<curIdx,now=i===curIdx;
+    const x=bx+20+n.beat*(BW-30)/4+(n.showAcc?13:0),y=yP(n.p),past=i<curIdx,now=i===curIdx;
     const col=now?'var(--root)':past?'var(--muted)':'currentColor';
     for(let q=BOT-2;q>=n.p;q-=2)o.push(`<line x1="${x-11}" y1="${yP(q)}" x2="${x+11}" y2="${yP(q)}" stroke="${col}" stroke-width="1.2"/>`);
     for(let q=BOT+10;q<=n.p;q+=2)o.push(`<line x1="${x-11}" y1="${yP(q)}" x2="${x+11}" y2="${yP(q)}" stroke="${col}" stroke-width="1.2"/>`);
     const open=n.d>=2;
     o.push(`<ellipse cx="${x}" cy="${y}" rx="6.6" ry="4.6" transform="rotate(-18 ${x} ${y})" ${open?`fill="none" stroke="${col}" stroke-width="2.4"`:`fill="${col}"`}/>`);
-    if(n.showAcc)o.push(`<g style="color:${col}">`+glyph(n.a>0?'sharp':'flat',x-19,y+(n.a>0?5:3),15)+'</g>');
+    if(n.showAcc)o.push(`<g style="color:${col}">`+glyph(n.a>0?'sharp':'flat',x-(n.a>0?30:27),y+(n.a>0?10:6),30)+'</g>');
     if(n.d<4){if(n.d===.5){const g=Math.floor(n.beat);const key2=n.bar+':'+g;let G=groups.find(z=>z.k===key2);if(!G){G={k:key2,ns:[],top,col:[]};groups.push(G);}G.ns.push({x,y,p:n.p,col});}
       else{const up=n.p<34;o.push(`<line x1="${up?x+6:x-6}" y1="${y}" x2="${up?x+6:x-6}" y2="${up?y-34:y+34}" stroke="${col}" stroke-width="1.5"/>`);}}
     i++;
@@ -883,19 +884,19 @@ function drawStaff(get,curIdx,key,chrom){
 GAMES.push({id:'lecture',titre:'Lecture de notes',
   desc:'Une partition générée au hasard, avec peu de sauts aux premiers niveaux. Lis et joue chaque note en rythme : la note en cours est en corail, la réponse s\'affiche ensuite sur le manche. Quatre mesures sont toujours visibles, pour lire en avance.',
   opts:()=>opt('gArea','Où jouer',LAREAS.map(a=>[a[0],a[1]]),'p0')+opt('gTon','Notes',LKEYS.map((k,i)=>[i,k[3]===0?'Tonalité de C (sans altération)':'Tonalité de '+k[0]+' ('+Math.abs(k[3])+(k[3]>0?' dièse':' bémol')+(Math.abs(k[3])>1?'s':'')+')']).concat([['chrom','Au hasard, avec altérations']]),0)
-    +opt('gNiv','Niveau',LNIV,1)+opt('gRev','Réponse sur le manche',REV,'0.5')+'<label class="chk" style="align-self:end;padding-bottom:8px"><input type="checkbox" id="gSnd" checked> Entendre la note (jouée en même temps que toi)</label>',
+    +opt('gNiv','Niveau',LNIV,1)+opt('gSw','Croches',[['bin','Droites'],['swing','Swing (ternaires)']],'bin')+opt('gRev','Réponse sur le manche',REV,'0.5')+'<label class="chk" style="align-self:end;padding-bottom:8px"><input type="checkbox" id="gSnd" checked> Entendre la note (jouée en même temps que toi)</label>',
   make:()=>{
-    const chrom=val('gTon')==='chrom',key=chrom?LKEYS[0]:LKEYS[+val('gTon')],niv=+val('gNiv'),get=lectureMelody(val('gArea'),key,chrom,niv);
+    const swing=val('gSw')==='swing',chrom=val('gTon')==='chrom',key=chrom?LKEYS[0]:LKEYS[+val('gTon')],niv=+val('gNiv'),get=lectureMelody(val('gArea'),key,chrom,niv);
     const A=LAREAS.find(a=>a[0]===val('gArea'));
     const board=(n,show)=>{const notes=show?n.locs.map(c=>({s:c.s,fr:c.fr,m:TUN[c.s]+c.fr,root:true,txt:n.name})):[];
       const s=A[0][0]==='s'?+A[0][1]:null;drawBoard($('gBoard'),{from:0,to:Math.max(12,A[3]||0),notes,hlString:s,label:'Manche',focus:show&&n.locs.length?n.locs[0].fr:(A[2]||6)});};
     return {sub:2,items:get,len:n=>n.d*2,label:()=>'lis la première ligne',
-      prepare:n=>{$('gStaff').innerHTML=drawStaff(get,0,key,chrom);board(n,false);},
-      show:(n)=>{const idx=n.i;$('gStaff').innerHTML=drawStaff(get,idx,key,chrom);
+      prepare:n=>{$('gStaff').innerHTML=drawStaff(get,0,key,chrom,swing);board(n,false);},
+      show:(n)=>{const idx=n.i;$('gStaff').innerHTML=drawStaff(get,idx,key,chrom,swing);
         $('gLab').textContent='Mesure';$('gNow').className='now cur';$('gNow').textContent=n.bar+1;$('gWhere').textContent='Lis la note en corail';$('gNext').innerHTML='';board(n,false);},
       revealFrac:revealFracOpt(),
       reveal:n=>{if(+val('gRev')<0)return;board(n,true);$('gWhere').textContent=n.name+' : '+n.locs.map(c=>'case '+c.fr+' '+CORDE_DE[c.s]).join(', ou ');},
-      step:(n,k,t,dur)=>{if(k===0&&$('gSnd').checked)pluck(n.m,t,.5,Math.max(.3,n.d*60/BPMV*.95));}};
+      step:(n,k,t,dur)=>{if(k===0&&$('gSnd').checked){const off=swing&&n.beat%1===.5?dur/3:0;pluck(n.m,t+off,.5,Math.max(.25,n.d*60/BPMV*.95-off));}}};
   }});
 
 let GI=0;
