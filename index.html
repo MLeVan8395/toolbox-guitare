@@ -230,7 +230,7 @@ label.chk input{width:18px;height:18px;accent-color:var(--accent)}
 </section>
 
 </main>
-<footer class="meta" style="max-width:1100px;margin:0 auto;padding:0 20px 30px;text-align:center">Boîte à outils guitare · <span id="appver">version 23</span></footer>
+<footer class="meta" style="max-width:1100px;margin:0 auto;padding:0 20px 30px;text-align:center">Boîte à outils guitare · <span id="appver">version 24</span></footer>
 <script src="contenu/formes.js"></script>
 <script>
 'use strict';
@@ -924,7 +924,7 @@ function drawStaff(get,curIdx,key,chrom,swing,showPick){
     for(let k=0;k<=4;k++){const x=left+k*BW-(k===0?6:0);o.push(`<line x1="${k===0?left-4:x}" y1="${top}" x2="${k===0?left-4:x}" y2="${top+40}" stroke="currentColor" stroke-width="${k===0?0:1.2}"/>`);}
   }
   // notes
-  let i=firstIdx;const groups=[],ARTS=[],XSP={};
+  let i=firstIdx;const groups=[],ARTS=[],XSP={},PICKS=[];
   while(true){const n=get(i);if(n.bar>b0+NB-1)break;
     const bi=n.bar-b0,line=bi>>2,top=T0+line*LH,yP=p=>top+4*SPc-(p-BOT)*SPc/2,bx=left+(bi%4)*BW;
     const x=bx+XS[i],y=yP(n.p),past=i<curIdx,now=i===curIdx;
@@ -940,8 +940,8 @@ function drawStaff(get,curIdx,key,chrom,swing,showPick){
     for(let q=BOT+10;q<=n.p;q+=2)o.push(`<line x1="${x-11}" y1="${yP(q)}" x2="${x+11}" y2="${yP(q)}" stroke="${col}" stroke-width="1.2"/>`);
     if(n.tied){const pv=get(i-1);const px=XSP[i-1];if(px!==undefined){const up=n.p<34,yy=up?y+7:y-7,cy=up?yy+9:yy-9;o.push(`<path d="M${px+5} ${yy} Q ${(px+x)/2} ${cy} ${x-5} ${yy}" fill="none" stroke="${col}" stroke-width="1.6"/>`);}}
     XSP[i]=x;
-    if(showPick&&n.pick){const yb=Math.min(top-12,y-30)-(n.art==='marc'?16:0);o.push(n.pick==='down'?`<path d="M${x-5} ${yb} V${yb-8} H${x+5} V${yb}" fill="none" stroke="${col}" stroke-width="1.6"/><line x1="${x-5}" y1="${yb-8}" x2="${x+5}" y2="${yb-8}" stroke="${col}" stroke-width="3.2"/>`:`<path d="M${x-5} ${yb-9} L${x} ${yb} L${x+5} ${yb-9}" fill="none" stroke="${col}" stroke-width="1.6"/>`);}
-    if(n.art)ARTS.push({x,y,p:n.p,art:n.art,col,k:n.bar+':'+Math.floor(n.beat+1e-6),top});
+    if(showPick&&n.pick)PICKS.push({x,y,p:n.p,pick:n.pick,col,k:n.bar+':'+Math.floor(n.beat+1e-6),top,d:n.d});
+    if(n.art)ARTS.push({x,y,p:n.p,art:n.art,col,k:n.bar+':'+Math.floor(n.beat+1e-6),top,d:n.d});
     const open=n.d>=2;
     if(n.chordName)o.push(`<text x="${x-7}" y="${top-32}" font-size="16" font-weight="700" font-family="var(--chord)" fill="${now||n.chordNow?'var(--root)':'currentColor'}">${esc(n.chordName)}</text>`);
     if(n.slash)o.push(open?`<polygon points="${x-7},${y+5} ${x-3},${y+8} ${x+7},${y-5} ${x+3},${y-8}" fill="none" stroke="${col}" stroke-width="2"/>`:`<line x1="${x-6}" y1="${y+6}" x2="${x+6}" y2="${y-6}" stroke="${col}" stroke-width="5"/>`);
@@ -973,13 +973,20 @@ function drawStaff(get,curIdx,key,chrom,swing,showPick){
       o.push(`<text x="${(xa+xb)/2}" y="${yy+(G.rests&&G.rests.length?0:4)}" text-anchor="middle" font-size="13" font-style="italic" font-weight="700" font-family="Georgia,serif" fill="currentColor">3</text>`);}
   });
   // articulations : du côté de la tête de note (opposé à la hampe) ; le chevron toujours au-dessus
-  ARTS.forEach(A=>{const G=groups.find(g=>g.k===A.k&&g.ns.some(n=>n.x===A.x));const up=G&&G.up!==undefined?G.up:A.p<34;
-    const below=A.art==='marc'?false:up,dy=below?1:-1,yy=below?Math.max(A.y+13,A.top+45):Math.min(A.y-13,A.top-5);
-    if(A.art==='stacc')o.push(`<circle cx="${A.x}" cy="${below?A.y+11:A.y-11}" r="2.3" fill="${A.col}"/>`);
+  // hampe de chaque note : on place les signes au-dessus et en dessous sans la croiser
+  const stemOf=Q=>{const G=groups.find(g=>g.k===Q.k&&g.ns.some(n=>n.x===Q.x));const up=G&&G.up!==undefined?G.up:Q.p<34;const hasStem=Q.d===undefined||Q.d<4;
+    return {G,up,top:up&&hasStem?(G&&G.ns.length>1?G.end:Q.y-34):Q.y-5,bot:!up&&hasStem?(G&&G.ns.length>1?G.end:Q.y+34):Q.y+5};};
+  // articulations : toujours au-dessus de la note (et de la hampe)
+  ARTS.forEach(A=>{const S=stemOf(A);let yy=Math.min(S.top-9,A.top-7);if(S.G&&S.G.trip)yy=Math.min(yy,A.top-24);
+    if(A.art==='stacc')o.push(`<circle cx="${A.x}" cy="${yy}" r="2.4" fill="${A.col}"/>`);
     else if(A.art==='acc')o.push(`<path d="M${A.x-7} ${yy-4} L${A.x+7} ${yy} L${A.x-7} ${yy+4}" fill="none" stroke="${A.col}" stroke-width="1.8"/>`);
-    else{const yt=Math.min(A.y-14,A.top-6,G&&G.up?G.end-6:1e9,G&&G.trip?Math.min(G.up?G.end-22:A.top-22,A.top-22):1e9);o.push(`<path d="M${A.x-6} ${yt+1} L${A.x} ${yt-10} L${A.x+6} ${yt+1}" fill="none" stroke="${A.col}" stroke-width="2.2" stroke-linejoin="miter"/>`);}
+    else o.push(`<path d="M${A.x-6} ${yy+3} L${A.x} ${yy-8} L${A.x+6} ${yy+3}" fill="none" stroke="${A.col}" stroke-width="2.2" stroke-linejoin="miter"/>`);
   });
-  return `<svg viewBox="0 0 ${W} ${T0+NL*LH-30}" role="img" aria-label="Partition : ${NB} mesures à lire">${o.join('')}</svg>`;
+  // sens du médiator : toujours en dessous de la note (et de la hampe)
+  PICKS.forEach(Q=>{const S=stemOf(Q);const yb=Math.max(S.bot+16,Q.top+56);
+    o.push(Q.pick==='down'?`<path d="M${Q.x-5} ${yb} V${yb-8} H${Q.x+5} V${yb}" fill="none" stroke="${Q.col}" stroke-width="1.6"/><line x1="${Q.x-5}" y1="${yb-8}" x2="${Q.x+5}" y2="${yb-8}" stroke="${Q.col}" stroke-width="3.2"/>`:`<path d="M${Q.x-5} ${yb-9} L${Q.x} ${yb} L${Q.x+5} ${yb-9}" fill="none" stroke="${Q.col}" stroke-width="1.6"/>`);
+  });
+  return `<svg viewBox="0 0 ${W} ${T0+NL*LH-8}" role="img" aria-label="Partition : ${NB} mesures à lire">${o.join('')}</svg>`;
 }
 GAMES.push({id:'lecture',titre:'Lecture de notes',
   desc:'Une partition générée au hasard : choisis les valeurs rythmiques et l\'intervalle le plus grand autorisé. Lis et joue chaque note en rythme : la note en cours est en corail, la réponse s\'affiche ensuite sur le manche. Quatre mesures sont toujours visibles, pour lire en avance.',
