@@ -230,7 +230,7 @@ label.chk input{width:18px;height:18px;accent-color:var(--accent)}
 </section>
 
 </main>
-<footer class="meta" style="max-width:1100px;margin:0 auto;padding:0 20px 30px;text-align:center">Boîte à outils guitare · <span id="appver">version 19</span></footer>
+<footer class="meta" style="max-width:1100px;margin:0 auto;padding:0 20px 30px;text-align:center">Boîte à outils guitare · <span id="appver">version 20</span></footer>
 <script src="contenu/formes.js"></script>
 <script>
 'use strict';
@@ -667,12 +667,12 @@ const GAMES=[
       const sv=(store.get('g-gShape','arp-maj7:0')).split(':'),zones=ch[0].formes.map((f,j)=>[j,f.n.split(', ').slice(1).join(', ')]);
       return opt('gArpQ','Accord',ch.map(c=>[c.id,c.titre.replace('Arpèges ','')]),ch.some(c=>c.id===sv[0])?sv[0]:ch[0].id)
         +'<label class="f" style="grid-column:span 2">Zone du manche <select id="gArpZ">'+zones.map(([j,n])=>`<option value="${j}"${String(j)===(sv[1]||'0')?' selected':''}>${esc(n.charAt(0).toUpperCase()+n.slice(1))}</option>`).join('')+'</select></label>'
-        +opt('gKey','Tonalité de départ',KEYS.map((k,i)=>[i,k[0]]),0)+opt('gSub','Valeurs',[[1,'Noires (1 note par temps)'],[2,'Croches (2 notes par temps)']],1)+opt('gNxt','Après chaque tour',[['same','Même tonalité'],['q','Cycle des quartes']],'same')
+        +opt('gKey','Tonalité de départ',KEYS.map((k,i)=>[i,k[0]]),0)+opt('gSub','Valeurs',[[1,'Noires (1 note par temps)'],[2,'Croches (2 notes par temps)']],1)+opt('gNxt','Après chaque tour',[['same','Même tonalité'],['q','Cycle des quartes']],'same')+opt('gAcc','Accompagnement',[['none','Aucun : métronome seul'],['pop','Pop : pad, basse, batterie'],['swing','Swing : orgue, walking bass, batterie'],['swing2','Swing : orgue, basse à la blanche, batterie']],'none')
         +'<label class="chk" style="align-self:end;padding-bottom:8px"><input type="checkbox" id="gSnd" checked> Entendre les notes</label>';}
     let o='<label class="f" style="grid-column:span 2">Schéma <select id="gShape">';
     ch.forEach(c=>{let grp=null;o+=`<optgroup label="${esc(c.titre)}">`;c.formes.forEach((f,j)=>{o+=`<option value="${c.id}:${j}">${esc(f.n+(f.groupe&&c.id==='arpeges'?' ('+f.groupe.toLowerCase()+')':''))}</option>`;});o+='</optgroup>';});
     o+='</select></label>';
-    return o+opt('gKey','Tonalité de départ',KEYS.map((k,i)=>[i,k[0]]),0)+opt('gSub','Valeurs',[[1,'Noires (1 note par temps)'],[2,'Croches (2 notes par temps)']],1)+opt('gNxt','Après chaque tour',[['same','Même tonalité'],['q','Cycle des quartes']],'same')
+    return o+opt('gKey','Tonalité de départ',KEYS.map((k,i)=>[i,k[0]]),0)+opt('gSub','Valeurs',[[1,'Noires (1 note par temps)'],[2,'Croches (2 notes par temps)']],1)+opt('gNxt','Après chaque tour',[['same','Même tonalité'],['q','Cycle des quartes']],'same')+opt('gAcc','Accompagnement',[['none','Aucun : métronome seul'],['pop','Pop : pad, basse, batterie'],['swing','Swing : orgue, walking bass, batterie'],['swing2','Swing : orgue, basse à la blanche, batterie']],'none')
       +'<label class="chk" style="align-self:end;padding-bottom:8px"><input type="checkbox" id="gSnd" checked> Entendre les notes</label>';},
   after:()=>{if($('gArpQ')){const up=()=>store.set('g-gShape',$('gArpQ').value+':'+$('gArpZ').value);$('gArpQ').addEventListener('change',up);$('gArpZ').addEventListener('change',()=>{up();if(!RUN.on)preview();});return;}
     const sel=$('gShape');const v=store.get('g-gShape','gammes:0');if([...sel.options].some(o=>o.value===v))sel.value=v;sel.onchange=()=>store.set('g-gShape',sel.value);},
@@ -690,7 +690,14 @@ const GAMES=[
     const lbl=it=>chordLbl(f,ch,it.T.key);
     const drawT=(T,cur)=>drawBoard($('gBoard'),{from:Math.max(0,Math.min(...T.pl.map(n=>n.fr))-1),to:Math.max(Math.max(...T.pl.map(n=>n.fr))+1,Math.min(...T.pl.map(n=>n.fr))+4),
        notes:T.pl.map(n=>({s:n.s,fr:n.fr,m:n.m,root:n.l==='1',txt:n.l,ring:cur&&n.s===cur.s&&n.fr===cur.fr,dim:cur&&!(n.s===cur.s&&n.fr===cur.fr)})),label:'Schéma'});
-    return {sub,items:item,len:()=>1,label:lbl,
+    // accord d'accompagnement : celui de l'arpège, ou l'accord de 4 sons contenu dans la gamme
+    const ivs=f.notes.map(n=>n[2]),has=l=>ivs.includes(l);
+    const third=has('♭3')&&!has('3')?'♭3':'3',fifth=has('5')?'5':has('♭5')?'♭5':has('♯5')?'♯5':'5',sev=has('7')?'7':has('♭7')?'♭7':has('𝄫7')?'𝄫7':has('6')?'6':'♭7';
+    const LBL=f.acc!==undefined&&f.arp?{Maj7:['1','3','5','7'],'7':['1','3','5','♭7'],m7:['1','♭3','5','♭7'],'m7♭5':['1','♭3','♭5','♭7'],dim7:['1','♭3','♭5','𝄫7']}[f.acc]:['1',third,fifth,sev];
+    const accSuf=f.arp?f.acc:(third==='♭3'?(fifth==='♭5'?(sev==='𝄫7'?'dim7':'m7♭5'):'m7'):(sev==='7'?'Maj7':sev==='6'?'6':'7'));
+    const chordOfT=T=>{const n=tours.indexOf(T);if(T.ch)return T.ch;return T.ch={idx:n,key:T.key,name:chordName(T.key,accSuf),pl:LBL.map(l=>({l,m:48+mod(T.key[1]-0,12)+SEMI[l]}))};};
+    const accSt=val('gAcc')||'none';
+    return {sub,items:item,len:()=>1,label:lbl,noClick:accSt!=='none',
       prepare:it=>drawT(it.T,null),
       show:(it,nx)=>{
         $('gLab').textContent='À jouer';$('gNow').className='now cur';$('gNow').textContent=it.n?spell(it.T.key,it.n.l):'—';
@@ -698,7 +705,11 @@ const GAMES=[
         const nT=tour(tours.indexOf(it.T)+1);
         $('gNext').innerHTML=cyc?'Tour suivant : <b>'+esc(lbl({T:nT}))+'</b>':'';
         drawT(it.T,it.n);},
-      step:(it,k,t,dur,r)=>{if(!(it.n&&$('gSnd').checked))return;if(SWING&&sub===2){const a=swingArt((r>>1)%4,r%2,dur*2);pluck(it.n.m,t,a.vel,a.len);}else pluck(it.n.m,t,.5,Math.max(.25,dur*1.6));}};
+      step:(it,k,t,dur,r)=>{
+        if(accSt!=='none'&&it.p%sub===0){const T=it.T,C=chordOfT(T),N=chordOfT(tour(tours.indexOf(T)+1)),beats=(T.seq.length+T.pad)/sub,kb=it.p/sub,bd=dur*sub;
+          if(kb===0)(accSt==='pop'?padChord:organChord)(C.pl.map(x=>x.m),t,beats*bd);
+          accomp(accSt,C,N,kb,t,bd,beats);}
+        if(!(it.n&&$('gSnd').checked))return;if(SWING&&sub===2){const a=swingArt((r>>1)%4,r%2,dur*2);pluck(it.n.m,t,a.vel,a.len);}else pluck(it.n.m,t,.5,Math.max(.25,dur*1.6));}};
   }},
  {id:'accords',titre:'Enchaînements d\'accords',
   desc:'Un même type d\'accord, enchaîné en cycle des quartes (C, F, B♭, E♭…) ou au hasard. Choisis la position (corde de Mi, corde de La, groupe de cordes, renversement) ou laisse l\'appli prendre à chaque fois la plus proche de la précédente.',
