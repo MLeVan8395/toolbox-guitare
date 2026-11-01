@@ -230,7 +230,7 @@ label.chk input{width:18px;height:18px;accent-color:var(--accent)}
 </section>
 
 </main>
-<footer class="meta" style="max-width:1100px;margin:0 auto;padding:0 20px 30px;text-align:center">Boîte à outils guitare · <span id="appver">version 16</span></footer>
+<footer class="meta" style="max-width:1100px;margin:0 auto;padding:0 20px 30px;text-align:center">Boîte à outils guitare · <span id="appver">version 17</span></footer>
 <script src="contenu/formes.js"></script>
 <script>
 'use strict';
@@ -814,6 +814,7 @@ const SIG_S=[38,35,39,36,33,37,34],SIG_F=[34,37,33,36,32,35,31]; // positions su
 const LAREAS=[['p0','1re position : cordes à vide et cases 1 à 3',0,3],['p2','Cases 2 à 5',2,5],['p5','5e position : cases 5 à 8',5,8],['p7','7e position : cases 7 à 10',7,10],['p9','Cases 9 à 12',9,12],
   ['s6','Corde de Mi grave (cases 0 à 12)'],['s5','Corde de La (cases 0 à 12)'],['s4','Corde de Ré (cases 0 à 12)'],['s3','Corde de Sol (cases 0 à 12)'],['s2','Corde de Si (cases 0 à 12)'],['s1','Corde de Mi aigu (cases 0 à 12)']];
 const LRYTO=[[1,'Rondes'],[2,'Blanches'],[3,'Noires'],[4,'Croches'],[6,'Triolets de croches'],[7,'Doubles croches'],[5,'Valeurs mélangées (blanches, noires, croches)'],[8,'Tout mélangé (avec triolets et doubles croches)']];
+const LARTO=[['none','Aucune'],['stacc','Piqué'],['acc','Accent'],['marc','Chevron (marcato)'],['mix','Mélangées']];
 const LINTO=[[1,'Seconde'],[2,'Tierce'],[3,'Quarte'],[4,'Quinte'],[5,'Sixte'],[6,'Septième'],[7,'Octave']];
 // pas mélodiques (en degrés : 1 = seconde, 2 = tierce…) et leur poids, selon le niveau
 const QR_Y=15,QR_S=40,ER_Y=19,ER_S=36; // position et taille des glyphes de silence
@@ -823,7 +824,7 @@ const rnd=a=>a[Math.floor(Math.random()*a.length)],repv=(v,n)=>Array(n).fill(v);
 const PB={
  3:[[[12],9],[[-12],1]],
  4:[[[6,6],8],[[12],2],[[-6,6],2],[[6,-6],1.2],[[-12],.6]],
- 6:[[[4,4,4],8],[[8,4],2],[[4,8],2],[[-4,4,4],1.5],[[4,-4,4],1],[[4,4,-4],1],[[12],1.2],[[-12],.4]],
+ 6:[[[4,4,4],8],[[-4,4,4],1.5],[[4,4,-4],1],[[12],1.2],[[-12],.4]],
  7:[[[3,3,3,3],6],[[6,3,3],2.5],[[3,3,6],2.5],[[9,3],2],[[3,9],.7],[[3,6,3],1],[[-3,3,3,3],1.5],[[-6,3,3],1],[[3,3,-6],.8],[[12],1],[[-12],.4]],
  5:[[[12],6],[[6,6],4],[[-6,6],1.5],[[6,-6],1],[[-12],1]]};
 PB[8]=[].concat(PB[4],PB[6],PB[7],[[[12],3],[[-12],.8]]);
@@ -834,7 +835,7 @@ function barRyt(niv){
     wpick(PB[niv]).forEach(x=>out.push(x/12));b++;}
   return out;}
 function wpick(ws){let t=ws.reduce((a,w)=>a+w[1],0),r=Math.random()*t;for(const w of ws){r-=w[1];if(r<=0)return w[0];}return ws[0][0];}
-function lectureMelody(area,key,chrom,niv,maxi){
+function lectureMelody(area,key,chrom,niv,maxi,art){
   // notes jouables dans la zone, regroupées par hauteur
   const A=LAREAS.find(a=>a[0]===area)||LAREAS[0],cells=[];
   if(A[0][0]==='s'){const s=+A[0][1];for(let fr=0;fr<=12;fr++)cells.push({s,fr});}
@@ -863,7 +864,8 @@ function lectureMelody(area,key,chrom,niv,maxi){
           if(sl.used[L]!==undefined)a=sl.used[L];else if(Math.random()<.3){const aa=Math.random()<.5?1:-1;if(by[m+aa]){a=aa;}}
           if(!by[pool[idx]+a])a=0;sl.used[L]=a;m=pool[idx]+a;}
         const wm=m+12,o=Math.round((wm-a-NAT[L])/12)-1;
-        notes.push({i:notes.length,m,L,a,p:o*7+L,d:sl.d,d12:Math.round(sl.d*12),bar:b,beat,name:LET[L]+accTxt(a),locs:by[m]||[],showAcc:chrom&&a!==0&&!sl[('shown'+L)]});
+        const ar=art==='none'||Math.random()>.35?null:art==='mix'?rnd(['stacc','acc','marc']):art;
+        notes.push({i:notes.length,art:ar,m,L,a,p:o*7+L,d:sl.d,d12:Math.round(sl.d*12),bar:b,beat,name:LET[L]+accTxt(a),locs:by[m]||[],showAcc:chrom&&a!==0&&!sl[('shown'+L)]});
         if(chrom&&a!==0)slots.forEach(x=>x['shown'+L]=1);
         beat=Math.round((beat+sl.d)*12)/12;});
     }
@@ -892,7 +894,7 @@ function drawStaff(get,curIdx,key,chrom,swing){
     for(let k=0;k<=4;k++){const x=left+k*BW-(k===0?6:0);o.push(`<line x1="${k===0?left-4:x}" y1="${top}" x2="${k===0?left-4:x}" y2="${top+40}" stroke="currentColor" stroke-width="${k===0?0:1.2}"/>`);}
   }
   // notes
-  let i=firstIdx;const groups=[];
+  let i=firstIdx;const groups=[],ARTS=[];
   while(true){const n=get(i);if(n.bar>b0+NB-1)break;
     const bi=n.bar-b0,line=bi>>2,top=34+line*LH,yP=p=>top+4*SPc-(p-BOT)*SPc/2,bx=left+(bi%4)*BW;
     const x=bx+XS[i],y=yP(n.p),past=i<curIdx,now=i===curIdx;
@@ -905,6 +907,7 @@ function drawStaff(get,curIdx,key,chrom,swing){
       i++;continue;}
     for(let q=BOT-2;q>=n.p;q-=2)o.push(`<line x1="${x-11}" y1="${yP(q)}" x2="${x+11}" y2="${yP(q)}" stroke="${col}" stroke-width="1.2"/>`);
     for(let q=BOT+10;q<=n.p;q+=2)o.push(`<line x1="${x-11}" y1="${yP(q)}" x2="${x+11}" y2="${yP(q)}" stroke="${col}" stroke-width="1.2"/>`);
+    if(n.art)ARTS.push({x,y,p:n.p,art:n.art,col,k:n.bar+':'+Math.floor(n.beat+1e-6),top});
     const open=n.d>=2;
     o.push(`<ellipse cx="${x}" cy="${y}" rx="6.6" ry="4.6" transform="rotate(-18 ${x} ${y})" ${open?`fill="none" stroke="${col}" stroke-width="2.4"`:`fill="${col}"`}/>`);
     if(n.showAcc)o.push(`<g style="color:${col}">`+glyph(n.a>0?'sharp':'flat',x-(n.a>0?30:27),y+(n.a>0?10:6),30)+'</g>');
@@ -928,17 +931,26 @@ function drawStaff(get,curIdx,key,chrom,swing){
           else if(!(pv&&pv.d12===3)){const L=nx?9:-9;o.push(`<line x1="${sx(n)}" y1="${e2}" x2="${sx(n)+L}" y2="${e2}" stroke="${n.col}" stroke-width="5"/>`);}});}
       else{const n=G.ns[0],x0=sx(n);o.push(`<path d="M${x0} ${end} q 3 ${up?8:-8} 9 ${up?12:-12} q 2 ${up?4:-4} -1 ${up?10:-10}" fill="none" stroke="${n.col}" stroke-width="1.6"/>`);
         if(n.d12===3)o.push(`<path d="M${x0} ${end+(up?8:-8)} q 3 ${up?8:-8} 9 ${up?12:-12} q 2 ${up?4:-4} -1 ${up?10:-10}" fill="none" stroke="${n.col}" stroke-width="1.6"/>`);}}
-    if(G.trip){const xs=G.ns.map(n=>n.x).concat((G.rests||[]).map(r=>r.x));const xa=Math.min(...xs)-4,xb=Math.max(...xs)+10,yy=G.ns.length?(G.up?Math.min(G.end-10,G.top-6):Math.max(G.end+12,G.top+52)):G.top-8;
-      o.push(`<text x="${(xa+xb)/2}" y="${yy+4}" text-anchor="middle" font-size="13" font-style="italic" font-weight="700" font-family="Georgia,serif" fill="currentColor">3</text>`);}
+    if(G.trip){const xs=G.ns.map(n=>n.x).concat((G.rests||[]).map(r=>r.x));const xa=Math.min(...xs)-6,xb=Math.max(...xs)+12,yy=G.ns.length?(G.up?Math.min(G.end-10,G.top-6):Math.max(G.end+12,G.top+52)):G.top-8;
+      if(G.rests&&G.rests.length){const h=G.up===false?-5:5,yb=yy-4; // crochet sur tout le temps quand il y a un silence
+        o.push(`<path d="M${xa} ${yb+h} V${yb} H${(xa+xb)/2-7} M${(xa+xb)/2+7} ${yb} H${xb} V${yb+h}" fill="none" stroke="currentColor" stroke-width="1.2"/>`);}
+      o.push(`<text x="${(xa+xb)/2}" y="${yy+(G.rests&&G.rests.length?0:4)}" text-anchor="middle" font-size="13" font-style="italic" font-weight="700" font-family="Georgia,serif" fill="currentColor">3</text>`);}
+  });
+  // articulations : du côté de la tête de note (opposé à la hampe) ; le chevron toujours au-dessus
+  ARTS.forEach(A=>{const G=groups.find(g=>g.k===A.k&&g.ns.some(n=>n.x===A.x));const up=G&&G.up!==undefined?G.up:A.p<34;
+    const below=A.art==='marc'?false:up,dy=below?1:-1,yy=below?Math.max(A.y+13,A.top+45):Math.min(A.y-13,A.top-5);
+    if(A.art==='stacc')o.push(`<circle cx="${A.x}" cy="${below?A.y+11:A.y-11}" r="2.3" fill="${A.col}"/>`);
+    else if(A.art==='acc')o.push(`<path d="M${A.x-7} ${yy-4} L${A.x+7} ${yy} L${A.x-7} ${yy+4}" fill="none" stroke="${A.col}" stroke-width="1.8"/>`);
+    else{const yt=Math.min(A.y-14,A.top-6,G&&G.up?G.end-6:1e9,G&&G.trip?Math.min(G.up?G.end-22:A.top-22,A.top-22):1e9);o.push(`<path d="M${A.x-6} ${yt+1} L${A.x} ${yt-10} L${A.x+6} ${yt+1}" fill="none" stroke="${A.col}" stroke-width="2.2" stroke-linejoin="miter"/>`);}
   });
   return `<svg viewBox="0 0 ${W} ${34+NL*LH-30}" role="img" aria-label="Partition : ${NB} mesures à lire">${o.join('')}</svg>`;
 }
 GAMES.push({id:'lecture',titre:'Lecture de notes',
   desc:'Une partition générée au hasard : choisis les valeurs rythmiques et l\'intervalle le plus grand autorisé. Lis et joue chaque note en rythme : la note en cours est en corail, la réponse s\'affiche ensuite sur le manche. Quatre mesures sont toujours visibles, pour lire en avance.',
   opts:()=>opt('gArea','Où jouer',LAREAS.map(a=>[a[0],a[1]]),'p0')+opt('gTon','Notes',LKEYS.map((k,i)=>[i,k[3]===0?'Tonalité de C (sans altération)':'Tonalité de '+k[0]+' ('+Math.abs(k[3])+(k[3]>0?' dièse':' bémol')+(Math.abs(k[3])>1?'s':'')+')']).concat([['chrom','Au hasard, avec altérations']]),0)
-    +opt('gNiv','Valeurs rythmiques',LRYTO,1)+opt('gInt','Intervalle maximal',LINTO,2)+opt('gRev','Réponse sur le manche',REV,'0.5')+'<label class="chk" style="align-self:end;padding-bottom:8px"><input type="checkbox" id="gSnd" checked> Entendre la note (jouée en même temps que toi)</label>',
+    +opt('gNiv','Valeurs rythmiques',LRYTO,1)+opt('gInt','Intervalle maximal',LINTO,2)+opt('gArt','Articulations',LARTO,'none')+opt('gRev','Réponse sur le manche',REV,'0.5')+'<label class="chk" style="align-self:end;padding-bottom:8px"><input type="checkbox" id="gSnd" checked> Entendre la note (jouée en même temps que toi)</label>',
   make:()=>{
-    const swing=SWING,chrom=val('gTon')==='chrom',key=chrom?LKEYS[0]:LKEYS[+val('gTon')],niv=+val('gNiv'),get=lectureMelody(val('gArea'),key,chrom,niv,+val('gInt'));
+    const swing=SWING,chrom=val('gTon')==='chrom',key=chrom?LKEYS[0]:LKEYS[+val('gTon')],niv=+val('gNiv'),get=lectureMelody(val('gArea'),key,chrom,niv,+val('gInt'),val('gArt'));
     const A=LAREAS.find(a=>a[0]===val('gArea'));
     const board=(n,show)=>{const notes=show?n.locs.map(c=>({s:c.s,fr:c.fr,m:TUN[c.s]+c.fr,root:true,txt:n.name})):[];
       const s=A[0][0]==='s'?+A[0][1]:null;drawBoard($('gBoard'),{from:0,to:Math.max(12,A[3]||0),notes,hlString:s,label:'Manche',focus:show&&n.locs.length?n.locs[0].fr:(A[2]||6)});};
@@ -948,7 +960,7 @@ GAMES.push({id:'lecture',titre:'Lecture de notes',
         $('gLab').textContent='Mesure';$('gNow').className='now cur';$('gNow').textContent=n.bar+1;$('gWhere').textContent=n.rest?'Silence':'Lis la note en corail';$('gNext').innerHTML='';board(n,false);},
       revealFrac:revealFracOpt(),
       reveal:n=>{if(+val('gRev')<0||n.rest)return;board(n,true);$('gWhere').textContent=n.name+' : '+n.locs.map(c=>'case '+c.fr+' '+CORDE_DE[c.s]).join(', ou ');},
-      step:(n,k,t,dur)=>{if(k!==0||n.rest||!$('gSnd').checked)return;const bd=60/BPMV;if(SWING&&n.d12===6){const off=n.beat%1!==0;const a=swingArt(n.beat,off,bd);pluck(n.m,t+(off?bd/6:0),a.vel,a.len);}else pluck(n.m,t,.5,Math.max(.25,n.d*bd*.9));}};
+      step:(n,k,t,dur)=>{if(k!==0||n.rest||!$('gSnd').checked)return;const bd=60/BPMV;if(SWING&&n.d12===6){const off=n.beat%1!==0;const a=swingArt(n.beat,off,bd);pluck(n.m,t+(off?bd/6:0),a.vel,a.len);}else{const L=Math.max(.25,n.d*bd*.9);pluck(n.m,t,n.art==='acc'?.78:n.art==='marc'?.85:.5,n.art==='stacc'?Math.min(L,.12):n.art==='marc'?Math.min(L,bd*.6):L);}}};
   }});
 
 let GI=0;
