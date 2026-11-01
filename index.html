@@ -413,10 +413,10 @@ function drawBoard(el,o){
   const yS=s=>T+(s-1)*SG;
   let svg=`<svg viewBox="0 0 ${W} ${H}" width="${W}" height="${H}" role="img" aria-label="${esc(o.label||'Manche')}" style="max-width:100%;height:auto;min-width:${Math.min(W,600)}px">`;
   // incrustations
-  const inl=[3,5,7,9,15,17];
+  const inl=[3,5,7,9,15,17,19,21];
   for(const f of cols){if(f===0)continue;const cx=(xs[f][0]+xs[f][1])/2;
     if(inl.includes(f))svg+=`<circle cx="${X(cx)}" cy="${T+SG*2.5}" r="6" fill="var(--inlay)"/>`;
-    if(f===12)svg+=`<circle cx="${X(cx)}" cy="${T+SG*1.5}" r="6" fill="var(--inlay)"/><circle cx="${X(cx)}" cy="${T+SG*3.5}" r="6" fill="var(--inlay)"/>`;}
+    if(f===12||f===24)svg+=`<circle cx="${X(cx)}" cy="${T+SG*1.5}" r="6" fill="var(--inlay)"/><circle cx="${X(cx)}" cy="${T+SG*3.5}" r="6" fill="var(--inlay)"/>`;}
   // frettes
   for(const f of cols){const xr=xs[f][1];
     const nut=(f===0);svg+=`<line x1="${X(xr)}" y1="${T-1}" x2="${X(xr)}" y2="${T+SG*5+1}" stroke="var(--fret)" stroke-width="${nut?5:1.6}"/>`;}
@@ -700,7 +700,9 @@ const GAMES=[
     if(grps.length>1)o+=opt('gGrp',F.cid.startsWith('triades')?'Cordes':'Position',[['*','Toutes : la plus proche']].concat(grps.map(g=>[g,g])),'*');
     const gv=grps.includes(val0('gGrp','*'))?val0('gGrp','*'):'*';
     const inG=F.fs.filter(f=>grps.length<2||gv==='*'||f.groupe===gv);
-    if(grps.length<2||gv!=='*'){const inv=inG.map(f=>restName(f.n)).filter(Boolean);if(inG.length>1&&inv.length===inG.length)o+=opt('gInv','Renversement',[['*','Le plus proche']].concat(inv.map(n=>[n,n])),'*');}
+    const tri=F.cid.startsWith('triades');
+    if(tri){const inv=[...new Set(F.fs.map(f=>restName(f.n)))];o+=opt('gInv','Renversements',[['monter','Monter les renversements jusqu\'à l\'octave (1 mesure chacun)'],['*','Le plus proche']].concat(inv.map(n=>[n,n])),'monter');}
+    else if(grps.length<2||gv!=='*'){const inv=inG.map(f=>restName(f.n)).filter(Boolean);if(inG.length>1&&inv.length===inG.length)o+=opt('gInv','Renversement',[['*','Le plus proche']].concat(inv.map(n=>[n,n])),'*');}
     return o+opt('gOrd','Ordre',[['q','Cycle des quartes'],['r','Au hasard']],'q')+opt('gLen','Durée',LENS,4)+opt('gKey','Départ (cycle)',KEYS.map((k,i)=>[i,k[0]]),0)
       +opt('gAcc','Accompagnement',[['none','Aucun : métronome seul'],['swing','Swing : batterie et walking bass'],['swing2','Swing : batterie et basse à la blanche'],['pop','Pop : batterie et basse']],['shell','enrichis','cordes1234'].includes(F.cid)?'swing':'none')
       +opt('gInst','Les accords joués par',[['orgue','L\'orgue (son tenu)'],['guitare','La guitare (1er temps de chaque mesure)'],['none','Personne : je les joue seul']],['shell','enrichis','cordes1234'].includes(F.cid)?'orgue':'guitare');},
@@ -710,6 +712,26 @@ const GAMES=[
     if(!fs.length)fs=F.fs.filter(f=>g==='*'||f.groupe===g);if(!fs.length)fs=F.fs;
     const keys=keySeq(val('gOrd'),+val('gKey'));
     const list=[];let pos=null;
+    const monter=F.cid.startsWith('triades')&&iv==='monter';
+    if(monter){ // un accord = 4 mesures : position fondamentale, 1er renversement, 2e renversement, fondamentale à l'octave
+      const INV=['position fondamentale','1er renversement','2e renversement'];let n=0;
+      const item=i=>{while(list.length<=i){const key=keys(n++);
+          const grpOf=g==='*'?nearest(F.fs.filter(f=>restName(f.n)===INV[0]),key,pos).f.groupe:g;
+          const sh=INV.map(r=>F.fs.find(f=>f.groupe===grpOf&&restName(f.n)===r));
+          const lo=pl=>Math.min(...pl.map(x=>x.fr)),hi=pl=>Math.max(...pl.map(x=>x.fr)),up=pl=>pl.map(x=>({...x,fr:x.fr+12,m:x.m+12}));
+          // on part de la position fondamentale ; si l'octave sort du manche (au-delà de la 20e case), on part du renversement le plus grave
+          let best=null;
+          for(const st of [0,1,2]){const ord=[st,(st+1)%3,(st+2)%3],p0=place(sh[st],key,{floor:0}),seq=[p0];
+            ord.slice(1).forEach(j=>{let pl=place(sh[j],key,{floor:0});while(lo(pl)<=lo(seq[seq.length-1]))pl=up(pl);seq.push(pl);});
+            seq.push(up(p0));const top=hi(seq[3]);
+            if(!best||(best.top>20&&top<best.top))best={seq,ord,top};if(top<=20)break;}
+          pos=best.seq[0].reduce((a,b)=>a+b.fr,0)/best.seq[0].length;
+          const nm=chordName(key,F.suf);
+          best.seq.forEach((pl,j)=>{const r=best.ord[j%3];list.push({idx:list.length,key,pl,f:sh[r],name:nm,inv:INV[r]+(j===3?' à l\'octave':'')});});}
+        return list[i];};
+      const inst=val('gInst'),acc=val('gAcc');
+      return chordGame(item,4,(it,k)=>k===0&&inst==='guitare'&&it,.03,'voicing',inst==='orgue'&&acc==='none'?'orgue-seul':acc,inst==='orgue'?'orgue':false);
+    }
     const item=i=>{while(list.length<=i){const key=keys(list.length);const b=nearest(fs,key,pos);pos=b.c;
       list.push({idx:list.length,key,pl:b.pl,f:b.f,name:chordName(key,F.cid==='power'?'5':(b.f.acc!==undefined?b.f.acc:F.suf))});}return list[i];};
     const inst=val('gInst'),acc=val('gAcc');
@@ -761,7 +783,7 @@ function keySeq(ord,k0){
 // Affichage commun aux jeux d'accords : mode 'voicing' / 'jouer' (accord + suivant en creux), 'impro' (gamme conseillée), 'lire' (rien)
 function chordGame(item,len,sound,gap,mode,style,pad){
   const rootOf=it=>{const rs=rootString(it.f);return {rs,rn:it.pl.find(n=>n.l==='1'&&n.s===rs)};};
-  const info=it=>{if(mode==='impro')return 'gamme conseillée : '+it.scale;if(mode==='lire')return '';const {rs,rn}=rootOf(it);return 'fondamentale case '+rn.fr+' '+CORDE_DE[rs];};
+  const info=it=>{if(mode==='impro')return 'gamme conseillée : '+it.scale;if(mode==='lire')return '';const {rs,rn}=rootOf(it);return (it.inv?it.inv+' — ':'')+'fondamentale case '+rn.fr+' '+CORDE_DE[rs];};
   const show=(it,nx,pre)=>{
     const inf=info(it);NEXTWORD='Accord suivant';if(!pre)showNow(it.name,cap(inf));
     if(mode==='lire'){drawBoard($('gBoard'),{from:0,to:12,notes:[],label:'Manche'});return;}
@@ -770,10 +792,10 @@ function chordGame(item,len,sound,gap,mode,style,pad){
     const {rn}=rootOf(it);
     const cur=it.pl.map(n=>({s:n.s,fr:n.fr,m:n.m,root:n.l==='1',txt:n.l}));
     const all=(nx?nx.pl.filter(n=>!it.pl.some(c=>c.s===n.s&&c.fr===n.fr)).map(n=>({s:n.s,fr:n.fr,m:n.m,root:false,txt:'',dim:true,hollow:true})):[]).concat(cur);
-    drawBoard($('gBoard'),{from:0,to:15,notes:all,x:it.f.x,label:it.name,focus:Math.round(rn.fr)});};
-  const where=L=>L.length>1?'':cap(info(L[0]));
+    drawBoard($('gBoard'),{from:0,to:Math.max(15,...all.map(n=>n.fr+1)),notes:all,x:it.f.x,label:it.name,focus:Math.round(rn.fr)});};
+  const where=L=>L.length>1?'':cap(info(L[0]).replace(/^.*? — /,''));
   return {sub:1,items:item,len:()=>len,label:it=>it.name,prepare:it=>show(it,null,true),show,
-    announce:(list,first,held)=>announceNotes(list,first,held,it=>it.name,where),
+    announce:(list,first,held)=>announceNotes(list,first,held,it=>it.name+(it.inv?' ('+it.inv.replace('position fondamentale','fond.').replace('renversement','renv.')+')':''),where),
     noClick:!!style&&style!=='none'&&style!=='orgue-seul',
     step:(it,k,t,dur)=>{if(sound(it,k))strum(it.pl.map(n=>n.m),t,gap);
       if(style&&style!=='none'){if(pad&&k===0)(pad==='orgue'?organChord:padChord)(it.pl.map(n=>n.m),t,len*dur);accomp(style,it,item(it.idx+1),k,t,dur,len);}}};
