@@ -230,7 +230,7 @@ label.chk input{width:18px;height:18px;accent-color:var(--accent)}
 </section>
 
 </main>
-<footer class="meta" style="max-width:1100px;margin:0 auto;padding:0 20px 30px;text-align:center">Boîte à outils guitare · <span id="appver">version 25</span></footer>
+<footer class="meta" style="max-width:1100px;margin:0 auto;padding:0 20px 30px;text-align:center">Boîte à outils guitare · <span id="appver">version 26</span></footer>
 <script src="contenu/formes.js"></script>
 <script>
 'use strict';
@@ -1007,7 +1007,7 @@ GAMES.push({id:'lecture',titre:'Lecture de notes',
   }});
 
 // ===================== Lecture de grille (accords et notation rythmique) =====================
-const GLEV=[[1,'Accords ouverts (C, G, D, A, E, Am, Dm, Em)'],[2,'Accords ouverts et accords 7'],[3,'Power chords'],[4,'Accords majeurs et mineurs, toutes tonalités'],[5,'Accords à 4 sons (Maj7, 7, m7, m7♭5)'],[6,'Accords enrichis (9, 13)']];
+const GLEV=[[1,'Accords ouverts (C, G, D, A, E, Am, Dm, Em)'],[2,'Accords ouverts et accords 7'],[3,'Power chords'],[4,'Accords majeurs et mineurs, toutes tonalités'],[5,'Accords à 4 sons (Maj7, 7, m7, m7♭5)'],[6,'Accords enrichis (9, ♭9, ♯9, 13, ♭13, ♯11, Maj9, m9)']];
 const GRYT=[[1,'Rondes'],[2,'Blanches'],[3,'Noires'],[4,'Croches'],[5,'Valeurs mélangées'],[7,'Doubles croches']];
 const OPEN_K={G:['G','C','D','Em','Am'],C:['C','Am','Dm','G','Em'],D:['D','G','A','Em'],A:['A','D','E'],Em:['Em','Am','G','C','D']};
 const OPEN_7={G:['D7'],C:['G7','E7'],D:['A7'],A:['E7'],Em:['B7']};
@@ -1018,7 +1018,7 @@ function chordShape(name,lv,pos){
   const m=name.match(/^([A-G][♭♯𝄪𝄫]?)(.*)$/),key=keyOf(m[1]),acc=m[2];
   let fs;
   if(acc==='5')fs=CHAPITRES.find(c=>c.id==='power').formes.slice(0,2);
-  else if(['9','13'].includes(acc))fs=CHAPITRES.find(c=>c.id==='enrichis').formes.filter(f=>f.acc===acc);
+  else if(CHAPITRES.find(c=>c.id==='enrichis').formes.some(f=>f.acc===acc&&acc!=='7'&&acc!=='Maj7'&&acc!=='m7'))fs=CHAPITRES.find(c=>c.id==='enrichis').formes.filter(f=>f.acc===acc);
   else fs=CHAPITRES.find(c=>c.id==='positions').formes.filter(f=>(f.acc||'')===acc);
   const b=nearest(fs,key,pos);return {f:b.f,pl:b.pl,c:b.c};
 }
@@ -1035,8 +1035,13 @@ function grilleChords(lv,nbars,per,K){
   if(lv===5){const Q=['Maj7','m7','m7','Maj7','7','m7','m7♭5'],PR=[[1,4,0,0],[0,5,1,4],[2,5,1,4],[0,3,2,5],[1,4,2,5],[3,6,2,5]];const seq=[];
     while(seq.length<nbars*per)seq.push(...rnd(PR));
     for(let b=0;b<nbars;b++)out.push(seq.slice(b*per,b*per+per).map(d=>chordName(kp(key,d),Q[d])));return out;}
-  const PR=[[0,0,3,3],[0,3,0,3],[1,4,1,4],[0,0,0,3]],seq=[];while(seq.length<nbars*per)seq.push(...rnd(PR));
-  for(let b=0;b<nbars;b++)out.push(seq.slice(b*per,b*per+per).map(d=>chordName(kp(key,d),d===1?'m7':rnd(['7','9','13']))));
+  // accords enrichis du répertoire : ii-V-I avec dominante altérée, I-VI-ii-V, et vamps de dominante
+  const ALT=['9','13','7♭9','7♯9','7♭13','7♯11'],seq=[];
+  while(seq.length<nbars*per){const t=Math.random();
+    if(t<.4)seq.push([1,'m9'],[4,rnd(ALT)],[0,'Maj9'],[0,'Maj9']);
+    else if(t<.7)seq.push([0,'Maj9'],[5,'7♭9'],[1,rnd(['m9','m7'])],[4,rnd(ALT)]);
+    else seq.push([0,rnd(['9','13'])],[0,rnd(['13','7♯11'])],[3,rnd(['9','13'])],[3,rnd(['9','7♯11'])]);}
+  for(let b=0;b<nbars;b++)out.push(seq.slice(b*per,b*per+per).map(([d,q])=>chordName(kp(key,d),q)));
   return out;
 }
 function grilleGen(lv,niv,per,art){
