@@ -170,6 +170,8 @@ label.chk input{width:18px;height:18px;accent-color:var(--accent)}
         <span class="bpm" id="bpmVal">90 à la noire</span>
         <button type="button" class="ghost" id="bpmPlus" aria-label="Accélérer">+</button></span>
       </div>
+      <label class="f" style="flex-direction:row;align-items:center;gap:8px">Croches <select id="gFeel"><option value="0">Droites</option><option value="1">Swing (ternaires)</option></select></label>
+      <label class="chk"><input type="checkbox" id="gClic24"> Clic sur 2 et 4</label>
       <button type="button" class="primary" id="gGo">▶ Démarrer</button>
     </div>
     <div class="stage">
@@ -346,13 +348,13 @@ function drum(kind,t){
 }
 // Un temps d'accompagnement : batterie (grosse caisse 1 et 3, caisse claire 2 et 4, charleston en croches) et basse
 function accBeat(it,k,t,dur,len){
-  const b=k%4;drum('hh',t);drum('hh2',t+dur/2);
+  const b=k%4,et=SWING?dur*2/3:dur/2;drum('hh',t);drum('hh2',t+et);
   if(b===0||b===2)drum('kick',t);else drum('snare',t);
-  if(b===2&&len>=4)drum('kick',t+dur*1.5);
+  if(b===2&&len>=4)drum('kick',t+dur+et);
   const r=it.key[1],fifth=/dim|♭5/.test(it.name)?6:7,root=36+mod(r-36,12)-(mod(r-36,12)>7?12:0);
   if(b===0)bassNote(root,t,dur*1.5);
   else if(b===2&&len>=4)bassNote(root+fifth,t,dur*.95);
-  else if(b===3&&len>=4)bassNote(root+(k%8===7?fifth:12),t+dur/2,dur*.45);
+  else if(b===3&&len>=4)bassNote(root+(k%8===7?fifth:12),t+et,dur*.4);
 }
 // Cymbales métalliques (ride, charleston au pied) : six oscillateurs carrés inharmoniques filtrés
 function metal(t,v,decay,freq){
@@ -549,6 +551,7 @@ function showTip(t){let el=$('ntTip');if(!el){el=document.createElement('div');e
 
 // ===================== Métronome et moteur de jeu =====================
 const BPM={lent:60,moyen:90,rapide:120};
+let SWING=store.get('swing','0')==='1',CLIC24=store.get('clic24','0')==='1';
 let TEMPO=store.get('tempo','moyen'),BPMV=+store.get('bpm',BPM[TEMPO]||90);
 if(!(BPMV>=30&&BPMV<=240))BPMV=90;
 const RUN={on:false,timer:null,tos:[],next:0,step:0,g:null};
@@ -571,8 +574,9 @@ function startGame(g){
   RUN.next=ac.currentTime+.15;
   const sched=()=>{
     while(RUN.on&&RUN.next<ac.currentTime+.12){
-      const t=RUN.next,dur=60/BPMV/sub;
-      if(step%sub===0&&(!g.noClick||step<count))click(t,(step/sub)%bpb===0);
+      const t0=RUN.next,dur=60/BPMV/sub,b4=(step/sub)%bpb;
+      const t=t0+(SWING&&sub===2&&step%2===1?dur/3:0); // swing : la croche du « et » tombe aux 2/3 du temps
+      if(step%sub===0&&(!g.noClick||step<count)&&(step<count||!CLIC24||b4===1||b4===3))click(t0,b4===0&&!(CLIC24&&step>=count));
       const beat=Math.floor(step/sub)%bpb;
       if(step%sub===0)at(t,()=>setBeats(bpb,beat));
       if(g.announce&&step%(bpb*sub)===0){ // à chaque début de mesure : ce qu'il faudra jouer à la mesure suivante
@@ -590,7 +594,7 @@ function startGame(g){
         k++;
         if(k>=left){i++;item=nextItem;nextItem=g.items(i+1);left=g.len(item);k=0;}
       }
-      step++;RUN.next+=dur;
+      step++;RUN.next=t0+dur;
     }
   };
   RUN.timer=setInterval(sched,25);sched();
@@ -729,18 +733,19 @@ const GAMES=[
   }},
  {id:'generateur',titre:'Générateur d\'accords',
   desc:'Des accords tirés au hasard, dans toutes les tonalités, annoncés une mesure à l\'avance. Joue l\'accord, ou improvise par-dessus avec la gamme conseillée. Laisse-toi 2 ou 4 mesures par accord pour improviser.',
-  opts:()=>opt('gLvl','Accords',[[1,'Majeurs et mineurs'],[2,'Majeurs, mineurs et 7'],[3,'Maj7, 7, m7'],[4,'Maj7, 7, m7, m7♭5, dim7'],[5,'Tous : triades et accords à 4 sons']],2)
+  opts:()=>opt('gLvl','Accords',[[1,'Majeurs et mineurs'],[2,'Majeurs, mineurs et 7'],[3,'Maj7, 7, m7'],[4,'Maj7, 7, m7, m7♭5, dim7'],[5,'Tous : triades et accords à 4 sons'],[6,'Accords enrichis : 9, 13, 7♭9, 7♯9, 7♯11, 7♭13, Maj9, m9'],[7,'Accords à 4 sons et accords enrichis']],2)
     +opt('gMode','Consigne',[['jouer','Jouer l\'accord'],['impro','Improviser par-dessus'],['lire','Lire seulement (rien sur le manche)']],'jouer')
     +opt('gLen','Durée',LENS.slice(1),8)
     +opt('gSon','Son',[['acc','Accompagnement pop : pad, basse, batterie'],['swing','Accompagnement swing : orgue, walking bass, batterie'],['swing2','Swing : orgue, basse à la blanche, batterie'],['bar','Guitare : l\'accord à chaque mesure'],['chg','Guitare : l\'accord au changement'],['none','Métronome seul']],'acc'),
   make:()=>{
     const lv=+val('gLvl'),mode=val('gMode'),son=val('gSon');
-    const types={1:['','m'],2:['','m','7'],3:['Maj7','7','m7'],4:['Maj7','7','m7','m7♭5','dim7'],5:['','m','7','Maj7','m7','m7♭5','dim7']}[lv];
-    const pos=CHAPITRES.find(c=>c.id==='positions');
+    const ENR=['9','13','7♭9','7♯9','7♯11','7♭13','Maj9','m9'].map(a=>'e:'+a);
+    const types={1:['','m'],2:['','m','7'],3:['Maj7','7','m7'],4:['Maj7','7','m7','m7♭5','dim7'],5:['','m','7','Maj7','m7','m7♭5','dim7'],6:ENR,7:['Maj7','7','m7','m7♭5'].concat(ENR)}[lv];
+    const pos=CHAPITRES.find(c=>c.id==='positions'),enr=CHAPITRES.find(c=>c.id==='enrichis');
     const list=[];let p=null,last='';
     const item=i=>{while(list.length<=i){let key,acc,nm;
-        do{key=KEYS[Math.floor(Math.random()*12)];acc=types[Math.floor(Math.random()*types.length)];nm=chordName(key,acc);}while(nm===last);last=nm;
-        const fs=pos.formes.filter(f=>f.acc===acc),b=nearest(fs,key,p);
+        let ty;do{key=KEYS[Math.floor(Math.random()*12)];ty=types[Math.floor(Math.random()*types.length)];acc=ty.replace('e:','');nm=chordName(key,acc);}while(nm===last);last=nm;
+        const fs=(ty.startsWith('e:')?enr:pos).formes.filter(f=>f.acc===acc),b=nearest(fs,key,p);
         const sc=SCALE_FOR[acc],sf=findShape(sc[0],sc[1]);
         const spl=place(sf,key,{near:b.c});
         p=b.c;list.push({idx:list.length,key,pl:b.pl,f:b.f,name:nm,scale:sc[1]+' de '+keyName(key),spl});}return list[i];};
@@ -754,7 +759,7 @@ const FAMILLES=[['shell:7','Shell 7 (1 3 ♭7)'],['shell:Maj7','Shell Maj7 (1 3 
   ['cordes1234:Maj7','Maj7 sur les cordes 1 à 4'],['cordes1234:7','7 sur les cordes 1 à 4'],['cordes1234:m7','m7 sur les cordes 1 à 4'],['cordes1234:m7b5','m7♭5 sur les cordes 1 à 4'],['cordes1234:dim7','dim7 sur les cordes 1 à 4'],
   ['enrichis:7','7 (corde 6 ou 5)'],['enrichis:9','9 (enrichi)'],['enrichis:13','13 (enrichi)'],['enrichis:Maj9','Maj9'],['enrichis:m9','m9'],['power:','Power chords']];
 const LENS=[[2,'2 temps par accord'],[4,'1 mesure par accord'],[8,'2 mesures par accord'],[16,'4 mesures par accord']];
-const SCALE_FOR={'':['gammes','Pentatonique majeure'],'m':['gammes','Pentatonique mineure'],'7':['modes','Mixolydien'],'Maj7':['modes','Ionien'],'m7':['modes','Dorien'],'m7♭5':['modes','Locrien'],'dim7':['modes','Diminuée ton/demi-ton']};
+const SCALE_FOR={'9':['modes','Mixolydien'],'13':['modes','Mixolydien'],'7♭9':['modes','Phrygien dominant'],'7♯9':['modes','Altéré'],'7♯11':['modes','Lydien dominant'],'7♭13':['modes','Mixolydien ♭6'],'Maj9':['modes','Ionien'],'m9':['modes','Dorien'],'':['gammes','Pentatonique majeure'],'m':['gammes','Pentatonique mineure'],'7':['modes','Mixolydien'],'Maj7':['modes','Ionien'],'m7':['modes','Dorien'],'m7♭5':['modes','Locrien'],'dim7':['modes','Diminuée ton/demi-ton']};
 function findShape(cid,n){return CHAPITRES.find(c=>c.id===cid).formes.find(f=>f.n===n);}
 function val0(id,d){const e=$(id);return e?e.value:store.get('g-'+id,d);}
 function restName(n){if(n.includes(' : '))return n.split(' : ').pop();const r=restOf(n);return r.includes('(')&&!r.includes(')')?r+')':r;}
@@ -843,10 +848,16 @@ function lectureMelody(area,key,chrom,niv){
 }
 function drawStaff(get,curIdx,key,chrom,swing){
   // toujours 4 mesures par ligne : la ligne en cours et la suivante ; on tourne la page toutes les 4 mesures
-  const NL=2,NB=8,cur=get(curIdx),b0=Math.floor(cur.bar/4)*4,SPc=10,BOT=30,BW=165;
+  const NL=2,NB=8,cur=get(curIdx),b0=Math.floor(cur.bar/4)*4,SPc=10,BOT=30;let BW=165;
   const sig=chrom?0:key[3],nsig=Math.abs(sig),left=62+nsig*10+(b0===0?22:0);
-  const W=left+4*BW+12,LH=118,o=[];
   const firstIdx=(()=>{let i=curIdx;while(i>0&&get(i-1).bar>=b0)i--;return i;})();
+  // espacement : chaque note prend une place selon sa durée, plus la place de son altération
+  const XS={};{let j=firstIdx;const byBar={};while(true){const n=get(j);if(n.bar>b0+NB-1)break;(byBar[n.bar]=byBar[n.bar]||[]).push([j,n]);j++;}
+    for(const k in byBar)BW=Math.max(BW,14+byBar[k].reduce((a,[j,n])=>a+(n.showAcc?24:0)+14+Math.sqrt(n.d)*22,0));
+    for(const k in byBar){const L=byBar[k],w=L.map(([j,n])=>(n.showAcc?24:0)+14+Math.sqrt(n.d)*22),tot=w.reduce((a,b)=>a+b,0),sc=(BW-14)/tot;
+      let acc=6;L.forEach(([j,n],q)=>{acc+=(n.showAcc?24:0)*sc;XS[j]=acc+8;acc+=(w[q]-(n.showAcc?24:0))*sc;});}}
+  const W=left+4*BW+12,LH=118,o=[];
+
   for(let line=0;line<NL;line++){
     const top=34+line*LH,yP=p=>top+4*SPc-(p-BOT)*SPc/2;
     for(let l=0;l<5;l++)o.push(`<line x1="8" y1="${top+l*SPc}" x2="${W-6}" y2="${top+l*SPc}" stroke="currentColor" stroke-width="1"/>`);
@@ -861,7 +872,7 @@ function drawStaff(get,curIdx,key,chrom,swing){
   let i=firstIdx;const groups=[];
   while(true){const n=get(i);if(n.bar>b0+NB-1)break;
     const bi=n.bar-b0,line=bi>>2,top=34+line*LH,yP=p=>top+4*SPc-(p-BOT)*SPc/2,bx=left+(bi%4)*BW;
-    const x=bx+20+n.beat*(BW-30)/4+(n.showAcc?13:0),y=yP(n.p),past=i<curIdx,now=i===curIdx;
+    const x=bx+XS[i],y=yP(n.p),past=i<curIdx,now=i===curIdx;
     const col=now?'var(--root)':past?'var(--muted)':'currentColor';
     for(let q=BOT-2;q>=n.p;q-=2)o.push(`<line x1="${x-11}" y1="${yP(q)}" x2="${x+11}" y2="${yP(q)}" stroke="${col}" stroke-width="1.2"/>`);
     for(let q=BOT+10;q<=n.p;q+=2)o.push(`<line x1="${x-11}" y1="${yP(q)}" x2="${x+11}" y2="${yP(q)}" stroke="${col}" stroke-width="1.2"/>`);
@@ -884,9 +895,9 @@ function drawStaff(get,curIdx,key,chrom,swing){
 GAMES.push({id:'lecture',titre:'Lecture de notes',
   desc:'Une partition générée au hasard, avec peu de sauts aux premiers niveaux. Lis et joue chaque note en rythme : la note en cours est en corail, la réponse s\'affiche ensuite sur le manche. Quatre mesures sont toujours visibles, pour lire en avance.',
   opts:()=>opt('gArea','Où jouer',LAREAS.map(a=>[a[0],a[1]]),'p0')+opt('gTon','Notes',LKEYS.map((k,i)=>[i,k[3]===0?'Tonalité de C (sans altération)':'Tonalité de '+k[0]+' ('+Math.abs(k[3])+(k[3]>0?' dièse':' bémol')+(Math.abs(k[3])>1?'s':'')+')']).concat([['chrom','Au hasard, avec altérations']]),0)
-    +opt('gNiv','Niveau',LNIV,1)+opt('gSw','Croches',[['bin','Droites'],['swing','Swing (ternaires)']],'bin')+opt('gRev','Réponse sur le manche',REV,'0.5')+'<label class="chk" style="align-self:end;padding-bottom:8px"><input type="checkbox" id="gSnd" checked> Entendre la note (jouée en même temps que toi)</label>',
+    +opt('gNiv','Niveau',LNIV,1)+opt('gRev','Réponse sur le manche',REV,'0.5')+'<label class="chk" style="align-self:end;padding-bottom:8px"><input type="checkbox" id="gSnd" checked> Entendre la note (jouée en même temps que toi)</label>',
   make:()=>{
-    const swing=val('gSw')==='swing',chrom=val('gTon')==='chrom',key=chrom?LKEYS[0]:LKEYS[+val('gTon')],niv=+val('gNiv'),get=lectureMelody(val('gArea'),key,chrom,niv);
+    const swing=SWING,chrom=val('gTon')==='chrom',key=chrom?LKEYS[0]:LKEYS[+val('gTon')],niv=+val('gNiv'),get=lectureMelody(val('gArea'),key,chrom,niv);
     const A=LAREAS.find(a=>a[0]===val('gArea'));
     const board=(n,show)=>{const notes=show?n.locs.map(c=>({s:c.s,fr:c.fr,m:TUN[c.s]+c.fr,root:true,txt:n.name})):[];
       const s=A[0][0]==='s'?+A[0][1]:null;drawBoard($('gBoard'),{from:0,to:Math.max(12,A[3]||0),notes,hlString:s,label:'Manche',focus:show&&n.locs.length?n.locs[0].fr:(A[2]||6)});};
@@ -896,7 +907,7 @@ GAMES.push({id:'lecture',titre:'Lecture de notes',
         $('gLab').textContent='Mesure';$('gNow').className='now cur';$('gNow').textContent=n.bar+1;$('gWhere').textContent='Lis la note en corail';$('gNext').innerHTML='';board(n,false);},
       revealFrac:revealFracOpt(),
       reveal:n=>{if(+val('gRev')<0)return;board(n,true);$('gWhere').textContent=n.name+' : '+n.locs.map(c=>'case '+c.fr+' '+CORDE_DE[c.s]).join(', ou ');},
-      step:(n,k,t,dur)=>{if(k===0&&$('gSnd').checked){const off=swing&&n.beat%1===.5?dur/3:0;pluck(n.m,t+off,.5,Math.max(.25,n.d*60/BPMV*.95-off));}}};
+      step:(n,k,t,dur)=>{if(k===0&&$('gSnd').checked)pluck(n.m,t,.5,Math.max(.25,n.d*60/BPMV*.9));}};
   }});
 
 let GI=0;
@@ -979,6 +990,8 @@ function start(){
     location.hash=to;};
   // jeux
   showTempo();setBeats(4,-1);
+  $('gFeel').value=SWING?'1':'0';$('gFeel').onchange=e=>{SWING=e.target.value==='1';store.set('swing',SWING?'1':'0');if(RUN.on)stopGame();preview();};
+  $('gClic24').checked=CLIC24;$('gClic24').onchange=e=>{CLIC24=e.target.checked;store.set('clic24',CLIC24?'1':'0');};
   document.querySelectorAll('.tempo [data-t]').forEach(b=>b.onclick=()=>setTempo(b.dataset.t));
   $('bpmMinus').onclick=()=>{BPMV=Math.max(30,BPMV-5);store.set('bpm',BPMV);showTempo();};
   $('bpmPlus').onclick=()=>{BPMV=Math.min(240,BPMV+5);store.set('bpm',BPMV);showTempo();};
