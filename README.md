@@ -4,7 +4,7 @@ Une appli libre et gratuite pour les guitaristes : **gammes, modes, accords, tri
 
 C'est la version interactive de la « Boîte à outils guitare » (fiches PDF), conçue pour les élèves de guitare musiques actuelles et jazz en conservatoire.
 
-👉 **Utiliser l'appli :** https://mlevan8395.github.io/boite-a-outils-guitare/
+👉 **Utiliser l'appli :** https://mlevan8395.github.io/bo-te-outils-guitare/
 
 ## Installer l'appli
 

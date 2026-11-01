@@ -3,7 +3,7 @@
 // arrivent tout de suite), et on se rabat sur la copie enregistrée sans connexion.
 // Images, icônes et polices : copie enregistrée d'abord. Les sons sont fabriqués par l'appli : aucun fichier.
 // Si tu ajoutes une image, ajoute-la à FICHIERS et change VERSION.
-const VERSION='boite-guitare-1';
+const VERSION='boite-guitare-2';
 const FICHIERS=["./","index.html","contenu/formes.js","manifest.webmanifest","images/mains.jpg","icones/icone-192.png","icones/icone-512.png"];
 self.addEventListener('install',e=>{ e.waitUntil(caches.open(VERSION).then(c=>c.addAll(FICHIERS)).then(()=>self.skipWaiting())); });
 self.addEventListener('activate',e=>{ e.waitUntil(caches.keys().then(ks=>Promise.all(ks.filter(k=>k!==VERSION).map(k=>caches.delete(k)))).then(()=>self.clients.claim())); });
