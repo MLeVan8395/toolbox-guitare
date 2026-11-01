@@ -82,6 +82,8 @@ label.chk input{width:18px;height:18px;accent-color:var(--accent)}
 .stage{display:grid;grid-template-columns:auto 1fr;gap:6px 22px;align-items:center;padding:14px 18px;border-radius:10px;background:var(--paper);border:1px solid var(--line);margin-top:14px}
 .now{font-family:var(--chord);font-weight:700;font-size:3.2rem;line-height:1.05;min-width:3.2em;color:var(--ink)}
 .now.wait{color:var(--muted);font-size:2.2rem}
+.now.many{font-size:2.1rem;word-spacing:.35em}
+.lab{font-size:.85rem;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:var(--root);min-height:1.3em}
 .side{display:grid;gap:6px}
 .next{color:var(--muted);font-size:1rem}
 .next b{color:var(--ink);font-family:var(--chord)}
@@ -169,7 +171,7 @@ label.chk input{width:18px;height:18px;accent-color:var(--accent)}
       <button type="button" class="primary" id="gGo">▶ Démarrer</button>
     </div>
     <div class="stage">
-      <div class="now wait" id="gNow" aria-live="polite">Prêt ?</div>
+      <div><div class="lab" id="gLab"></div><div class="now wait" id="gNow" aria-live="polite">Prêt ?</div></div>
       <div class="side">
         <div class="where" id="gWhere"></div>
         <div class="next" id="gNext"></div>
@@ -266,14 +268,19 @@ function pluckBuf(m){
   const fade=Math.floor(sr*.25);for(let i=0;i<len;i++){d[i]/=peak||1;if(i>len-fade)d[i]*=(len-i)/fade;}
   return KS[m]=b;
 }
-function pluck(m,t,vel,dur){
+// Notes détachées : chaque nouvelle note (ou nouvel accord) coupe le son de la précédente, avec un relâchement court.
+let VOICES=[];
+function cutAt(t){VOICES=VOICES.filter(v=>v.end>t);VOICES.forEach(v=>{if(v.start>=t)return;try{v.g.gain.cancelScheduledValues(t);v.g.gain.setTargetAtTime(0,t,.012);}catch(e){}});VOICES=[];}
+function pluck(m,t,vel,dur,keep){
   const ac=ctx();if(!ac)return;t=t||ac.currentTime;vel=vel||.55;dur=dur||1.6;
+  if(!keep)cutAt(t);
   const s=ac.createBufferSource();s.buffer=pluckBuf(m);
   const lp=ac.createBiquadFilter();lp.type='lowpass';lp.frequency.value=2600+ (m-40)*40;
   const g=ac.createGain();g.gain.setValueAtTime(vel,t);g.gain.setTargetAtTime(0,t+dur,.07);
   s.connect(lp);lp.connect(g);g.connect(MASTER);s.start(t);s.stop(t+dur+.6);
+  VOICES.push({g,start:t,end:t+dur+.6});
 }
-function strum(midis,t,gap){const ac=ctx();if(!ac)return;t=t||ac.currentTime+.02;gap=gap===undefined?.035:gap;[...midis].sort((a,b)=>a-b).forEach((m,i)=>pluck(m,t+i*gap,.42,2));}
+function strum(midis,t,gap){const ac=ctx();if(!ac)return;t=t||ac.currentTime+.02;gap=gap===undefined?.035:gap;cutAt(t);[...midis].sort((a,b)=>a-b).forEach((m,i)=>pluck(m,t+i*gap,.42,2,true));}
 function click(t,accent){
   const ac=ctx();if(!ac)return;
   const o=ac.createOscillator(),g=ac.createGain();o.type='square';o.frequency.value=accent?1760:1180;
@@ -445,7 +452,7 @@ function stopGame(){
   RUN.on=false;clearInterval(RUN.timer);RUN.tos.forEach(clearTimeout);RUN.tos=[];
   $('gGo').textContent='▶ Démarrer';$('gGo').className='primary';setBeats(4,-1);
   if(RUN.g&&RUN.g.stop)RUN.g.stop();
-  $('gNow').textContent='Prêt ?';$('gNow').className='now wait';$('gWhere').textContent='';$('gNext').textContent='';
+  $('gNow').textContent='Prêt ?';$('gNow').className='now wait';$('gWhere').textContent='';$('gNext').textContent='';$('gLab').textContent='';
 }
 /* Un jeu fournit : sub (subdivisions par temps), items(i) -> élément i, len(item) en subdivisions,
    show(item,next,t), reveal(item,t) (facultatif, à revealFrac de la durée), step(item,k,t) à chaque subdivision. */
@@ -461,8 +468,13 @@ function startGame(g){
       if(step%sub===0)click(t,(step/sub)%bpb===0);
       const beat=Math.floor(step/sub)%bpb;
       if(step%sub===0)at(t,()=>setBeats(bpb,beat));
+      if(g.announce&&step%(bpb*sub)===0){ // à chaque début de mesure : ce qu'il faudra jouer à la mesure suivante
+        const bar=bpb*sub,b=step/bar-1,L=g.len(),s0=(b+1)*bar,list=[];
+        for(let j=Math.ceil(s0/L);j*L<s0+bar;j++)list.push(g.items(j));
+        const held=list.length?null:g.items(Math.floor(s0/L));
+        at(t,()=>g.announce(list,b<0,held));}
       if(step<count){
-        if(step%sub===0){const n=bpb-step/sub;at(t,()=>{$('gNow').className='now wait';$('gNow').textContent=n;$('gWhere').textContent='Décompte';$('gNext').innerHTML='Pour commencer : <b>'+esc(g.label(item))+'</b>';});}
+        if(step%sub===0){const n=bpb-step/sub;at(t,()=>{if(g.announce){$('gNext').innerHTML='Décompte : <b>'+n+'</b>';return;}$('gNow').className='now wait';$('gNow').textContent=n;$('gWhere').textContent='Décompte';$('gNext').innerHTML='Pour commencer : <b>'+esc(g.label(item))+'</b>';});}
         if(step===0&&g.prepare)at(t,()=>g.prepare(item));
       }else{
         if(k===0){const it=item,nx=nextItem;at(t,()=>g.show(it,nx));
@@ -495,16 +507,24 @@ function stringBoard(s,marks,cur){ // un seul repère de corde, manche 0-12
 }
 function fretsOf(s,pc){const r=[];for(let fr=0;fr<=12;fr++)if(mod(TUN[s]+fr,12)===pc)r.push(fr);return r;}
 function revealFracOpt(){return ()=>{const v=+val('gRev');return v<0?0:v;};}
+const cap=t=>t.charAt(0).toUpperCase()+t.slice(1);
+function announceNotes(list,first,held,name,where){
+  const L=list.length?list:[held];
+  $('gLab').textContent=first?'Première mesure':(list.length?'Mesure suivante':'Mesure suivante : on garde');
+  $('gNow').className='now'+(L.length>1?' many':'');$('gNow').textContent=L.map(name).join(' ');
+  $('gWhere').textContent=where?where(L):'';
+}
 function noteGame(make){ // jeu « une note à trouver sur une corde »
   return {
     sub:1,
     items:make.items,len:()=>+val('gRyt')||4,label:it=>it.name,
     prepare:it=>stringBoard(it.s,[]),
-    show:(it,nx)=>{$('gNow').className='now';$('gNow').textContent=it.name;$('gWhere').textContent=CORDE_DE[it.s].replace('sur la','Sur la');
-      $('gNext').innerHTML=nx?'Ensuite : <b>'+esc(nx.name)+'</b>'+(nx.s!==it.s?' '+esc(CORDE_DE[nx.s]):''):'';stringBoard(it.s,[]);},
+    announce:(list,first,held)=>{announceNotes(list,first,held,it=>it.name,
+        L=>{const ss=[...new Set(L.map(x=>x.s))];return ss.length===1?cap(CORDE_DE[ss[0]]):'Cordes '+L.map(x=>CORDE[x.s]).join(' → ');});},
+    show:it=>{$('gNext').innerHTML='Maintenant : <b>'+esc(it.name)+'</b> '+esc(CORDE_DE[it.s]);stringBoard(it.s,[]);},
     revealFrac:revealFracOpt(),
     reveal:it=>{if(+val('gRev')<0)return;stringBoard(it.s,fretsOf(it.s,it.pc));
-      $('gWhere').textContent=CORDE_DE[it.s].replace('sur la','Sur la')+' : case '+fretsOf(it.s,it.pc).join(' ou ');},
+      $('gNext').innerHTML='Maintenant : <b>'+esc(it.name)+'</b> '+esc(CORDE_DE[it.s])+' → case '+fretsOf(it.s,it.pc).join(' ou ');},
     revealSound:(it,t)=>{if(+val('gRev')>=0&&$('gSnd')&&$('gSnd').checked){const fr=fretsOf(it.s,it.pc).find(f=>f>0)||0;pluck(TUN[it.s]+fr,t,.5,1.2);}}
   };
 }
@@ -577,13 +597,14 @@ const GAMES=[
       let best=null;fs.forEach(f=>{[0].forEach(sh=>{const pl=place(f,key);
         const c=pl.reduce((a,b)=>a+b.fr,0)/pl.length,d=Math.abs(c-(pos===null?5:pos));if(!best||d<best.d)best={d,pl,f,c};});});
       pos=best.c;list.push({key,pl:best.pl,f:best.f,name:cid==='power'?key[0]+'5':chordName(key,best.f.acc||'')});}return list[i];};
-    const show=(it,nx)=>{$('gNow').className='now';$('gNow').textContent=it.name;
+    const show=(it,nx,pre)=>{
       const rs=rootString(it.f),rn=it.pl.find(n=>n.l==='1'&&n.s===rs);
-      $('gWhere').textContent='Fondamentale '+spell(it.key,'1')+', case '+rn.fr+' '+CORDE_DE[rs];
-      $('gNext').innerHTML=nx?'Ensuite : <b>'+esc(nx.name)+'</b>':'';
+      $('gNext').innerHTML=(pre?'':'Maintenant : <b>'+esc(it.name)+'</b> — ')+'fondamentale '+spell(it.key,'1')+', case '+rn.fr+' '+CORDE_DE[rs];
       const all=it.pl.map(n=>({s:n.s,fr:n.fr,m:n.m,root:n.l==='1',txt:n.l})).concat(nx?nx.pl.map(n=>({s:n.s,fr:n.fr,m:n.m,root:false,txt:'',dim:true,hollow:true})):[]);
       drawBoard($('gBoard'),{from:0,to:15,notes:all,x:it.f.x,label:it.name,focus:Math.round(rn.fr)});};
-    return {sub:1,items:item,len:()=>len,label:it=>it.name,prepare:it=>show(it,null),show,
+    const where=L=>{const it=L[0],rs=rootString(it.f),rn=it.pl.find(n=>n.l==='1'&&n.s===rs);return L.length>1?'':'Fondamentale case '+rn.fr+' '+CORDE_DE[rs];};
+    return {sub:1,items:item,len:()=>len,label:it=>it.name,prepare:it=>show(it,null,true),show,
+      announce:(list,first,held)=>announceNotes(list,first,held,it=>it.name,where),
       step:(it,k,t)=>{if(k===0&&$('gSnd').checked)strum(it.pl.map(n=>n.m),t,cid==='power'?.012:.03);}};
   }}
 ];
@@ -598,7 +619,7 @@ function renderGame(){
 }
 function preview(){ // aperçu du premier élément, sans démarrer
   if(RUN.on)return;
-  try{const gm=GAMES[GI].make();const it=gm.items(0);if(gm.prepare)gm.prepare(it);$('gNext').innerHTML='Pour commencer : <b>'+esc(gm.label(it))+'</b>';}catch(e){console.error(e);}
+  try{const gm=GAMES[GI].make();const it=gm.items(0);if(gm.prepare)gm.prepare(it);$('gLab').textContent='';$('gNext').innerHTML='Pour commencer : <b>'+esc(gm.label(it))+'</b>';}catch(e){console.error(e);}
 }
 function setTempo(t){TEMPO=t;if(BPM[t])BPMV=BPM[t];store.set('tempo',t);store.set('bpm',BPMV);showTempo();}
 function showTempo(){document.querySelectorAll('.tempo [data-t]').forEach(b=>b.setAttribute('aria-pressed',b.dataset.t===TEMPO&&BPMV===BPM[TEMPO]));$('bpmVal').textContent=BPMV+' à la noire';}
