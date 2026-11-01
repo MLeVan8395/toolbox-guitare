@@ -326,6 +326,42 @@ function accBeat(it,k,t,dur,len){
   else if(b===2&&len>=4)bassNote(root+fifth,t,dur*.95);
   else if(b===3&&len>=4)bassNote(root+(k%8===7?fifth:12),t+dur/2,dur*.45);
 }
+// Cymbales métalliques (ride, charleston au pied) : six oscillateurs carrés inharmoniques filtrés
+function metal(t,v,decay,freq){
+  const ac=ctx();if(!ac)return;const g=ac.createGain(),bp=ac.createBiquadFilter(),hp=ac.createBiquadFilter();
+  bp.type='bandpass';bp.frequency.value=freq;bp.Q.value=.9;hp.type='highpass';hp.frequency.value=freq*.7;
+  g.gain.setValueAtTime(0,t);g.gain.linearRampToValueAtTime(v,t+.002);g.gain.exponentialRampToValueAtTime(.001,t+decay);
+  [205.3,304.4,369.6,522.7,540,800].forEach(f=>{const o=ac.createOscillator();o.type='square';o.frequency.value=f*1.6;o.connect(bp);o.start(t);o.stop(t+decay+.05);});
+  bp.connect(hp);hp.connect(g);g.connect(MASTER);track(g,t+decay);
+}
+function softKick(t){const ac=ctx();if(!ac)return;const o=ac.createOscillator(),g=ac.createGain();o.frequency.setValueAtTime(110,t);o.frequency.exponentialRampToValueAtTime(45,t+.1);
+  g.gain.setValueAtTime(.28,t);g.gain.exponentialRampToValueAtTime(.001,t+.22);o.connect(g);g.connect(MASTER);o.start(t);o.stop(t+.25);track(g,t+.25);}
+// Batterie swing : ride « ding, ding-da », charleston au pied sur 2 et 4, grosse caisse effleurée
+function swingDrums(k,t,dur){
+  const b=k%4;metal(t,.11,.75,7500);softKick(t);
+  if(b===1||b===3){metal(t+dur*2/3,.07,.45,7500);metal(t,.09,.06,9500);}
+}
+// Qualité de l'accord à partir de ses intervalles
+function quality(it){const L=it.pl.map(n=>n.l);
+  return {third:L.includes('♭3')?3:L.includes('3')?4:7,fifth:L.includes('♭5')||/dim|♭5/.test(it.name)?6:L.includes('♯5')?8:7,
+    sev:L.includes('7')?11:L.includes('𝄫7')||/dim/.test(it.name)?9:L.includes('♭7')?10:L.includes('6')?9:10};}
+const bassRoot=pc=>{const r=36+mod(pc-36,12);return r>43?r-12:r;};
+// Walking bass : fondamentale, tierce, quinte, septième (en montant, puis en redescendant) ; dernier temps : note chromatique vers l'accord suivant
+function walkBeat(it,nx,k,t,dur,len){
+  const q=quality(it),r=bassRoot(it.key[1]),b=k%4,lastBeat=k===len-1;
+  let m;
+  if(lastBeat&&nx){const nr=bassRoot(nx.key[1]);m=nr+(((k*7+it.idx)%3)===0?1:-1);}
+  else if(len===2)m=b===0?r:r+q.fifth;
+  else m=((k>>2)%2?[r+12,r+q.sev,r+q.fifth,r+q.third]:[r,r+q.third,r+q.fifth,r+q.sev])[b]; // mesures paires : on monte ; impaires : on redescend
+  bassNote(m,t,dur*.92);
+}
+function halfBeat(it,k,t,dur,len){const q=quality(it),r=bassRoot(it.key[1]),b=k%4;
+  if(b===0)bassNote(r,t,dur*1.9);else if(b===2&&len>=4)bassNote(r+q.fifth-(r+q.fifth>45?12:0),t,dur*1.9);}
+function accomp(style,it,nx,k,t,dur,len){
+  if(style==='pop'){accBeat(it,k,t,dur,len);return;}
+  swingDrums(k,t,dur);
+  if(style==='swing')walkBeat(it,nx,k,t,dur,len);else halfBeat(it,k,t,dur,len);
+}
 function click(t,accent){
   const ac=ctx();if(!ac)return;
   const o=ac.createOscillator(),g=ac.createGain();o.type='square';o.frequency.value=accent?1760:1180;
@@ -635,7 +671,8 @@ const GAMES=[
     const inG=F.fs.filter(f=>grps.length<2||gv==='*'||f.groupe===gv);
     if(grps.length<2||gv!=='*'){const inv=inG.map(f=>restName(f.n)).filter(Boolean);if(inG.length>1&&inv.length===inG.length)o+=opt('gInv','Renversement',[['*','Le plus proche']].concat(inv.map(n=>[n,n])),'*');}
     return o+opt('gOrd','Ordre',[['q','Cycle des quartes'],['r','Au hasard']],'q')+opt('gLen','Durée',LENS,4)+opt('gKey','Départ (cycle)',KEYS.map((k,i)=>[i,k[0]]),0)
-      +'<label class="chk" style="align-self:end;padding-bottom:8px"><input type="checkbox" id="gSnd" checked> Entendre l\'accord</label>';},
+      +opt('gAcc','Accompagnement',[['none','Aucun : métronome seul'],['swing','Swing : batterie et walking bass'],['swing2','Swing : batterie et basse à la blanche'],['pop','Pop : batterie et basse']],['shell','enrichis','cordes1234'].includes(F.cid)?'swing':'none')
+      +'<label class="chk" style="align-self:end;padding-bottom:8px"><input type="checkbox" id="gSnd" checked> Entendre l\'accord (1er temps de chaque mesure)</label>';},
   make:()=>{
     const F=chordFamily(val('gFam')),g=val('gGrp')||'*',iv=val('gInv')||'*';
     let fs=F.fs.filter(f=>(g==='*'||f.groupe===g)&&(iv==='*'||restName(f.n)===iv));
@@ -643,15 +680,15 @@ const GAMES=[
     const keys=keySeq(val('gOrd'),+val('gKey'));
     const list=[];let pos=null;
     const item=i=>{while(list.length<=i){const key=keys(list.length);const b=nearest(fs,key,pos);pos=b.c;
-      list.push({key,pl:b.pl,f:b.f,name:chordName(key,F.cid==='power'?'5':(b.f.acc!==undefined?b.f.acc:F.suf))});}return list[i];};
-    return chordGame(item,+val('gLen'),(it,k)=>k===0&&$('gSnd').checked&&it,F.cid==='power'?.012:.03,'voicing');
+      list.push({idx:list.length,key,pl:b.pl,f:b.f,name:chordName(key,F.cid==='power'?'5':(b.f.acc!==undefined?b.f.acc:F.suf))});}return list[i];};
+    return chordGame(item,+val('gLen'),(it,k)=>k%4===0&&$('gSnd').checked&&it,F.cid==='power'?.012:.03,'voicing',val('gAcc'),false);
   }},
  {id:'generateur',titre:'Générateur d\'accords',
   desc:'Des accords tirés au hasard, dans toutes les tonalités, annoncés une mesure à l\'avance. Joue l\'accord, ou improvise par-dessus avec la gamme conseillée. Laisse-toi 2 ou 4 mesures par accord pour improviser.',
   opts:()=>opt('gLvl','Accords',[[1,'Majeurs et mineurs'],[2,'Majeurs, mineurs et 7'],[3,'Maj7, 7, m7'],[4,'Maj7, 7, m7, m7♭5, dim7'],[5,'Tous : triades et accords à 4 sons']],2)
     +opt('gMode','Consigne',[['jouer','Jouer l\'accord'],['impro','Improviser par-dessus'],['lire','Lire seulement (rien sur le manche)']],'jouer')
     +opt('gLen','Durée',LENS.slice(1),8)
-    +opt('gSon','Son',[['acc','Accompagnement : pad, basse, batterie'],['bar','Guitare : l\'accord à chaque mesure'],['chg','Guitare : l\'accord au changement'],['none','Métronome seul']],'acc'),
+    +opt('gSon','Son',[['acc','Accompagnement pop : pad, basse, batterie'],['swing','Accompagnement swing : pad, walking bass, batterie'],['swing2','Swing : pad, basse à la blanche, batterie'],['bar','Guitare : l\'accord à chaque mesure'],['chg','Guitare : l\'accord au changement'],['none','Métronome seul']],'acc'),
   make:()=>{
     const lv=+val('gLvl'),mode=val('gMode'),son=val('gSon');
     const types={1:['','m'],2:['','m','7'],3:['Maj7','7','m7'],4:['Maj7','7','m7','m7♭5','dim7'],5:['','m','7','Maj7','m7','m7♭5','dim7']}[lv];
@@ -662,10 +699,9 @@ const GAMES=[
         const fs=pos.formes.filter(f=>f.acc===acc),b=nearest(fs,key,p);
         const sc=SCALE_FOR[acc],sf=findShape(sc[0],sc[1]);
         const spl=place(sf,key,{near:b.c});
-        p=b.c;list.push({key,pl:b.pl,f:b.f,name:nm,scale:sc[1]+' de '+keyName(key),spl});}return list[i];};
-    const len=+val('gLen'),g=chordGame(item,len,(it,k)=>(son==='bar'&&k%4===0||son==='chg'&&k===0)&&it,.03,mode);
-    if(son==='acc'){g.noClick=true;g.step=(it,k,t,dur)=>{if(k===0)padChord(it.pl.map(n=>n.m),t,len*dur);accBeat(it,k,t,dur,len);};}
-    return g;
+        p=b.c;list.push({idx:list.length,key,pl:b.pl,f:b.f,name:nm,scale:sc[1]+' de '+keyName(key),spl});}return list[i];};
+    const len=+val('gLen'),style={acc:'pop',swing:'swing',swing2:'swing2'}[son]||'none';
+    return chordGame(item,len,(it,k)=>(son==='bar'&&k%4===0||son==='chg'&&k===0)&&it,.03,mode,style,style!=='none');
   }}
 ];
 const FAMILLES=[['shell:7','Shell 7 (1 3 ♭7)'],['shell:Maj7','Shell Maj7 (1 3 7)'],['shell:m7','Shell m7 (1 ♭3 ♭7)'],['shell:6','Shell 6 (1 3 6)'],['shell:m6','Shell m6 (1 ♭3 6)'],
@@ -691,7 +727,7 @@ function keySeq(ord,k0){
   const s0=KEYQ.findIndex(k=>k===KEYS[k0]);return i=>KEYQ[(s0+i)%12];
 }
 // Affichage commun aux jeux d'accords : mode 'voicing' / 'jouer' (accord + suivant en creux), 'impro' (gamme conseillée), 'lire' (rien)
-function chordGame(item,len,sound,gap,mode){
+function chordGame(item,len,sound,gap,mode,style,pad){
   const rootOf=it=>{const rs=rootString(it.f);return {rs,rn:it.pl.find(n=>n.l==='1'&&n.s===rs)};};
   const info=it=>{if(mode==='impro')return 'gamme conseillée : '+it.scale;if(mode==='lire')return '';const {rs,rn}=rootOf(it);return 'fondamentale case '+rn.fr+' '+CORDE_DE[rs];};
   const show=(it,nx,pre)=>{
@@ -706,7 +742,9 @@ function chordGame(item,len,sound,gap,mode){
   const where=L=>L.length>1?'':cap(info(L[0]));
   return {sub:1,items:item,len:()=>len,label:it=>it.name,prepare:it=>show(it,null,true),show,
     announce:(list,first,held)=>announceNotes(list,first,held,it=>it.name,where),
-    step:(it,k,t)=>{if(sound(it,k))strum(it.pl.map(n=>n.m),t,gap);}};
+    noClick:!!style&&style!=='none',
+    step:(it,k,t,dur)=>{if(sound(it,k))strum(it.pl.map(n=>n.m),t,gap);
+      if(style&&style!=='none'){if(pad&&k===0)padChord(it.pl.map(n=>n.m),t,len*dur);accomp(style,it,item(it.idx+1),k,t,dur,len);}}};
 }
 function chordLbl(f,ch,key){return shapeName(f,ch,key);}
 let GI=0;
