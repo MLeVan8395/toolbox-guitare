@@ -230,7 +230,7 @@ label.chk input{width:18px;height:18px;accent-color:var(--accent)}
 </section>
 
 </main>
-<footer class="meta" style="max-width:1100px;margin:0 auto;padding:0 20px 30px;text-align:center">Boîte à outils guitare · <span id="appver">version 24</span></footer>
+<footer class="meta" style="max-width:1100px;margin:0 auto;padding:0 20px 30px;text-align:center">Boîte à outils guitare · <span id="appver">version 25</span></footer>
 <script src="contenu/formes.js"></script>
 <script>
 'use strict';
@@ -1007,8 +1007,8 @@ GAMES.push({id:'lecture',titre:'Lecture de notes',
   }});
 
 // ===================== Lecture de grille (accords et notation rythmique) =====================
-const GLEV=[[1,'Accords ouverts (C, G, D, A, E, Am, Dm, Em)'],[2,'Accords ouverts et accords 7'],[3,'Power chords'],[4,'Accords majeurs et mineurs, toutes tonalités'],[5,'Accords à 4 sons (Maj7, 7, m7, m7♭5)'],[6,'Funk : 7, 9, 13, m7']];
-const GRYT=[[1,'Rondes'],[2,'Blanches'],[3,'Noires'],[4,'Croches'],[5,'Valeurs mélangées'],[7,'Doubles croches (funk)']];
+const GLEV=[[1,'Accords ouverts (C, G, D, A, E, Am, Dm, Em)'],[2,'Accords ouverts et accords 7'],[3,'Power chords'],[4,'Accords majeurs et mineurs, toutes tonalités'],[5,'Accords à 4 sons (Maj7, 7, m7, m7♭5)'],[6,'Accords enrichis (9, 13)']];
+const GRYT=[[1,'Rondes'],[2,'Blanches'],[3,'Noires'],[4,'Croches'],[5,'Valeurs mélangées'],[7,'Doubles croches']];
 const OPEN_K={G:['G','C','D','Em','Am'],C:['C','Am','Dm','G','Em'],D:['D','G','A','Em'],A:['A','D','E'],Em:['Em','Am','G','C','D']};
 const OPEN_7={G:['D7'],C:['G7','E7'],D:['A7'],A:['E7'],Em:['B7']};
 const keyOf=l=>{const L='CDEFGAB'.indexOf(l[0]),a=(l.includes('♯')?1:0)-(l.includes('♭')?1:0)+(l.includes('𝄪')?2:0)-(l.includes('𝄫')?2:0);return [l,mod(NAT[L]+a,12),L];};
