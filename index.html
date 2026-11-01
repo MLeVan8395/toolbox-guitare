@@ -230,7 +230,7 @@ label.chk input{width:18px;height:18px;accent-color:var(--accent)}
 </section>
 
 </main>
-<footer class="meta" style="max-width:1100px;margin:0 auto;padding:0 20px 30px;text-align:center">Boîte à outils guitare · <span id="appver">version 21</span></footer>
+<footer class="meta" style="max-width:1100px;margin:0 auto;padding:0 20px 30px;text-align:center">Boîte à outils guitare · <span id="appver">version 22</span></footer>
 <script src="contenu/formes.js"></script>
 <script>
 'use strict';
@@ -299,7 +299,7 @@ function pluck(m,t,vel,dur,keep){
   s.connect(lp);lp.connect(g);g.connect(MASTER);s.start(t,off);s.stop(t+dur+.6);
   VOICES.push({g,start:t,end:t+dur+.6});
 }
-function strum(midis,t,gap){const ac=ctx();if(!ac)return;t=t||ac.currentTime+.02;gap=gap===undefined?.035:gap;cutAt(t);[...midis].sort((a,b)=>a-b).forEach((m,i)=>pluck(m,t+i*gap,.42,2,true));}
+function strum(midis,t,gap,up,vel,len){const ac=ctx();if(!ac)return;t=t||ac.currentTime+.02;gap=gap===undefined?.035:gap;cutAt(t);const o=[...midis].sort((a,b)=>a-b);if(up)o.reverse();o.forEach((m,i)=>pluck(m,t+i*gap,vel||.42,len||2,true));}
 // ===== Accompagnement : pad, basse, batterie (sons de synthèse) =====
 let ACCV=[];
 function track(g,end){ACCV=ACCV.filter(v=>v.end>AC.currentTime);ACCV.push({g,end});}
@@ -846,6 +846,9 @@ const PB={
  7:[[[3,3,3,3],6],[[6,3,3],2.5],[[3,3,6],2.5],[[9,3],2],[[3,9],.7],[[3,6,3],1],[[-3,3,3,3],1.5],[[-6,3,3],1],[[12],1],[[-12],.4]],
  5:[[[12],6],[[6,6],4],[[-6,6],1.5],[[-12],1]]};
 PB[8]=[].concat(PB[4],PB[6],PB[7],[[[12],3],[[-12],.8]]);
+// Sens du médiator : toujours en aller-retour sur la plus petite subdivision de la mesure (croche, ou double croche s'il y en a)
+function markPicks(ns){if(!ns.length)return;const has16=ns.some(n=>n.d12===3||n.d12===9),hasTrip=ns.some(n=>n.d12===4||n.d12===8),u=has16?3:6;
+  ns.forEach(n=>{if(n.rest||n.tied){n.pick=null;return;}const p12=Math.round(n.beat*12);if(p12%u!==0||(hasTrip&&n.d12%4===0&&n.d12<12)){n.pick=null;return;}n.pick=(p12/u)%2===0?'down':'up';});}
 let LASTREST=false; // pour ne jamais enchaîner deux silences, même d'une mesure à l'autre
 function barRyt(niv,opt){
   opt=opt||{};
@@ -894,10 +897,11 @@ function lectureMelody(area,key,chrom,niv,maxi,art){
         notes.push({i:notes.length,art:ar,tieNext:!!sl.tieNext,tied:!!sl.tieStart,m,L,a,p:o*7+L,d:sl.d,d12:Math.round(sl.d*12),bar:b,beat,name:LET[L]+accTxt(a),locs:by[m]||[],showAcc:chrom&&a!==0&&!sl[('shown'+L)]});
         if(chrom&&a!==0)slots.forEach(x=>x['shown'+L]=1);
         beat=Math.round((beat+sl.d)*12)/12;});
+      markPicks(notes.filter(n=>n.bar===b));
     }
     return notes[i];};
 }
-function drawStaff(get,curIdx,key,chrom,swing){
+function drawStaff(get,curIdx,key,chrom,swing,showPick){
   // toujours 4 mesures par ligne : la ligne en cours et la suivante ; on tourne la page toutes les 4 mesures
   const NL=2,NB=8,cur=get(curIdx),b0=Math.floor(cur.bar/4)*4,SPc=10,BOT=30;let BW=165;
   const sig=chrom?0:key[3],nsig=Math.abs(sig),left=62+nsig*10+(b0===0?22:0);
@@ -936,6 +940,7 @@ function drawStaff(get,curIdx,key,chrom,swing){
     for(let q=BOT+10;q<=n.p;q+=2)o.push(`<line x1="${x-11}" y1="${yP(q)}" x2="${x+11}" y2="${yP(q)}" stroke="${col}" stroke-width="1.2"/>`);
     if(n.tied){const pv=get(i-1);const px=XSP[i-1];if(px!==undefined){const up=n.p<34,yy=up?y+7:y-7,cy=up?yy+9:yy-9;o.push(`<path d="M${px+5} ${yy} Q ${(px+x)/2} ${cy} ${x-5} ${yy}" fill="none" stroke="${col}" stroke-width="1.6"/>`);}}
     XSP[i]=x;
+    if(showPick&&n.pick){const yb=Math.min(top-12,y-30)-(n.art==='marc'?16:0);o.push(n.pick==='down'?`<path d="M${x-5} ${yb} V${yb-8} H${x+5} V${yb}" fill="none" stroke="${col}" stroke-width="1.6"/><line x1="${x-5}" y1="${yb-8}" x2="${x+5}" y2="${yb-8}" stroke="${col}" stroke-width="3.2"/>`:`<path d="M${x-5} ${yb-9} L${x} ${yb} L${x+5} ${yb-9}" fill="none" stroke="${col}" stroke-width="1.6"/>`);}
     if(n.art)ARTS.push({x,y,p:n.p,art:n.art,col,k:n.bar+':'+Math.floor(n.beat+1e-6),top});
     const open=n.d>=2;
     if(n.chordName)o.push(`<text x="${x-7}" y="${top-32}" font-size="16" font-weight="700" font-family="var(--chord)" fill="${now||n.chordNow?'var(--root)':'currentColor'}">${esc(n.chordName)}</text>`);
@@ -979,15 +984,15 @@ function drawStaff(get,curIdx,key,chrom,swing){
 GAMES.push({id:'lecture',titre:'Lecture de notes',
   desc:'Une partition générée au hasard : choisis les valeurs rythmiques et l\'intervalle le plus grand autorisé. Lis et joue chaque note en rythme : la note en cours est en corail, la réponse s\'affiche ensuite sur le manche. Quatre mesures sont toujours visibles, pour lire en avance.',
   opts:()=>opt('gArea','Où jouer',LAREAS.map(a=>[a[0],a[1]]),'p0')+opt('gTon','Notes',LKEYS.map((k,i)=>[i,k[3]===0?'Tonalité de C (sans altération)':'Tonalité de '+k[0]+' ('+Math.abs(k[3])+(k[3]>0?' dièse':' bémol')+(Math.abs(k[3])>1?'s':'')+')']).concat([['chrom','Au hasard, avec altérations']]),0)
-    +opt('gNiv','Valeurs rythmiques',LRYTO,1)+opt('gInt','Intervalle maximal',LINTO,2)+opt('gArt','Articulations',LARTO,'none')+opt('gRev','Réponse sur le manche',REV,'0.5')+'<label class="chk" style="align-self:end;padding-bottom:8px"><input type="checkbox" id="gSnd" checked> Entendre la note (jouée en même temps que toi)</label>',
+    +opt('gNiv','Valeurs rythmiques',LRYTO,1)+opt('gInt','Intervalle maximal',LINTO,2)+opt('gArt','Articulations',LARTO,'none')+opt('gPick','Sens du médiator',[['show','Affiché (⊓ vers le bas, V vers le haut)'],['hide','Caché']],'show')+opt('gRev','Réponse sur le manche',REV,'0.5')+'<label class="chk" style="align-self:end;padding-bottom:8px"><input type="checkbox" id="gSnd" checked> Entendre la note (jouée en même temps que toi)</label>',
   make:()=>{
     const swing=SWING,chrom=val('gTon')==='chrom',key=chrom?LKEYS[0]:LKEYS[+val('gTon')],niv=+val('gNiv'),get=lectureMelody(val('gArea'),key,chrom,niv,+val('gInt'),val('gArt'));
     const A=LAREAS.find(a=>a[0]===val('gArea'));
     const board=(n,show)=>{const notes=show?n.locs.map(c=>({s:c.s,fr:c.fr,m:TUN[c.s]+c.fr,root:true,txt:n.name})):[];
       const s=A[0][0]==='s'?+A[0][1]:null;drawBoard($('gBoard'),{from:0,to:Math.max(12,A[3]||0),notes,hlString:s,label:'Manche',focus:show&&n.locs.length?n.locs[0].fr:(A[2]||6)});};
     return {sub:12,items:get,len:n=>n.d12,label:()=>'lis la première ligne',
-      prepare:n=>{$('gStaff').innerHTML=drawStaff(get,0,key,chrom,swing);board(n,false);},
-      show:(n)=>{const idx=n.i;$('gStaff').innerHTML=drawStaff(get,idx,key,chrom,swing);
+      prepare:n=>{$('gStaff').innerHTML=drawStaff(get,0,key,chrom,swing,val('gPick')==='show');board(n,false);},
+      show:(n)=>{const idx=n.i;$('gStaff').innerHTML=drawStaff(get,idx,key,chrom,swing,val('gPick')==='show');
         $('gLab').textContent='Mesure';$('gNow').className='now cur';$('gNow').textContent=n.bar+1;$('gWhere').textContent=n.rest?'Silence':'Lis la note en corail';$('gNext').innerHTML='';board(n,false);},
       revealFrac:revealFracOpt(),
       reveal:n=>{if(+val('gRev')<0||n.rest)return;board(n,true);$('gWhere').textContent=n.name+' : '+n.locs.map(c=>'case '+c.fr+' '+CORDE_DE[c.s]).join(', ou ');},
@@ -1027,7 +1032,7 @@ function grilleChords(lv,nbars,per,K){
   for(let b=0;b<nbars;b++)out.push(seq.slice(b*per,b*per+per).map(d=>chordName(kp(key,d),d===1?'m7':rnd(['7','9','13']))));
   return out;
 }
-function grilleGen(lv,niv,per){
+function grilleGen(lv,niv,per,art){
   const notes=[];let bars=0,pos=null,last=null,cur=null;const cache={},GK=lv<=2?rnd(Object.keys(OPEN_K)):lv===3?null:rnd(KEYS);
   const shape=nm=>{const r=chordShape(nm,lv,pos);pos=r.c!==undefined?r.c:pos;return r;};
   LASTREST=false;
@@ -1041,28 +1046,38 @@ function grilleGen(lv,niv,per){
       ryt.forEach(sl=>{const h=per===2&&beat>=2-1e-6?1:0,nm=cs[h];
         const isNew=beat===0||(per===2&&Math.abs(beat-2)<1e-6); // nom de l'accord au début de chaque mesure (et au 3e temps s'il y en a deux)
         if(nm!==last){cur=Object.assign({name:nm},shape(nm));last=nm;}
-        notes.push({i:notes.length,slash:true,p:33.999,d:sl.d,d12:Math.round(sl.d*12),rest:!!sl.rest,tied:!!sl.tieStart,tieNext:!!sl.tieNext,bar:b,beat,chord:cur,chordName:isNew?nm:null,name:nm,locs:[]});
+        const long=!sl.rest&&!sl.tieStart&&(sl.d>=1||sl.tieNext),ar=art==='none'||!long?null:art==='mix'?rnd(['stacc','acc','marc']):art;
+        notes.push({i:notes.length,slash:true,p:33.999,d:sl.d,d12:Math.round(sl.d*12),rest:!!sl.rest,tied:!!sl.tieStart,tieNext:!!sl.tieNext,bar:b,beat,chord:cur,chordName:isNew?nm:null,name:nm,locs:[],art:ar==='stacc'&&sl.tieNext?'acc':ar});
         beat=Math.round((beat+sl.d)*12)/12;});
+      markPicks(notes.filter(n=>n.bar===b));
     }
     return notes[i];};
 }
 GAMES.push({id:'grille',titre:'Lecture de grille',
   desc:'Une grille d\'accords en notation rythmique : le nom de l\'accord au-dessus, le rythme à jouer en barres obliques. Joue chaque accord sur le rythme écrit, en suivant le métronome.',
   opts:()=>opt('gGLv','Accords',GLEV,1)+opt('gNiv','Valeurs rythmiques',GRYT,3)+opt('gPer','Accords par mesure',[[1,'1 accord par mesure'],[2,'2 accords par mesure']],1)
+    +opt('gArt','Articulations',LARTO,'none')+opt('gPick','Sens du médiator',[['show','Affiché (⊓ vers le bas, V vers le haut)'],['hide','Caché']],'show')
+    +opt('gAcc','Accompagnement',[['none','Aucun : métronome seul'],['pop','Pop : basse et batterie'],['swing','Swing : walking bass et batterie'],['swing2','Swing : basse à la blanche et batterie']],'none')
     +opt('gDiag','Position de l\'accord sur le manche',[['show','Affichée'],['hide','Cachée']],'show')
     +'<label class="chk" style="align-self:end;padding-bottom:8px"><input type="checkbox" id="gSnd" checked> Entendre la grille (jouée en même temps que toi)</label>',
   make:()=>{
-    const lv=+val('gGLv'),niv=+val('gNiv'),per=niv===1?1:+val('gPer'),get=grilleGen(lv,niv,per);
+    const lv=+val('gGLv'),niv=+val('gNiv'),per=niv===1?1:+val('gPer'),get=grilleGen(lv,niv,per,val('gArt')),pk=val('gPick')==='show',accSt=val('gAcc');
     const board=n=>{const c=n.chord;if(val('gDiag')==='hide'||!c){drawBoard($('gBoard'),{from:0,to:12,notes:[],label:'Manche'});return;}
       const fr=c.pl.map(x=>x.fr),mn=Math.min(...fr),mx=Math.max(...fr);
       drawBoard($('gBoard'),{from:c.f.fixe?0:Math.max(0,mn-1),to:c.f.fixe?Math.max(4,mx+1):Math.max(mx+1,mn+4),notes:c.pl.map(x=>({s:x.s,fr:x.fr,m:x.m,root:x.l==='1',txt:c.f.fixe?'':x.l,hollow:c.f.fixe&&x.fr===0})),x:c.f.x,label:c.name});};
-    return {sub:12,items:get,len:n=>n.d12,label:n=>n.name,
-      prepare:n=>{$('gStaff').innerHTML=drawStaff(get,0,LKEYS[0],true,SWING);board(n);},
-      show:n=>{$('gStaff').innerHTML=drawStaff(get,n.i,LKEYS[0],true,SWING);
+    // accompagnement : un objet accord par changement d'accord, pour la basse et la batterie
+    let accN=0;const accOf=c=>c.acc||(c.acc={idx:accN++,key:keyOf(c.name.match(/^[A-G][♭♯]?/)[0]),name:c.name,pl:c.pl});
+    const nextChord=n=>{for(let j=n.i+1;j<n.i+64;j++){const x=get(j);if(x.chord!==n.chord)return x.chord;}return n.chord;};
+    return {sub:12,items:get,len:n=>n.d12,label:n=>n.name,noClick:accSt!=='none',
+      prepare:n=>{$('gStaff').innerHTML=drawStaff(get,0,LKEYS[0],true,SWING,pk);board(n);},
+      show:n=>{$('gStaff').innerHTML=drawStaff(get,n.i,LKEYS[0],true,SWING,pk);
         $('gLab').textContent='Accord';$('gNow').className='now cur';$('gNow').textContent=n.name;$('gWhere').textContent='Mesure '+(n.bar+1)+(n.rest?' · silence':'');$('gNext').innerHTML='';board(n);},
-      step:(n,k,t,dur)=>{if(k!==0||n.rest||n.tied||!$('gSnd').checked)return;const bd=60/BPMV,off=SWING&&n.d12===6&&n.beat%1?bd/6:0;
-        const L=(n.tieNext?n.d+.5:n.d)*bd;const ms=n.chord.pl.map(x=>x.m);const sixt=n.d12===3;
-        strum(sixt||n.d12===6&&n.beat%1?ms.slice(-4):ms,t+off,sixt?.006:.014);}};
+      step:(n,k,t,dur,r)=>{const bd=60/BPMV;
+        if(accSt!=='none'&&r%12===0){const bb=(r/12)%4,len=4/per,kb=bb%len;accomp(accSt,accOf(n.chord),accOf(nextChord(n)),kb,t,bd,len);}
+        if(k!==0||n.rest||n.tied||!$('gSnd').checked)return;const off=SWING&&n.d12===6&&n.beat%1?bd/6:0;
+        const L=(n.tieNext?n.d+.5:n.d)*bd,ms=n.chord.pl.map(x=>x.m),up=n.pick==='up',short=n.d12<=6&&!n.tieNext;
+        const vel=n.art==='acc'?.62:n.art==='marc'?.66:up?.32:.42,len=n.art==='stacc'?.13:n.art==='marc'?Math.min(L,bd*.55):Math.max(.2,L);
+        strum(up?ms.slice(-4):ms,t+off,short?.008:.014,up,vel,len);}};
   }});
 
 let GI=0;
@@ -1086,16 +1101,17 @@ const JEU_TRIADES='Triades : monter les renversements';
 const MENU=[
  {id:'presentation',t:'Présentation',items:[{id:'accueil',t:'Présentation',view:'presentation'}]},
  {id:'manche',t:'Manche',items:[{id:'notes',t:'Toutes les notes',view:'notes'},{id:'mains',t:'Les mains',view:'mains'},
-   {id:'lecture',t:'Lecture de notes',view:'game',game:'lecture'},{id:'quartes',t:'Cycle des quartes sur une corde',view:'game',game:'quartes'},{id:'cordes',t:'Une note sur toutes les cordes',view:'game',game:'cordes'}]},
+   {id:'quartes',t:'Cycle des quartes sur une corde',view:'game',game:'quartes'},{id:'cordes',t:'Une note sur toutes les cordes',view:'game',game:'cordes'}]},
  {id:'gammes',t:'Gammes',items:[{id:'premieres',t:'Premières gammes',view:'schema',chap:'gammes'},{id:'modes',t:'Modes et gammes dérivés',view:'schema',chap:'modes'},
    {id:'rythme',t:'Gammes en rythme',view:'game',game:'gamme',filter:['gammes','modes'],desc:'La gamme choisie, montée puis descendue au métronome : la note à jouer s\'allume sur le manche. Avec l\'option cycle des quartes, la tonalité change à chaque tour.'}]},
  {id:'accords',t:'Accords',items:[{id:'ouverts',t:'Accords ouverts',view:'schema',chap:'ouverts'},{id:'power',t:'Power chords et octaves',view:'schema',chap:'power'},
    {id:'triades',t:'Triades majeures',view:'schema',chap:'triades'},{id:'triades-min',t:'Triades mineures',view:'schema',chap:'triades-min'},
    {id:'shell',t:'Jazz shells',view:'schema',chap:'shell'},{id:'positions',t:'Positions transposables',view:'schema',chap:'positions'},
    {id:'renversements',t:'Renversements (cordes 1 à 4)',view:'schema',chap:'cordes1234'},{id:'enrichis',t:'Accords enrichis',view:'schema',chap:'enrichis'},
-   {id:'enchainements',t:'Enchaînements d\'accords',view:'game',game:'accords'},{id:'grille',t:'Lecture de grille',view:'game',game:'grille'},{id:'generateur',t:'Générateur d\'accords',view:'game',game:'generateur'}]},
+   {id:'enchainements',t:'Enchaînements d\'accords',view:'game',game:'accords'},{id:'generateur',t:'Générateur d\'accords',view:'game',game:'generateur'}]},
  {id:'arpeges',t:'Arpèges',items:[{id:'maj7',t:'Maj7',view:'schema',chap:'arp-maj7'},{id:'7',t:'7',view:'schema',chap:'arp-7'},{id:'m7',t:'m7',view:'schema',chap:'arp-m7'},{id:'m7b5',t:'m7♭5',view:'schema',chap:'arp-m7b5'},{id:'dim7',t:'dim7',view:'schema',chap:'arp-dim7'},
-   {id:'rythme',t:'Arpèges en rythme',view:'game',game:'gamme',filter:['arp-maj7','arp-7','arp-m7','arp-m7b5','arp-dim7'],desc:'L\'arpège choisi, monté puis descendu au métronome : la note à jouer s\'allume sur le manche. Avec l\'option cycle des quartes, la tonalité change à chaque tour.'}]}
+   {id:'rythme',t:'Arpèges en rythme',view:'game',game:'gamme',filter:['arp-maj7','arp-7','arp-m7','arp-m7b5','arp-dim7'],desc:'L\'arpège choisi, monté puis descendu au métronome : la note à jouer s\'allume sur le manche. Avec l\'option cycle des quartes, la tonalité change à chaque tour.'}]},
+ {id:'lecture',t:'Lecture',items:[{id:'notes',t:'Lecture de notes',view:'game',game:'lecture'},{id:'grille',t:'Lecture de grille',view:'game',game:'grille'}]}
 ];
 let CUR={};
 const PANELS=['schemas','jeux','notes','presentation','mains'];
