@@ -230,7 +230,7 @@ label.chk input{width:18px;height:18px;accent-color:var(--accent)}
 </section>
 
 </main>
-<footer class="meta" style="max-width:1100px;margin:0 auto;padding:0 20px 30px;text-align:center">Boîte à outils guitare · <span id="appver">version 18</span></footer>
+<footer class="meta" style="max-width:1100px;margin:0 auto;padding:0 20px 30px;text-align:center">Boîte à outils guitare · <span id="appver">version 19</span></footer>
 <script src="contenu/formes.js"></script>
 <script>
 'use strict';
@@ -663,14 +663,21 @@ const GAMES=[
  {id:'gamme',titre:'Gammes et arpèges en rythme',
   desc:'Le schéma choisi, monté puis descendu au métronome : la note à jouer s\'allume sur le manche. Avec l\'option cycle des quartes, la tonalité change à chaque tour.',
   opts:()=>{const ch=CHAPITRES.filter(c=>(CUR.filter||['gammes','arpeges','modes']).includes(c.id));
+    if(ch.length&&ch.every(c=>c.id.startsWith('arp-'))){ // arpèges : d'un côté le type d'accord, de l'autre la zone du manche
+      const sv=(store.get('g-gShape','arp-maj7:0')).split(':'),zones=ch[0].formes.map((f,j)=>[j,f.n.split(', ').slice(1).join(', ')]);
+      return opt('gArpQ','Accord',ch.map(c=>[c.id,c.titre.replace('Arpèges ','')]),ch.some(c=>c.id===sv[0])?sv[0]:ch[0].id)
+        +'<label class="f" style="grid-column:span 2">Zone du manche <select id="gArpZ">'+zones.map(([j,n])=>`<option value="${j}"${String(j)===(sv[1]||'0')?' selected':''}>${esc(n.charAt(0).toUpperCase()+n.slice(1))}</option>`).join('')+'</select></label>'
+        +opt('gKey','Tonalité de départ',KEYS.map((k,i)=>[i,k[0]]),0)+opt('gSub','Valeurs',[[1,'Noires (1 note par temps)'],[2,'Croches (2 notes par temps)']],1)+opt('gNxt','Après chaque tour',[['same','Même tonalité'],['q','Cycle des quartes']],'same')
+        +'<label class="chk" style="align-self:end;padding-bottom:8px"><input type="checkbox" id="gSnd" checked> Entendre les notes</label>';}
     let o='<label class="f" style="grid-column:span 2">Schéma <select id="gShape">';
     ch.forEach(c=>{let grp=null;o+=`<optgroup label="${esc(c.titre)}">`;c.formes.forEach((f,j)=>{o+=`<option value="${c.id}:${j}">${esc(f.n+(f.groupe&&c.id==='arpeges'?' ('+f.groupe.toLowerCase()+')':''))}</option>`;});o+='</optgroup>';});
     o+='</select></label>';
     return o+opt('gKey','Tonalité de départ',KEYS.map((k,i)=>[i,k[0]]),0)+opt('gSub','Valeurs',[[1,'Noires (1 note par temps)'],[2,'Croches (2 notes par temps)']],1)+opt('gNxt','Après chaque tour',[['same','Même tonalité'],['q','Cycle des quartes']],'same')
       +'<label class="chk" style="align-self:end;padding-bottom:8px"><input type="checkbox" id="gSnd" checked> Entendre les notes</label>';},
-  after:()=>{const sel=$('gShape');const v=store.get('g-gShape','gammes:0');if([...sel.options].some(o=>o.value===v))sel.value=v;sel.onchange=()=>store.set('g-gShape',sel.value);},
+  after:()=>{if($('gArpQ')){const up=()=>store.set('g-gShape',$('gArpQ').value+':'+$('gArpZ').value);$('gArpQ').addEventListener('change',up);$('gArpZ').addEventListener('change',()=>{up();if(!RUN.on)preview();});return;}
+    const sel=$('gShape');const v=store.get('g-gShape','gammes:0');if([...sel.options].some(o=>o.value===v))sel.value=v;sel.onchange=()=>store.set('g-gShape',sel.value);},
   make:()=>{
-    const [cid,j]=val('gShape').split(':'),ch=CHAPITRES.find(c=>c.id===cid),f=ch.formes[+j],sub=+val('gSub'),k0=+val('gKey'),cyc=val('gNxt')==='q';
+    const [cid,j]=($('gArpQ')?$('gArpQ').value+':'+$('gArpZ').value:val('gShape')).split(':'),ch=CHAPITRES.find(c=>c.id===cid),f=ch.formes[+j],sub=+val('gSub'),k0=+val('gKey'),cyc=val('gNxt')==='q';
     const startQ=KEYQ.findIndex(k=>k===KEYS[k0]);
     let pos=null;const tours=[];
     const tour=n=>{while(tours.length<=n){const key=cyc?KEYQ[(startQ+tours.length)%12]:KEYS[k0];
