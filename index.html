@@ -262,7 +262,7 @@ label.chk input{width:18px;height:18px;accent-color:var(--accent)}
 </section>
 
 </main>
-<footer class="meta" style="max-width:1100px;margin:0 auto;padding:0 20px 30px;text-align:center">Boîte à outils guitare · <span id="appver">version 29</span><br><span style="font-size:12px">Sons : guitare et basse <a href="https://www.karoryfer.com/karoryfer-samples" target="_blank" rel="noopener">Karoryfer Samples</a> (CC BY 3.0) · batterie Virtuosity Drums et contrebasse <a href="https://github.com/sgossner/VSCO-2-CE" target="_blank" rel="noopener">VSCO 2</a> (CC0)</span></footer>
+<footer class="meta" style="max-width:1100px;margin:0 auto;padding:0 20px 30px;text-align:center">Boîte à outils guitare · <span id="appver">version 30</span><br><span style="font-size:12px">Sons : guitare et basse <a href="https://www.karoryfer.com/karoryfer-samples" target="_blank" rel="noopener">Karoryfer Samples</a> (CC BY 3.0) · guitare saturée Musyng Kite (CC BY-SA 3.0) · batterie Virtuosity Drums et contrebasse <a href="https://github.com/sgossner/VSCO-2-CE" target="_blank" rel="noopener">VSCO 2</a> (CC0)</span></footer>
 <script src="contenu/formes.js"></script>
 <script>
 'use strict';
@@ -302,17 +302,20 @@ function noteMidi(n){const L={C:0,D:2,E:4,F:5,G:7,A:9,B:11}[n[0]],sh=n[1]==='s'?
 // Batterie (Virtuosity Drums, CC0), contrebasse pizzicato (VSCO 2 CE, CC0), basse électrique (Karoryfer, CC BY 3.0)
 const DR_FILES=['kick','caisse','caisse-ghost','cross-stick','hh-ferme','hh-doux','hh-ouvert','hh-pied','ride','ride-cloche'];
 const CB_FILES=[28,30,31,34,36,38,40,42,44,45,49,52,56],EB_FILES=[28,31,34,37,40,43,46,49,52];
-const DR={},CB={},EB={};
+const DR={},CB={},EB={},DG={};
+// Guitare saturée pour les power chords et les octaves (Musyng Kite, distortion guitar, CC BY-SA 3.0, via midi-js-soundfonts)
+const DG_FILES=[40,43,46,49,52,55,58,61,64,67,70,73,76];
 function loadBuf(url,cb){fetch(url).then(r=>{if(!r.ok)throw 0;return r.arrayBuffer();}).then(b=>new Promise((ok,ko)=>AC.decodeAudioData(b,ok,ko))).then(cb).catch(()=>{});}
 function loadGuitar(){
   if(GT_LOADING||!AC||!/^https?:$/.test(location.protocol))return;GT_LOADING=true;
   DR_FILES.forEach(n=>loadBuf('sons/batterie/'+n+'.mp3',b=>DR[n]=b));
   CB_FILES.forEach(m=>loadBuf('sons/contrebasse/'+m+'.mp3',b=>CB[m]=b));
   EB_FILES.forEach(m=>loadBuf('sons/basse/'+m+'.mp3',b=>EB[m]=b));
+  DG_FILES.forEach(m=>loadBuf('sons/guitare-saturee/'+m+'.mp3',b=>DG[m]=b));
   GT_FILES.forEach(n=>fetch('sons/guitare/'+n+'.mp3').then(r=>{if(!r.ok)throw 0;return r.arrayBuffer();})
     .then(b=>new Promise((ok,ko)=>AC.decodeAudioData(b,ok,ko))).then(buf=>{GT[noteMidi(n)]=buf;}).catch(()=>{}));
 }
-function gtSample(m){let best=null;for(const k in GT){const d=Math.abs(k-m);if(d<=2&&(best===null||d<Math.abs(best-m)))best=+k;}return best;}
+function gtSample(m,B){B=B||GT;let best=null;for(const k in B){const d=Math.abs(k-m);if(d<=2&&(best===null||d<Math.abs(best-m)))best=+k;}return best;}
 const KS={};
 function pluckBuf(m){
   if(KS[m])return KS[m];
@@ -329,17 +332,19 @@ function pluckBuf(m){
 // Notes détachées : chaque nouvelle note (ou nouvel accord) coupe le son de la précédente, avec un relâchement court.
 let VOICES=[];
 function cutAt(t){VOICES=VOICES.filter(v=>v.end>t);VOICES.forEach(v=>{if(v.start>=t)return;try{v.g.gain.cancelScheduledValues(t);v.g.gain.setTargetAtTime(0,t,.012);}catch(e){}});VOICES=[];}
-function pluck(m,t,vel,dur,keep){
+function pluck(m,t,vel,dur,keep,sat){
   const ac=ctx();if(!ac)return;t=t||ac.currentTime;vel=vel||.55;dur=dur||1.6;
   if(!keep)cutAt(t);
-  const s=ac.createBufferSource(),sm=gtSample(m);let off=0;
-  if(sm!==null){s.buffer=GT[sm];s.playbackRate.value=Math.pow(2,(m-sm)/12);off=.02;vel*=1.6;}else s.buffer=pluckBuf(m);
-  const lp=ac.createBiquadFilter();lp.type='lowpass';lp.frequency.value=sm!==null?4200:1300+(m-40)*28;lp.Q.value=.5;
+  const B=sat&&Object.keys(DG).length?DG:GT,s=ac.createBufferSource(),sm=gtSample(m,B);let off=0;
+  if(sm!==null){s.buffer=B[sm];s.playbackRate.value=Math.pow(2,(m-sm)/12);off=B===DG?.003:.02;vel*=B===DG?.7:1.6;}else s.buffer=pluckBuf(m);
+  const lp=ac.createBiquadFilter();lp.type='lowpass';lp.frequency.value=sm!==null?(B===DG?5200:4200):1300+(m-40)*28;lp.Q.value=.5;
   const g=ac.createGain();g.gain.setValueAtTime(vel,t);g.gain.setTargetAtTime(0,t+dur,.07);
   s.connect(lp);lp.connect(g);g.connect(MASTER);s.start(t,off);s.stop(t+dur+.6);
   VOICES.push({g,start:t,end:t+dur+.6});
 }
-function strum(midis,t,gap,up,vel,len){const ac=ctx();if(!ac)return;t=t||ac.currentTime+.02;gap=gap===undefined?.035:gap;cutAt(t);const o=[...midis].sort((a,b)=>a-b);if(up)o.reverse();o.forEach((m,i)=>pluck(m,t+i*gap,vel||.42,len||2,true));}
+// power chord (fondamentale, quinte, octaves) ou octave : son saturé
+const isPower=ms=>{if(ms.length<2)return false;const r=Math.min(...ms);return ms.every(m=>[0,7].includes(mod(m-r,12)));};
+function strum(midis,t,gap,up,vel,len){const ac=ctx();if(!ac)return;t=t||ac.currentTime+.02;gap=gap===undefined?.035:gap;cutAt(t);const sat=isPower(midis),o=[...midis].sort((a,b)=>a-b);if(up)o.reverse();o.forEach((m,i)=>pluck(m,t+i*gap,vel||.42,len||2,true,sat));}
 // ===== Accompagnement : pad, basse, batterie (sons de synthèse) =====
 let ACCV=[];
 function track(g,end){ACCV=ACCV.filter(v=>v.end>AC.currentTime);ACCV.push({g,end});}
@@ -466,7 +471,7 @@ function accomp(style,it,nx,k,t,dur,len){
     return;}
   // swing : ride « ding, ding-da », charleston au pied sur 2 et 4, grosse caisse effleurée, contrebasse à la blanche
   dS('ride',t,bb%2?.62:.5);dS('kick',t,.12);
-  if(bb===1||bb===3){dS('ride',t+dur*2/3,.38);dS('hh-pied',t-.008,.55);}
+  if(bb===1||bb===3){dS('ride',t+dur*2/3,.38);dS('hh-pied',t-.02,.55);}
   if(Math.random()<.12)dS('caisse-ghost',t+dur*2/3,.25);
   if(bb===0)bS(r,t,dur*1.9,.95,'cb');else if(bb===2&&len>=4)bS(r+Q.fifth-(r+Q.fifth>47?12:0),t,dur*1.9,.9,'cb');
 }

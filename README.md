@@ -45,6 +45,7 @@ Un bouton **Droitier / Gaucher** retourne tous les manches.
 ## Crédits des sons
 
 - Guitare électrique en son clair et basse électrique (`sons/guitare`, `sons/basse`) : échantillons de [Karoryfer Samples](https://www.karoryfer.com/karoryfer-samples), mis en forme par Nicholaus Brosowsky ([tonejs-instruments](https://github.com/nbrosowsky/tonejs-instruments)), licence [CC BY 3.0](https://creativecommons.org/licenses/by/3.0/deed.fr). Fichiers raccourcis et convertis en mono.
+- Guitare saturée pour les power chords et les octaves (`sons/guitare-saturee`) : soundfont Musyng Kite (« distortion guitar »), rendue en mp3 par Benjamin Gleitzman ([midi-js-soundfonts](https://github.com/gleitz/midi-js-soundfonts)), licence [CC BY-SA 3.0](https://creativecommons.org/licenses/by-sa/3.0/deed.fr). Fichiers raccourcis, normalisés et convertis en mono.
 - Batterie (`sons/batterie`) : Virtuosity Drums, domaine public ([CC0](https://creativecommons.org/publicdomain/zero/1.0/deed.fr)).
 - Contrebasse en pizzicato (`sons/contrebasse`) : [VSCO 2 Community Edition](https://github.com/sgossner/VSCO-2-CE) de Versilian Studios, domaine public (CC0). Fichiers raccourcis, normalisés et convertis en mono.
 - Le métronome, le pad et l'orgue sont des sons de synthèse fabriqués par l'appli.
