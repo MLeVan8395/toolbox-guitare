@@ -91,6 +91,8 @@ const CHAPITRES=[
   {"n":"Maj7 (fondamentale corde 6)","notes":[[6,0,"1"],[4,1,"7"],[3,1,"3"],[2,0,"5"]],"x":[1,5],"groupe":"Fondamentale sur la corde de Mi","acc":"Maj7"},
   {"n":"7 (fondamentale corde 6)","notes":[[6,0,"1"],[4,0,"♭7"],[3,1,"3"],[2,0,"5"]],"x":[1,5],"groupe":"Fondamentale sur la corde de Mi","acc":"7"},
   {"n":"m7 (fondamentale corde 6)","notes":[[6,0,"1"],[4,0,"♭7"],[3,0,"♭3"],[2,0,"5"]],"x":[1,5],"groupe":"Fondamentale sur la corde de Mi","acc":"m7"},
+  {"n":"6 (fondamentale corde 6)","notes":[[6,0,"1"],[4,-1,"6"],[3,1,"3"],[2,0,"5"]],"x":[1,5],"groupe":"Fondamentale sur la corde de Mi","acc":"6"},
+  {"n":"m6 (fondamentale corde 6)","notes":[[6,0,"1"],[4,-1,"6"],[3,0,"♭3"],[2,0,"5"]],"x":[1,5],"groupe":"Fondamentale sur la corde de Mi","acc":"m6"},
   {"n":"m7♭5 (fondamentale corde 6)","notes":[[6,0,"1"],[4,0,"♭7"],[3,0,"♭3"],[2,-1,"♭5"]],"x":[1,5],"groupe":"Fondamentale sur la corde de Mi","acc":"m7♭5"},
   {"n":"dim7 (fondamentale corde 6)","notes":[[6,0,"1"],[4,-1,"𝄫7"],[3,0,"♭3"],[2,-1,"♭5"]],"x":[1,5],"groupe":"Fondamentale sur la corde de Mi","acc":"dim7"},
   {"n":"Majeur (fondamentale corde 5)","notes":[[5,0,"1"],[4,2,"5"],[3,2,"1"],[2,2,"3"],[1,0,"5"]],"x":[6],"groupe":"Fondamentale sur la corde de La","acc":""},
@@ -98,6 +100,8 @@ const CHAPITRES=[
   {"n":"Maj7 (fondamentale corde 5)","notes":[[5,0,"1"],[4,2,"5"],[3,1,"7"],[2,2,"3"]],"x":[1,6],"groupe":"Fondamentale sur la corde de La","acc":"Maj7"},
   {"n":"7 (fondamentale corde 5)","notes":[[5,0,"1"],[4,2,"5"],[3,0,"♭7"],[2,2,"3"]],"x":[1,6],"groupe":"Fondamentale sur la corde de La","acc":"7"},
   {"n":"m7 (fondamentale corde 5)","notes":[[5,0,"1"],[4,2,"5"],[3,0,"♭7"],[2,1,"♭3"]],"x":[1,6],"groupe":"Fondamentale sur la corde de La","acc":"m7"},
+  {"n":"6 (fondamentale corde 5)","notes":[[5,0,"1"],[4,2,"5"],[3,-1,"6"],[2,2,"3"]],"x":[1,6],"groupe":"Fondamentale sur la corde de La","acc":"6"},
+  {"n":"m6 (fondamentale corde 5)","notes":[[5,0,"1"],[4,2,"5"],[3,-1,"6"],[2,1,"♭3"]],"x":[1,6],"groupe":"Fondamentale sur la corde de La","acc":"m6"},
   {"n":"m7♭5 (fondamentale corde 5)","notes":[[5,0,"1"],[4,1,"♭5"],[3,0,"♭7"],[2,1,"♭3"]],"x":[1,6],"groupe":"Fondamentale sur la corde de La","acc":"m7♭5"},
   {"n":"dim7 (fondamentale corde 5)","notes":[[5,0,"1"],[4,1,"♭5"],[3,-1,"𝄫7"],[2,1,"♭3"]],"x":[1,6],"groupe":"Fondamentale sur la corde de La","acc":"dim7"}
 ]},

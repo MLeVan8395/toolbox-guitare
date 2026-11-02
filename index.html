@@ -262,7 +262,7 @@ label.chk input{width:18px;height:18px;accent-color:var(--accent)}
 </section>
 
 </main>
-<footer class="meta" style="max-width:1100px;margin:0 auto;padding:0 20px 30px;text-align:center">Boîte à outils guitare · <span id="appver">version 28</span><br><span style="font-size:12px">Sons : guitare et basse <a href="https://www.karoryfer.com/karoryfer-samples" target="_blank" rel="noopener">Karoryfer Samples</a> (CC BY 3.0) · batterie Virtuosity Drums et contrebasse <a href="https://github.com/sgossner/VSCO-2-CE" target="_blank" rel="noopener">VSCO 2</a> (CC0)</span></footer>
+<footer class="meta" style="max-width:1100px;margin:0 auto;padding:0 20px 30px;text-align:center">Boîte à outils guitare · <span id="appver">version 29</span><br><span style="font-size:12px">Sons : guitare et basse <a href="https://www.karoryfer.com/karoryfer-samples" target="_blank" rel="noopener">Karoryfer Samples</a> (CC BY 3.0) · batterie Virtuosity Drums et contrebasse <a href="https://github.com/sgossner/VSCO-2-CE" target="_blank" rel="noopener">VSCO 2</a> (CC0)</span></footer>
 <script src="contenu/formes.js"></script>
 <script>
 'use strict';
@@ -466,7 +466,7 @@ function accomp(style,it,nx,k,t,dur,len){
     return;}
   // swing : ride « ding, ding-da », charleston au pied sur 2 et 4, grosse caisse effleurée, contrebasse à la blanche
   dS('ride',t,bb%2?.62:.5);dS('kick',t,.12);
-  if(bb===1||bb===3){dS('ride',t+dur*2/3,.38);dS('hh-pied',t,.55);}
+  if(bb===1||bb===3){dS('ride',t+dur*2/3,.38);dS('hh-pied',t-.008,.55);}
   if(Math.random()<.12)dS('caisse-ghost',t+dur*2/3,.25);
   if(bb===0)bS(r,t,dur*1.9,.95,'cb');else if(bb===2&&len>=4)bS(r+Q.fifth-(r+Q.fifth>47?12:0),t,dur*1.9,.9,'cb');
 }
@@ -863,9 +863,9 @@ const GAMES=[
       show:(it,nx)=>{
         if(f0.arp){ // arpège : le nom de l'accord en gros
           $('gLab').textContent='Arpège';$('gNow').className='now cur';$('gNow').textContent=chordName(it.T.key,f0.acc);
-          $('gWhere').textContent=it.n?(it.n.l==='1'?'tonique':it.n.l)+' ('+spell(it.T.key,it.n.l)+'), case '+it.n.fr+' '+CORDE_DE[it.n.s]:'silence, prépare la suite';}
-        else{$('gLab').textContent='À jouer';$('gNow').className='now cur';$('gNow').textContent=it.n?spell(it.T.key,it.n.l):'—';
-          $('gWhere').textContent=lbl(it)+' · '+(it.n?(it.n.l==='1'?'tonique':it.n.l)+', case '+it.n.fr+' '+CORDE_DE[it.n.s]:'silence, prépare la suite');}
+          $('gWhere').textContent=f0.n;}
+        else{ // gamme : affichage fixe pendant tout le tour, la note en cours se suit sur le schéma
+          $('gLab').textContent='Tonalité';$('gNow').className='now cur';$('gNow').textContent=keyName(it.T.key);$('gWhere').textContent=lbl(it);}
         const nT=tour(tours.indexOf(it.T)+1);
         $('gNext').innerHTML=cyc?(f0.arp?'Accord suivant : ':'Tour suivant : ')+'<span class="nx">'+esc(lbl({T:nT}))+'</span>':'';
         drawT(it.T,it.n);},
