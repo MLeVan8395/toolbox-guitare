@@ -16,16 +16,17 @@ L'appli fonctionne ensuite **hors ligne**, son compris. Elle se met à jour tout
 
 ## Ce qu'on y trouve
 
-Cinq onglets, chacun avec son sous-menu (les jeux au métronome sont marqués d'une note) :
+Sept onglets, chacun avec son sous-menu (les jeux au métronome sont marqués d'une note) :
 
 | Onglet | Contenu |
 |---|---|
 | **Présentation** | Le mode d'emploi de la boîte à outils |
-| **Manche** | Toutes les notes (de 0 à 12) ; les mains ; cycle des quartes sur une corde ; une note sur toutes les cordes |
-| **Lecture** | **Lecture de notes** (partition générée au hasard, en position ou le long d'une corde, dans une tonalité ou avec altérations, valeurs rythmiques (rondes, blanches, noires, croches, triolets, doubles croches ou mélangées) et intervalle maximal (de la seconde à l'octave) réglables séparément, articulations, sens du médiator) ; **lecture de grille** (accords et notation rythmique, des accords ouverts aux accords enrichis, avec articulations, sens du médiator et accompagnement pop ou swing) |
-| **Gammes** | Premières gammes (avec les doigts), modes et gammes dérivés ; gammes en rythme |
-| **Accords** | Accords ouverts, power chords et octaves, triades majeures et mineures, jazz shells, positions transposables, renversements sur les cordes 1 à 4, accords enrichis ; enchaînements d'accords (cycle des quartes ou hasard, choix de la position, montée des renversements pour les triades, accompagnement swing ou pop avec orgue, walking bass et batterie) ; générateur d'accords pour jouer ou improviser, jusqu'aux accords enrichis |
-| **Arpèges** | Un sous-menu par accord (Maj7, 7, m7, m7♭5, dim7) : sur une octave en position (cordes 6-5-4, 5-4-3, 4-3-2, 3-2-1), puis sur deux octaves (en position, en enchaînant deux positions, en diagonale) ; arpèges en rythme, avec accompagnement pop ou swing au choix |
+| **Manche** | Toutes les notes (de 0 à 12) ; les mains ; cycle des quartes sur une corde, avec le cercle des quartes affiché |
+| **Lecture** | **Lecture de notes** (partition générée au hasard, en position ou le long d'une corde, dans une tonalité ou avec altérations, valeurs rythmiques réglables (des rondes aux doubles croches, en cellules répétitives façon funk), nombre d'attaques par mesure de 1 à 8 ou variable, intervalle maximal, articulations, sens du médiator) ; **lecture de grille** (accords et notation rythmique, mêmes réglages, accompagnement pop, funk, reggae ou swing) |
+| **Gammes** | Premières gammes (avec les doigts), modes et gammes dérivés (dont la gamme chromatique), pentatoniques en diagonale sur 3 octaves ; en position, sur une octave (fondamentale sur corde 6, 5, 4 ou 3) ou sur la corde de son choix ; partition sous chaque gamme (avec armure pour la majeure et la mineure naturelle, altérations accidentelles pour les modes) ; à jouer au métronome directement sous le schéma, en noires, croches, triolets ou doubles croches |
+| **Accords** | Accords ouverts, power chords et octaves, triades majeures et mineures (les quatre états sur un même schéma : fondamentale, 1er et 2e renversements, fondamentale à l'octave), jazz shells, positions transposables, renversements sur les cordes 1 à 4, accords enrichis ; enchaînements d'accords (cycle des quartes ou hasard, choix de la position, montée des renversements pour les triades) ; générateur d'accords pour jouer ou improviser, jusqu'aux accords enrichis. Accompagnement pop, funk, reggae ou swing au choix |
+| **Arpèges** | Un sous-menu par accord (Maj7, 7, m7, m7♭5, dim7) : sur une octave (fondamentale sur corde 6, 5, 4 ou 3), sur deux octaves, et sur trois octaves en diagonale (7-1 puis 3-5) ; à jouer au métronome sous le schéma, le nom de l'accord affiché en gros |
+| **Accordeur** | Accordeur chromatique au micro (La de référence réglable de 430 à 445 Hz), et les six cordes à vide à écouter |
 
 Tous les schémas se placent dans la tonalité choisie, avec les intervalles ou les noms des notes. Dans les jeux, la note ou l'accord à jouer s'affiche en gros, et le suivant est annoncé une mesure à l'avance. Tempo lent, moyen ou rapide, réglable de 5 en 5 ; croches droites ou swing, et clic sur 2 et 4 en option.
 
@@ -43,7 +44,10 @@ Un bouton **Droitier / Gaucher** retourne tous les manches.
 
 ## Crédits des sons
 
-Guitare électrique en son clair : échantillons de [Karoryfer Samples](https://www.karoryfer.com/karoryfer-samples), mis en forme par Nicholaus Brosowsky ([tonejs-instruments](https://github.com/nbrosowsky/tonejs-instruments)), licence [CC BY 3.0](https://creativecommons.org/licenses/by/3.0/deed.fr). Fichiers raccourcis et convertis en mono. Le métronome, la batterie, la basse, le pad et l'orgue sont des sons de synthèse fabriqués par l'appli.
+- Guitare électrique en son clair et basse électrique (`sons/guitare`, `sons/basse`) : échantillons de [Karoryfer Samples](https://www.karoryfer.com/karoryfer-samples), mis en forme par Nicholaus Brosowsky ([tonejs-instruments](https://github.com/nbrosowsky/tonejs-instruments)), licence [CC BY 3.0](https://creativecommons.org/licenses/by/3.0/deed.fr). Fichiers raccourcis et convertis en mono.
+- Batterie (`sons/batterie`) : Virtuosity Drums, domaine public ([CC0](https://creativecommons.org/publicdomain/zero/1.0/deed.fr)).
+- Contrebasse en pizzicato (`sons/contrebasse`) : [VSCO 2 Community Edition](https://github.com/sgossner/VSCO-2-CE) de Versilian Studios, domaine public (CC0). Fichiers raccourcis, normalisés et convertis en mono.
+- Le métronome, le pad et l'orgue sont des sons de synthèse fabriqués par l'appli.
 
 ## Licences
 
