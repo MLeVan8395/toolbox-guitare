@@ -262,7 +262,7 @@ label.chk input{width:18px;height:18px;accent-color:var(--accent)}
 </section>
 
 </main>
-<footer class="meta" style="max-width:1100px;margin:0 auto;padding:0 20px 30px;text-align:center">Boîte à outils guitare · <span id="appver">version 30</span><br><span style="font-size:12px">Sons : guitare et basse <a href="https://www.karoryfer.com/karoryfer-samples" target="_blank" rel="noopener">Karoryfer Samples</a> (CC BY 3.0) · guitare saturée Musyng Kite (CC BY-SA 3.0) · batterie Virtuosity Drums et contrebasse <a href="https://github.com/sgossner/VSCO-2-CE" target="_blank" rel="noopener">VSCO 2</a> (CC0)</span></footer>
+<footer class="meta" style="max-width:1100px;margin:0 auto;padding:0 20px 30px;text-align:center">Boîte à outils guitare · <span id="appver">version 31</span><br><span style="font-size:12px">Sons : guitare et basse <a href="https://www.karoryfer.com/karoryfer-samples" target="_blank" rel="noopener">Karoryfer Samples</a> (CC BY 3.0) · guitare saturée Musyng Kite (CC BY-SA 3.0) · batterie Virtuosity Drums et contrebasse <a href="https://github.com/sgossner/VSCO-2-CE" target="_blank" rel="noopener">VSCO 2</a> (CC0)</span></footer>
 <script src="contenu/formes.js"></script>
 <script>
 'use strict';
@@ -336,7 +336,7 @@ function pluck(m,t,vel,dur,keep,sat){
   const ac=ctx();if(!ac)return;t=t||ac.currentTime;vel=vel||.55;dur=dur||1.6;
   if(!keep)cutAt(t);
   const B=sat&&Object.keys(DG).length?DG:GT,s=ac.createBufferSource(),sm=gtSample(m,B);let off=0;
-  if(sm!==null){s.buffer=B[sm];s.playbackRate.value=Math.pow(2,(m-sm)/12);off=B===DG?.003:.02;vel*=B===DG?.7:1.6;}else s.buffer=pluckBuf(m);
+  if(sm!==null){s.buffer=B[sm];s.playbackRate.value=Math.pow(2,(m-sm)/12);off=B===DG?.003:.02;vel*=B===DG?.45:1.6;}else s.buffer=pluckBuf(m);
   const lp=ac.createBiquadFilter();lp.type='lowpass';lp.frequency.value=sm!==null?(B===DG?5200:4200):1300+(m-40)*28;lp.Q.value=.5;
   const g=ac.createGain();g.gain.setValueAtTime(vel,t);g.gain.setTargetAtTime(0,t+dur,.07);
   s.connect(lp);lp.connect(g);g.connect(MASTER);s.start(t,off);s.stop(t+dur+.6);
