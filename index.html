@@ -262,7 +262,7 @@ label.chk input{width:18px;height:18px;accent-color:var(--accent)}
 </section>
 
 </main>
-<footer class="meta" style="max-width:1100px;margin:0 auto;padding:0 20px 30px;text-align:center">Boîte à outils guitare · <span id="appver">version 37</span><br><span style="font-size:12px">Sons : basse <a href="https://www.karoryfer.com/karoryfer-samples" target="_blank" rel="noopener">Karoryfer Samples</a> (CC BY 3.0) · batterie Virtuosity Drums et contrebasse <a href="https://github.com/sgossner/VSCO-2-CE" target="_blank" rel="noopener">VSCO 2</a> (CC0)</span></footer>
+<footer class="meta" style="max-width:1100px;margin:0 auto;padding:0 20px 30px;text-align:center">Boîte à outils guitare · <span id="appver">version 38</span><br><span style="font-size:12px">Sons : basse <a href="https://www.karoryfer.com/karoryfer-samples" target="_blank" rel="noopener">Karoryfer Samples</a> (CC BY 3.0) · batterie Virtuosity Drums et contrebasse <a href="https://github.com/sgossner/VSCO-2-CE" target="_blank" rel="noopener">VSCO 2</a> (CC0)</span></footer>
 <script src="contenu/formes.js"></script>
 <script>
 'use strict';
@@ -315,8 +315,10 @@ function pluck(m,t,vel,dur,keep){
   if(!keep)cutAt(t);
   const f=440*Math.pow(2,(m-69)/12),o1=ac.createOscillator(),o2=ac.createOscillator(),g2=ac.createGain();
   o1.type='triangle';o1.frequency.value=f;o2.type='sine';o2.frequency.value=f*2;g2.gain.value=.12;
-  const lp=ac.createBiquadFilter();lp.type='lowpass';lp.frequency.value=Math.min(3200,f*5);lp.Q.value=.4;
-  const g=ac.createGain(),pk=vel*.55*(Math.abs(t-ACC_T)<4?1.45:1);
+  const lp=ac.createBiquadFilter();lp.type='lowpass';lp.frequency.value=Math.min(1900,f*4);lp.Q.value=.3; // coupe-haut doux
+  // les aigus paraissent plus forts : environ -3 dB par octave au-dessus du Sol à vide ; nettement plus fort quand l'accompagnement joue
+  const tilt=Math.max(.55,Math.min(1.25,Math.pow(2,-(m-55)/24)));
+  const g=ac.createGain(),pk=vel*.55*tilt*(Math.abs(t-ACC_T)<4?2.1:1);
   g.gain.setValueAtTime(0,t);g.gain.linearRampToValueAtTime(pk,t+.045);g.gain.setTargetAtTime(pk*.55,t+.05,.5);
   g.gain.setTargetAtTime(0,t+dur,.09);
   o1.connect(lp);o2.connect(g2);g2.connect(lp);lp.connect(g);g.connect(MASTER);
