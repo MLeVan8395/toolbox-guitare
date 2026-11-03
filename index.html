@@ -262,7 +262,7 @@ label.chk input{width:18px;height:18px;accent-color:var(--accent)}
 </section>
 
 </main>
-<footer class="meta" style="max-width:1100px;margin:0 auto;padding:0 20px 30px;text-align:center">Boîte à outils guitare · <span id="appver">version 31</span><br><span style="font-size:12px">Sons : guitare et basse <a href="https://www.karoryfer.com/karoryfer-samples" target="_blank" rel="noopener">Karoryfer Samples</a> (CC BY 3.0) · guitare saturée Musyng Kite (CC BY-SA 3.0) · batterie Virtuosity Drums et contrebasse <a href="https://github.com/sgossner/VSCO-2-CE" target="_blank" rel="noopener">VSCO 2</a> (CC0)</span></footer>
+<footer class="meta" style="max-width:1100px;margin:0 auto;padding:0 20px 30px;text-align:center">Boîte à outils guitare · <span id="appver">version 32</span><br><span style="font-size:12px">Sons : basse <a href="https://www.karoryfer.com/karoryfer-samples" target="_blank" rel="noopener">Karoryfer Samples</a> (CC BY 3.0) · batterie Virtuosity Drums et contrebasse <a href="https://github.com/sgossner/VSCO-2-CE" target="_blank" rel="noopener">VSCO 2</a> (CC0)</span></footer>
 <script src="contenu/formes.js"></script>
 <script>
 'use strict';
@@ -295,56 +295,35 @@ function ctx(){
   loadGuitar();
   return AC;
 }
-// Échantillons de guitare électrique en son clair (Karoryfer, CC BY 3.0, via tonejs-instruments) ; sinon son de synthèse
-const GT_FILES=['E2','Fs2','A2','C3','Ds3','Fs3','A3','C4','Ds4','Fs4','A4','C5','Ds5','Fs5','A5','C6'];
-const GT={};let GT_LOADING=false;
-function noteMidi(n){const L={C:0,D:2,E:4,F:5,G:7,A:9,B:11}[n[0]],sh=n[1]==='s'?1:0;return 12*(+n.slice(1+sh)+1)+L+sh;}
 // Batterie (Virtuosity Drums, CC0), contrebasse pizzicato (VSCO 2 CE, CC0), basse électrique (Karoryfer, CC BY 3.0)
 const DR_FILES=['kick','caisse','caisse-ghost','cross-stick','hh-ferme','hh-doux','hh-ouvert','hh-pied','ride','ride-cloche'];
 const CB_FILES=[28,30,31,34,36,38,40,42,44,45,49,52,56],EB_FILES=[28,31,34,37,40,43,46,49,52];
-const DR={},CB={},EB={},DG={};
-// Guitare saturée pour les power chords et les octaves (Musyng Kite, distortion guitar, CC BY-SA 3.0, via midi-js-soundfonts)
-const DG_FILES=[40,43,46,49,52,55,58,61,64,67,70,73,76];
+const DR={},CB={},EB={};let GT_LOADING=false;
 function loadBuf(url,cb){fetch(url).then(r=>{if(!r.ok)throw 0;return r.arrayBuffer();}).then(b=>new Promise((ok,ko)=>AC.decodeAudioData(b,ok,ko))).then(cb).catch(()=>{});}
 function loadGuitar(){
   if(GT_LOADING||!AC||!/^https?:$/.test(location.protocol))return;GT_LOADING=true;
   DR_FILES.forEach(n=>loadBuf('sons/batterie/'+n+'.mp3',b=>DR[n]=b));
   CB_FILES.forEach(m=>loadBuf('sons/contrebasse/'+m+'.mp3',b=>CB[m]=b));
   EB_FILES.forEach(m=>loadBuf('sons/basse/'+m+'.mp3',b=>EB[m]=b));
-  DG_FILES.forEach(m=>loadBuf('sons/guitare-saturee/'+m+'.mp3',b=>DG[m]=b));
-  GT_FILES.forEach(n=>fetch('sons/guitare/'+n+'.mp3').then(r=>{if(!r.ok)throw 0;return r.arrayBuffer();})
-    .then(b=>new Promise((ok,ko)=>AC.decodeAudioData(b,ok,ko))).then(buf=>{GT[noteMidi(n)]=buf;}).catch(()=>{}));
-}
-function gtSample(m,B){B=B||GT;let best=null;for(const k in B){const d=Math.abs(k-m);if(d<=2&&(best===null||d<Math.abs(best-m)))best=+k;}return best;}
-const KS={};
-function pluckBuf(m){
-  if(KS[m])return KS[m];
-  const ac=ctx(),sr=ac.sampleRate,f=440*Math.pow(2,(m-69)/12),N=Math.max(2,Math.round(sr/f)),len=Math.floor(sr*2.4);
-  const b=ac.createBuffer(1,len,sr),d=b.getChannelData(0),w=new Float32Array(N);
-  // excitation adoucie (attaque ronde, comme au micro manche)
-  let p1=0,p2=0;for(let i=0;i<N;i++){const r=Math.random()*2-1;p1=.3*r+.7*p1;p2=.3*p1+.7*p2;w[i]=p2;}
-  const dec=.9975+Math.min(.002,(N/sr)*.9);
-  let j=0,peak=0;
-  for(let i=0;i<len;i++){const a=w[j],k=(j+1)%N;w[j]=dec*.5*(a+w[k]);d[i]=a;j=k;if(Math.abs(a)>peak)peak=Math.abs(a);}
-  const fade=Math.floor(sr*.25);for(let i=0;i<len;i++){d[i]/=peak||1;if(i>len-fade)d[i]*=(len-i)/fade;}
-  return KS[m]=b;
 }
 // Notes détachées : chaque nouvelle note (ou nouvel accord) coupe le son de la précédente, avec un relâchement court.
 let VOICES=[];
 function cutAt(t){VOICES=VOICES.filter(v=>v.end>t);VOICES.forEach(v=>{if(v.start>=t)return;try{v.g.gain.cancelScheduledValues(t);v.g.gain.setTargetAtTime(0,t,.012);}catch(e){}});VOICES=[];}
-function pluck(m,t,vel,dur,keep,sat){
+// Son des notes : un synthé doux (attaque lente, sans imiter la guitare), juste pour entendre la hauteur
+function pluck(m,t,vel,dur,keep){
   const ac=ctx();if(!ac)return;t=t||ac.currentTime;vel=vel||.55;dur=dur||1.6;
   if(!keep)cutAt(t);
-  const B=sat&&Object.keys(DG).length?DG:GT,s=ac.createBufferSource(),sm=gtSample(m,B);let off=0;
-  if(sm!==null){s.buffer=B[sm];s.playbackRate.value=Math.pow(2,(m-sm)/12);off=B===DG?.003:.02;vel*=B===DG?.45:1.6;}else s.buffer=pluckBuf(m);
-  const lp=ac.createBiquadFilter();lp.type='lowpass';lp.frequency.value=sm!==null?(B===DG?5200:4200):1300+(m-40)*28;lp.Q.value=.5;
-  const g=ac.createGain();g.gain.setValueAtTime(vel,t);g.gain.setTargetAtTime(0,t+dur,.07);
-  s.connect(lp);lp.connect(g);g.connect(MASTER);s.start(t,off);s.stop(t+dur+.6);
-  VOICES.push({g,start:t,end:t+dur+.6});
+  const f=440*Math.pow(2,(m-69)/12),o1=ac.createOscillator(),o2=ac.createOscillator(),g2=ac.createGain();
+  o1.type='triangle';o1.frequency.value=f;o2.type='sine';o2.frequency.value=f*2;g2.gain.value=.12;
+  const lp=ac.createBiquadFilter();lp.type='lowpass';lp.frequency.value=Math.min(3200,f*5);lp.Q.value=.4;
+  const g=ac.createGain(),pk=vel*.55;
+  g.gain.setValueAtTime(0,t);g.gain.linearRampToValueAtTime(pk,t+.045);g.gain.setTargetAtTime(pk*.55,t+.05,.5);
+  g.gain.setTargetAtTime(0,t+dur,.09);
+  o1.connect(lp);o2.connect(g2);g2.connect(lp);lp.connect(g);g.connect(MASTER);
+  o1.start(t);o2.start(t);o1.stop(t+dur+.7);o2.stop(t+dur+.7);
+  VOICES.push({g,start:t,end:t+dur+.7});
 }
-// power chord (fondamentale, quinte, octaves) ou octave : son saturé
-const isPower=ms=>{if(ms.length<2)return false;const r=Math.min(...ms);return ms.every(m=>[0,7].includes(mod(m-r,12)));};
-function strum(midis,t,gap,up,vel,len){const ac=ctx();if(!ac)return;t=t||ac.currentTime+.02;gap=gap===undefined?.035:gap;cutAt(t);const sat=isPower(midis),o=[...midis].sort((a,b)=>a-b);if(up)o.reverse();o.forEach((m,i)=>pluck(m,t+i*gap,vel||.42,len||2,true,sat));}
+function strum(midis,t,gap,up,vel,len){const ac=ctx();if(!ac)return;t=t||ac.currentTime+.02;gap=gap===undefined?.035:gap;cutAt(t);const o=[...midis].sort((a,b)=>a-b),v=(vel||.42)*(o.length>3?Math.sqrt(3/o.length):1);if(up)o.reverse();o.forEach((m,i)=>pluck(m,t+i*gap,v,len||2,true));}
 // ===== Accompagnement : pad, basse, batterie (sons de synthèse) =====
 let ACCV=[];
 function track(g,end){ACCV=ACCV.filter(v=>v.end>AC.currentTime);ACCV.push({g,end});}
