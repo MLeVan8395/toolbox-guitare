@@ -1,6 +1,6 @@
 // =====================================================================
 //  Boîte à outils guitare — schémas (contenu pédagogique)
-//  Licence : CC BY-SA 4.0 (voir LICENCE-CONTENU.md). Pour contribuer : CONTRIBUER.md
+//  © 2026 Mickael Le Van – Tous droits réservés (voir LICENSE). Pour proposer une idée : CONTRIBUER.md
 //
 //  Chaque forme est une liste de notes [corde, case, intervalle] :
 //   - corde : 1 = Mi aigu … 6 = Mi grave ;

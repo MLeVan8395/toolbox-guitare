@@ -36,3 +36,7 @@ L'appli vérifie elle-même le placement : elle calcule les noms des notes à pa
 1. Sur GitHub, ouvre `contenu/formes.js` et clique sur le crayon (« Edit this file »).
 2. Fais ta modification, puis « Propose changes ».
 3. Ou ouvre simplement une *issue* pour signaler une erreur ou proposer un schéma.
+
+## Droits
+
+Le projet est sous « tous droits réservés » (voir `LICENSE`). En proposant une contribution, tu acceptes que Mickael Le Van l’intègre, la modifie et l’exploite dans ses applications, y compris de façon commerciale.
