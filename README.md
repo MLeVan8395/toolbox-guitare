@@ -16,14 +16,13 @@ L'appli fonctionne ensuite **hors ligne**, son compris. Elle se met à jour tout
 
 ## Ce qu'on y trouve
 
-Sept onglets, chacun avec son sous-menu (les jeux au métronome sont marqués d'une note) :
+Six onglets, chacun avec son sous-menu (les jeux au métronome sont marqués d'une note) :
 
 | Onglet | Contenu |
 |---|---|
 | **Présentation** | Le mode d'emploi de la boîte à outils |
 | **Manche** | Toutes les notes (de 0 à 12) ; les mains ; cycle des quartes sur une corde, avec le cercle des quartes affiché |
-| **Lecture** | **Lecture de notes** (partition générée au hasard, en position ou le long d'une corde, dans une tonalité ou avec altérations, valeurs rythmiques réglables (des rondes aux doubles croches, en cellules répétitives façon funk), nombre d'attaques par mesure de 1 à 8 ou variable, intervalle maximal, articulations, sens du médiator) ; **lecture de grille** (accords et notation rythmique, mêmes réglages, accompagnement pop, funk, reggae ou swing) |
-| **Gammes** | Premières gammes (avec les doigts), modes et gammes dérivés (dont la gamme chromatique), pentatoniques en diagonale sur 3 octaves ; en position, sur une octave (fondamentale sur corde 6, 5, 4 ou 3) ou sur la corde de son choix ; partition sous chaque gamme (avec armure pour la majeure et la mineure naturelle, altérations accidentelles pour les modes) ; à jouer au métronome directement sous le schéma, en noires, croches, triolets ou doubles croches |
+| **Gammes** | Premières gammes (avec les doigts), modes et gammes dérivés (dont la gamme chromatique), pentatoniques en diagonale sur 3 octaves ; en position, sur une octave (fondamentale sur corde 6, 5, 4 ou 3) ou sur la corde de son choix ; partition sous chaque gamme (avec armure pour la majeure et la mineure naturelle, altérations accidentelles pour les modes) ; à jouer au métronome directement sous le schéma, en noires, croches, triolets ou doubles croches ; motifs (en tierces, quartes, quintes, sixtes, septièmes, simples ou alternés, en triades, gammes brisées par 3 et par 4), avec la partition de ce qui est joué (intervalles au-dessus des notes, note en cours en surbrillance) |
 | **Accords** | Accords ouverts, power chords et octaves, triades majeures et mineures (les quatre états sur un même schéma : fondamentale, 1er et 2e renversements, fondamentale à l'octave), jazz shells, positions transposables, renversements sur les cordes 1 à 4, accords enrichis ; enchaînements d'accords (cycle des quartes ou hasard, choix de la position, montée des renversements pour les triades) ; générateur d'accords pour jouer ou improviser, jusqu'aux accords enrichis. Accompagnement pop, funk, reggae ou swing au choix |
 | **Arpèges** | Un sous-menu par accord (Maj7, 7, m7, m7♭5, dim7) : sur une octave (fondamentale sur corde 6, 5, 4 ou 3), sur deux octaves, et sur trois octaves en diagonale (7-1 puis 3-5) ; à jouer au métronome sous le schéma, le nom de l'accord affiché en gros |
 | **Accordeur** | Accordeur chromatique au micro (La de référence réglable de 430 à 445 Hz), et les six cordes à vide à écouter |
