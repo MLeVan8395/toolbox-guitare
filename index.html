@@ -263,7 +263,7 @@ label.chk input{width:18px;height:18px;accent-color:var(--accent)}
 </section>
 
 </main>
-<footer class="meta" style="max-width:1100px;margin:0 auto;padding:0 20px 30px;text-align:center">Boîte à outils guitare · <span id="appver">version 42</span><br><span style="font-size:12px">Sons : basse <a href="https://www.karoryfer.com/karoryfer-samples" target="_blank" rel="noopener">Karoryfer Samples</a> (CC BY 3.0) · batterie Virtuosity Drums et contrebasse <a href="https://github.com/sgossner/VSCO-2-CE" target="_blank" rel="noopener">VSCO 2</a> (CC0)</span></footer>
+<footer class="meta" style="max-width:1100px;margin:0 auto;padding:0 20px 30px;text-align:center">Boîte à outils guitare · <span id="appver">version 43</span><br><span style="font-size:12px">Sons : basse <a href="https://www.karoryfer.com/karoryfer-samples" target="_blank" rel="noopener">Karoryfer Samples</a> (CC BY 3.0) · batterie Virtuosity Drums et contrebasse <a href="https://github.com/sgossner/VSCO-2-CE" target="_blank" rel="noopener">VSCO 2</a> (CC0)</span></footer>
 <script src="contenu/formes.js"></script>
 <script>
 'use strict';
@@ -632,9 +632,9 @@ function rhythmItems(wr,sub,padSlots,kt,sig,b0,i0){
   return {items,map};
 }
 // pages de 8 mesures, sans note en cours (sous le schéma)
-function rhythmPages(items,kt){
+function rhythmPages(items,kt,labels){
   const last=items[items.length-1].bar,get=i=>items[i]||{bar:1e9,p:34,rest:true,d:1,d12:12,beat:0,key:kt},o=[];
-  for(let b=0;b<=last;b+=8){const i=items.findIndex(n=>n.bar>=b);o.push(drawStaff(get,i,kt,false,false,false,{labels:true,still:true,lastBar:last}));}
+  for(let b=0;b<=last;b+=8){const i=items.findIndex(n=>n.bar>=b);o.push(drawStaff(get,i,kt,false,false,false,{labels:!!labels,still:true,lastBar:last}));}
   return o.join('');
 }
 const keyTupleOf=(K,sig,minor)=>sig?[K[0]+(minor?'m':''),K[1],K[2],sig]:['',0,0,0];
@@ -678,13 +678,17 @@ function extendScale(asc,count,dir){
     const pk=inW.length?inW.reduce((a,b)=>(dir>0?b.s<a.s:b.s>a.s)?b:a):cands.reduce((a,b)=>Math.abs(b.fr-ref)<Math.abs(a.fr-ref)?b:a);
     out.push({s:pk.s,fr:pk.fr,m,l:lab[mod(m,12)],ext:true});}
   return out;}
-// motif : chaque groupe part d'une note de la gamme ; on monte jusqu'au groupe qui part de la note la plus haute
-// (en allant chercher les notes au-dessus du schéma), puis on redescend de la même façon. « Alterné » : un groupe sur deux à l'envers
+// motif : en montant, chaque groupe part d'une note de la gamme jusqu'à la note la plus haute du schéma (en allant chercher
+// les notes au-dessus) ; la descente repart un degré sous la note la plus haute atteinte, pour rester conjoint
+// (… Do Ré Mi, Ré Do Si… ; … Do Mi, Ré Si…), et s'arrête quand on atteint le degré sous la note de départ,
+// pour que le tour suivant reparte lui aussi par degré conjoint. « Alterné » : un groupe sur deux à l'envers
 function motifSeq(asc,mot){const sp=motifSpec(mot);
   if(!sp||asc.length<2)return {seq:asc.concat(asc.slice(0,-1).reverse()),ext:[],group:0};
-  const need=sp.kk*(sp.nn-1),eu=extendScale(asc,need,1),ed=extendScale(asc,need,-1),dsc=[...asc].reverse();
-  const grp=A=>{const out=[];for(let q=0;q<asc.length&&q+need<A.length;q++){const g=[];for(let r=0;r<sp.nn;r++)g.push(A[q+sp.kk*r]);out.push(sp.alt&&q%2?g.reverse():g);}return out;};
-  return {seq:[].concat(...grp(asc.concat(eu)),...grp(dsc.concat(ed))),ext:eu.concat(ed),group:sp.nn};}
+  const need=sp.kk*(sp.nn-1),eu=extendScale(asc,need,1),ed=extendScale(asc,1,-1);
+  const Lad=[...ed].reverse().concat(asc,eu),o0=ed.length,tI=o0+asc.length-1,seq=[];let hi=0,j=0;
+  for(let q=o0;q<=tI&&q+need<Lad.length;q++,j++){const g=[];for(let r=0;r<sp.nn;r++)g.push(q+sp.kk*r);hi=Math.max(hi,...g);seq.push(...(sp.alt&&j%2?g.reverse():g).map(k=>Lad[k]));}
+  j=0;for(let q=hi-1;q-need>=Math.max(0,o0-1);q--,j++){const g=[];for(let r=0;r<sp.nn;r++)g.push(q-sp.kk*r);seq.push(...(sp.alt&&j%2?g.reverse():g).map(k=>Lad[k]));}
+  return {seq,ext:eu.concat(ed),group:sp.nn};}
 const ascOf=pl=>[...pl].sort((a,b)=>a.m-b.m).filter((n,i,A)=>i===0||n.m!==A[i-1].m);
 // ---- Triades : les quatre états sur un même schéma ----
 const INV3=['position fondamentale','1er renversement','2e renversement'];
@@ -770,7 +774,7 @@ function renderShape(){
     SH.cur={f,ch,key,notes:pl,corde,base,CH};store.set('key',SH.key);return;}
   if((isScaleChap(ch)&&scale)||f0.arp){const pl=corde?notes:place(f,key,f.diag?{floor:0}:{}),M=motifSeq(ascOf(pl),f0.arp?'lin':val('gMot')),SK=staffKeyOf(f0,key);
     const sub=+(val('gSub')||1),R=rhythmItems(spellSeq(M.seq,SK.K),sub,mod(-M.seq.length,4*sub),keyTupleOf(SK.K,SK.sig,f0.n==='Gamme mineure naturelle'),SK.sig,0,0);
-    $('shStaff').hidden=false;$('shStaff').innerHTML=rhythmPages(R.items,R.items[0].key);}
+    $('shStaff').hidden=false;$('shStaff').innerHTML=rhythmPages(R.items,R.items[0].key,!!f0.arp);}
   SH.cur={f,ch,key,notes,corde};
   store.set('key',SH.key);
   if(EMB&&!RUN.on)preview();
@@ -965,7 +969,7 @@ const GAMES=[
     const lbl=it=>f0.arp?chordName(it.T.key,f0.acc):shapeName(f0,ch,it.T.key);
     const drawT=(T,cur)=>{const A=T.pl.concat(T.ext||[]);drawBoard($('gBoard'),{from:Math.max(0,Math.min(...A.map(n=>n.fr))-1),to:Math.max(Math.max(...A.map(n=>n.fr))+1,Math.min(...A.map(n=>n.fr))+4),
        notes:T.pl.concat(T.ext||[]).map(n=>({s:n.s,fr:n.fr,m:n.m,root:n.l==='1',txt:n.l,hollow:!!n.ext,ring:cur&&n.s===cur.s&&n.fr===cur.fr,dim:cur&&!(n.s===cur.s&&n.fr===cur.fr)})),label:'Schéma'});};
-    const staffT=(T,p)=>{$('gStaff').hidden=false;$('gStaff').innerHTML=drawStaff(getS,T.R.map[p],T.R.items[0].key,false,SWING&&sub===2,false,{labels:true});};
+    const staffT=(T,p)=>{$('gStaff').hidden=false;$('gStaff').innerHTML=drawStaff(getS,T.R.map[p],T.R.items[0].key,false,SWING&&sub===2,false,{labels:!!f0.arp});};
     // accord d'accompagnement : celui de l'arpège, ou l'accord de 4 sons contenu dans la gamme
     const ivs=f0.notes.map(n=>n[2]),has=l=>ivs.includes(l);
     const third=has('♭3')&&!has('3')?'♭3':'3',fifth=has('5')?'5':has('♭5')?'♭5':has('♯5')?'♯5':'5',sev=has('7')?'7':has('♭7')?'♭7':has('𝄫7')?'𝄫7':has('6')?'6':'♭7';
