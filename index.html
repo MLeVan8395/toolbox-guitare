@@ -263,7 +263,7 @@ label.chk input{width:18px;height:18px;accent-color:var(--accent)}
 </section>
 
 </main>
-<footer class="meta" style="max-width:1100px;margin:0 auto;padding:0 20px 30px;text-align:center">Boîte à outils guitare · <span id="appver">version 43</span><br><span style="font-size:12px">Sons : basse <a href="https://www.karoryfer.com/karoryfer-samples" target="_blank" rel="noopener">Karoryfer Samples</a> (CC BY 3.0) · batterie Virtuosity Drums et contrebasse <a href="https://github.com/sgossner/VSCO-2-CE" target="_blank" rel="noopener">VSCO 2</a> (CC0)</span></footer>
+<footer class="meta" style="max-width:1100px;margin:0 auto;padding:0 20px 30px;text-align:center">Boîte à outils guitare · <span id="appver">version 44</span><br><span style="font-size:12px">Sons : basse <a href="https://www.karoryfer.com/karoryfer-samples" target="_blank" rel="noopener">Karoryfer Samples</a> (CC BY 3.0) · batterie Virtuosity Drums et contrebasse <a href="https://github.com/sgossner/VSCO-2-CE" target="_blank" rel="noopener">VSCO 2</a> (CC0)</span></footer>
 <script src="contenu/formes.js"></script>
 <script>
 'use strict';
@@ -969,7 +969,7 @@ const GAMES=[
     const lbl=it=>f0.arp?chordName(it.T.key,f0.acc):shapeName(f0,ch,it.T.key);
     const drawT=(T,cur)=>{const A=T.pl.concat(T.ext||[]);drawBoard($('gBoard'),{from:Math.max(0,Math.min(...A.map(n=>n.fr))-1),to:Math.max(Math.max(...A.map(n=>n.fr))+1,Math.min(...A.map(n=>n.fr))+4),
        notes:T.pl.concat(T.ext||[]).map(n=>({s:n.s,fr:n.fr,m:n.m,root:n.l==='1',txt:n.l,hollow:!!n.ext,ring:cur&&n.s===cur.s&&n.fr===cur.fr,dim:cur&&!(n.s===cur.s&&n.fr===cur.fr)})),label:'Schéma'});};
-    const staffT=(T,p)=>{$('gStaff').hidden=false;$('gStaff').innerHTML=drawStaff(getS,T.R.map[p],T.R.items[0].key,false,SWING&&sub===2,false,{labels:!!f0.arp});};
+    const staffT=(T,p)=>{$('gStaff').hidden=false;$('gStaff').innerHTML=drawStaff(getS,T.R.map[p],T.R.items[0].key,false,SWING&&sub===2,false,{labels:!!f0.arp,lines:(T.seq.length+T.pad)/(4*sub)<=4?1:2});}; // une seule ligne quand le tour tient en 4 mesures
     // accord d'accompagnement : celui de l'arpège, ou l'accord de 4 sons contenu dans la gamme
     const ivs=f0.notes.map(n=>n[2]),has=l=>ivs.includes(l);
     const third=has('♭3')&&!has('3')?'♭3':'3',fifth=has('5')?'5':has('♭5')?'♭5':has('♯5')?'♯5':'5',sev=has('7')?'7':has('♭7')?'♭7':has('𝄫7')?'𝄫7':has('6')?'6':'♭7';
@@ -1232,8 +1232,8 @@ function lectureMelody(area,key,chrom,niv,maxi,art,att){
 function drawStaff(get,curIdx,key,chrom,swing,showPick,O){
   // toujours 4 mesures par ligne : la ligne en cours et la suivante ; on tourne la page toutes les 4 mesures
   // O.labels : intervalle écrit au-dessus de chaque note ; O.still : sans note en cours ; O.lastBar : dernière mesure (moins de lignes si besoin)
-  O=O||{};const NB=8,cur=get(curIdx),b0=Math.floor(cur.bar/4)*4,SPc=10,BOT=30;let BW=165;
-  const NL=O.lastBar!==undefined?Math.max(1,Math.min(2,Math.ceil((O.lastBar-b0+1)/4))):2;
+  O=O||{};let NB=8;const cur=get(curIdx),b0=Math.floor(cur.bar/4)*4,SPc=10,BOT=30;let BW=165;
+  const NL=O.lines?O.lines:O.lastBar!==undefined?Math.max(1,Math.min(2,Math.ceil((O.lastBar-b0+1)/4))):2;NB=NL*4;
   const firstIdx=(()=>{let i=curIdx;while(i>0&&get(i-1).bar>=b0)i--;return i;})();
   // armure de chaque ligne (elle peut changer d'une ligne à l'autre en lecture de notes)
   const lineKey=l=>{let j=firstIdx;while(true){const n=get(j);if(n.bar>=b0+4*l)return n.key||key;j++;}};
