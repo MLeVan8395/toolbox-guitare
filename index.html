@@ -277,7 +277,7 @@ label.chk input{width:18px;height:18px;accent-color:var(--accent)}
 </section>
 
 </main>
-<footer class="meta" style="max-width:1100px;margin:0 auto;padding:0 20px 30px;text-align:center">Boîte à outils guitare · <span id="appver">version 51</span><br><span style="font-size:12px">Sons : basse <a href="https://www.karoryfer.com/karoryfer-samples" target="_blank" rel="noopener">Karoryfer Samples</a> (CC BY 3.0) · batterie Virtuosity Drums et contrebasse <a href="https://github.com/sgossner/VSCO-2-CE" target="_blank" rel="noopener">VSCO 2</a> (CC0)</span></footer>
+<footer class="meta" style="max-width:1100px;margin:0 auto;padding:0 20px 30px;text-align:center">Boîte à outils guitare · <span id="appver">version 52</span><br><span style="font-size:12px">Sons : basse <a href="https://www.karoryfer.com/karoryfer-samples" target="_blank" rel="noopener">Karoryfer Samples</a> (CC BY 3.0) · batterie Virtuosity Drums et contrebasse <a href="https://github.com/sgossner/VSCO-2-CE" target="_blank" rel="noopener">VSCO 2</a> (CC0)</span></footer>
 <script src="contenu/formes.js"></script>
 <script>
 'use strict';
@@ -1060,7 +1060,7 @@ const GAMES=[
     // accord d'accompagnement : celui de l'arpège, ou l'accord de 4 sons contenu dans la gamme
     const ivs=f0.notes.map(n=>n[2]),has=l=>ivs.includes(l);
     const third=has('♭3')&&!has('3')?'♭3':'3',fifth=has('5')?'5':has('♭5')?'♭5':has('♯5')?'♯5':'5',sev=has('7')?'7':has('♭7')?'♭7':has('𝄫7')?'𝄫7':has('6')?'6':'♭7';
-    const LBL=f0.arp?{Maj7:['1','3','5','7'],'7':['1','3','5','♭7'],m7:['1','♭3','5','♭7'],'m7♭5':['1','♭3','♭5','♭7'],dim7:['1','♭3','♭5','𝄫7']}[f0.acc]:['1',third,fifth,sev];
+    const LBL=f0.arp?({Maj7:['1','3','5','7'],'7':['1','3','5','♭7'],m7:['1','♭3','5','♭7'],'m7♭5':['1','♭3','♭5','♭7'],dim7:['1','♭3','♭5','𝄫7'],'':['1','3','5'],m:['1','♭3','5'],'m(Maj7)':['1','♭3','5','7'],'Maj7♯5':['1','3','♯5','7'],'7♯5':['1','3','♯5','♭7']}[f0.acc]||[...new Set(f0.notes.map(n=>n[2]))].sort((a,b)=>SEMI[a]-SEMI[b])):['1',third,fifth,sev];
     const accSuf=f0.arp?f0.acc:(third==='♭3'?(fifth==='♭5'?(sev==='𝄫7'?'dim7':'m7♭5'):'m7'):(sev==='7'?'Maj7':sev==='6'?'6':'7'));
     const chordOfT=T=>{const n=tours.indexOf(T);if(T.ch)return T.ch;return T.ch={idx:n,key:T.key,name:chordName(T.key,accSuf),pl:LBL.map(l=>({l,m:48+mod(T.key[1]-0,12)+SEMI[l]}))};};
     const accSt=val('gAcc')||'none';
