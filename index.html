@@ -144,6 +144,7 @@ label.chk input{width:18px;height:18px;accent-color:var(--accent)}
       <label class="f" id="keyWrap">Tonalité <select id="keySel"></select></label>
       <label class="f">Pastilles <select id="lblSel"><option value="int">Intervalles (1, ♭3, 5…)</option><option value="note">Noms des notes</option></select></label>
       <label class="f" id="viewWrap">Affichage <select id="viewSel"><option value="pos">En position</option><option value="corde">Sur une corde</option></select></label>
+      <label class="f" id="bassWrap" hidden>Basse <select id="bassSel"><option value="Basse sur la corde de Mi">Sur la corde de Mi (6)</option><option value="Basse sur la corde de La">Sur la corde de La (5)</option></select></label>
       <label class="f" id="cordeWrap" hidden>Corde <select id="cordeSel"><option value="6">Mi grave (6)</option><option value="5" selected>La (5)</option><option value="4">Ré (4)</option><option value="3">Sol (3)</option><option value="2">Si (2)</option><option value="1">Mi aigu (1)</option></select></label>
       <label class="f" id="etWrap" hidden>Étendue <select id="etSel"><option value="pos">Toute la position</option><option value="6">Une octave, fondamentale sur corde 6</option><option value="5">Une octave, fondamentale sur corde 5</option><option value="4">Une octave, fondamentale sur corde 4</option><option value="3">Une octave, fondamentale sur corde 3</option></select></label>
     </div>
@@ -263,7 +264,7 @@ label.chk input{width:18px;height:18px;accent-color:var(--accent)}
 </section>
 
 </main>
-<footer class="meta" style="max-width:1100px;margin:0 auto;padding:0 20px 30px;text-align:center">Boîte à outils guitare · <span id="appver">version 47</span><br><span style="font-size:12px">Sons : basse <a href="https://www.karoryfer.com/karoryfer-samples" target="_blank" rel="noopener">Karoryfer Samples</a> (CC BY 3.0) · batterie Virtuosity Drums et contrebasse <a href="https://github.com/sgossner/VSCO-2-CE" target="_blank" rel="noopener">VSCO 2</a> (CC0)</span></footer>
+<footer class="meta" style="max-width:1100px;margin:0 auto;padding:0 20px 30px;text-align:center">Boîte à outils guitare · <span id="appver">version 48</span><br><span style="font-size:12px">Sons : basse <a href="https://www.karoryfer.com/karoryfer-samples" target="_blank" rel="noopener">Karoryfer Samples</a> (CC BY 3.0) · batterie Virtuosity Drums et contrebasse <a href="https://github.com/sgossner/VSCO-2-CE" target="_blank" rel="noopener">VSCO 2</a> (CC0)</span></footer>
 <script src="contenu/formes.js"></script>
 <script>
 'use strict';
@@ -716,6 +717,11 @@ function fillShapes(){
   $('chapIntro').textContent=c.intro;
   if(isTriadChap(c)){triadGroups(c).forEach((g,i)=>{const o=document.createElement('option');o.value=i;o.textContent=g;sel.appendChild(o);});if(SH.f>=sel.options.length)SH.f=0;sel.value=SH.f;
     $('chapIntro').textContent=c.intro+' Les quatre états de l\'accord sur un même schéma : on part de l\'état le plus grave sur le manche, on monte les renversements, et on finit sur le premier à l\'octave.';return;}
+  $('bassWrap').hidden=c.id!=='slash';
+  if(c.id==='slash'){ // un seul choix par accord ; la corde de la basse se choisit dans son propre menu
+    const g=c.formes[SH.f]?c.formes[SH.f].groupe:c.formes[0].groupe;$('bassSel').value=g;
+    c.formes.forEach((f,i)=>{if(f.groupe!==g)return;const o=document.createElement('option');o.value=i;const nm=f.n.replace(/, basse corde \d$/,''),rm=nm.match(/\(([^)]*)\)/);o.textContent=rm?rm[1]+' : '+nm.replace(/\s*\([^)]*\)/,'').replace(/^Triade/,'triade'):nm;sel.appendChild(o);});
+    if(!c.formes[SH.f]||c.formes[SH.f].groupe!==g)SH.f=+sel.options[0].value;sel.value=SH.f;return;}
   let grp=null,og=null;
   c.formes.forEach((f,i)=>{
     if(f.groupe!==grp){grp=f.groupe;og=null;if(grp){og=document.createElement('optgroup');og.label=grp;sel.appendChild(og);}}
@@ -791,7 +797,7 @@ function renderShape(){
 }
 function renderTriads(ch,key,lbl){
   const grp=triadGroups(ch)[SH.f]||triadGroups(ch)[0],T=triadClimb(ch.formes,grp,key),suf=TSUF[ch.id];
-  $('keyWrap').hidden=false;$('viewWrap').hidden=true;$('cordeWrap').hidden=true;$('etWrap').hidden=true;
+  $('keyWrap').hidden=false;$('viewWrap').hidden=true;$('cordeWrap').hidden=true;$('etWrap').hidden=true;$('bassWrap').hidden=true;
   $('shTitle').textContent=chordName(key,suf)+' — '+grp.toLowerCase()+' : les quatre états';
   $('shInts').textContent=TINTS[suf];
   const f=T.sh[0];$('legX').hidden=false;$('legX').textContent='× = corde non jouée';
@@ -1559,6 +1565,8 @@ function start(){
   $('lblSel').value=store.get('lbl','int');
   fillShapes();renderShape();
   $('shSel').onchange=e=>{SH.f=+e.target.value;renderShape();};
+  // basse étrangère : changer de corde de basse garde le même accord
+  $('bassSel').onchange=e=>{const c=CHAPITRES[SH.ch],cur=c.formes[SH.f],t=cur.tri.join('|'),j=c.formes.findIndex(f=>f.groupe===e.target.value&&f.tri.join('|')===t);if(j>=0)SH.f=j;fillShapes();renderShape();};
   $('keySel').onchange=e=>{SH.key=+e.target.value;renderShape();};
   $('lblSel').onchange=e=>{store.set('lbl',e.target.value);renderShape();};
   $('viewSel').onchange=renderShape;$('shFull').onchange=renderShape;
