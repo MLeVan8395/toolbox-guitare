@@ -12,14 +12,12 @@
 //  doigts : case de la tonique dans le schéma de 4 cases (numéros de doigts sous les cases).
 // =====================================================================
 const CHAPITRES=[
-{id:"gammes",titre:"Premières gammes",intro:"Schémas transposables, tonique sur la corde de Mi grave. Les numéros sous les cases sont les doigts de la main gauche.",formes:[
-  {"n":"Gamme majeure","notes":[[6,0,"1"],[6,2,"2"],[5,-1,"3"],[5,0,"4"],[5,2,"5"],[4,-1,"6"],[4,1,"7"],[4,2,"1"],[3,-1,"2"],[3,1,"3"],[3,2,"4"],[2,0,"5"],[2,2,"6"],[1,-1,"7"],[1,0,"1"]],"doigts":2,"groupe":"En position"},
-  {"n":"Gamme mineure naturelle","notes":[[6,-2,"♭7"],[6,0,"1"],[6,2,"2"],[5,-2,"♭3"],[5,0,"4"],[5,2,"5"],[4,-2,"♭6"],[4,0,"♭7"],[4,2,"1"],[3,-1,"2"],[3,0,"♭3"],[3,2,"4"],[2,0,"5"],[2,1,"♭6"],[1,-2,"♭7"],[1,0,"1"],[1,2,"2"]],"doigts":2,"groupe":"En position"},
-  {"n":"Pentatonique majeure","notes":[[6,0,"1"],[6,2,"2"],[5,-1,"3"],[5,2,"5"],[4,-1,"6"],[4,2,"1"],[3,-1,"2"],[3,1,"3"],[2,0,"5"],[2,2,"6"],[1,0,"1"],[1,2,"2"]],"doigts":2,"groupe":"En position"},
-  {"n":"Pentatonique mineure","notes":[[6,0,"1"],[6,3,"♭3"],[5,0,"4"],[5,2,"5"],[4,0,"♭7"],[4,2,"1"],[3,0,"♭3"],[3,2,"4"],[2,0,"5"],[2,3,"♭7"],[1,0,"1"],[1,3,"♭3"]],"doigts":1,"groupe":"En position"},
-  {"n":"Pentatonique mineure, positions 5, 1 et 2","notes":[[6,-2,"♭7"],[6,0,"1"],[6,3,"♭3"],[6,5,"4"],[5,-2,"♭3"],[5,0,"4"],[5,2,"5"],[5,5,"♭7"],[4,-3,"5"],[4,0,"♭7"],[4,2,"1"],[4,5,"♭3"],[3,-3,"1"],[3,0,"♭3"],[3,2,"4"],[3,4,"5"],[2,-2,"4"],[2,0,"5"],[2,3,"♭7"],[2,5,"1"],[1,-2,"♭7"],[1,0,"1"],[1,3,"♭3"],[1,5,"4"]],"groupe":"En position"},
-  {"n":"Pentatonique majeure en diagonale","notes":[[6,0,"1"],[6,2,"2"],[5,-1,"3"],[5,2,"5"],[5,4,"6"],[4,2,"1"],[4,4,"2"],[3,1,"3"],[3,4,"5"],[3,6,"6"],[2,5,"1"],[2,7,"2"],[1,4,"3"],[1,7,"5"],[1,9,"6"]],"groupe":"Diagonales (3 octaves)","diag":true},
-  {"n":"Pentatonique mineure en diagonale","notes":[[6,-2,"♭7"],[6,0,"1"],[5,-2,"♭3"],[5,0,"4"],[5,2,"5"],[4,0,"♭7"],[4,2,"1"],[3,0,"♭3"],[3,2,"4"],[3,4,"5"],[2,3,"♭7"],[2,5,"1"],[1,3,"♭3"],[1,5,"4"],[1,7,"5"]],"groupe":"Diagonales (3 octaves)","diag":true}
+{id:"gammes",titre:"Premières gammes",intro:"Les gammes de base, tonique sur la corde de Mi grave. Les numéros sous les cases sont les doigts de la main gauche.",formes:[
+  {"n": "Gamme majeure", "notes": [[6, 0, "1"], [6, 2, "2"], [5, -1, "3"], [5, 0, "4"], [5, 2, "5"], [4, -1, "6"], [4, 1, "7"], [4, 2, "1"], [3, -1, "2"], [3, 1, "3"], [3, 2, "4"], [2, 0, "5"], [2, 2, "6"], [1, -1, "7"], [1, 0, "1"]], "doigts": 2, "groupe": "En position"},
+  {"n": "Gamme mineure naturelle", "notes": [[6, -2, "♭7"], [6, 0, "1"], [6, 2, "2"], [5, -2, "♭3"], [5, 0, "4"], [5, 2, "5"], [4, -2, "♭6"], [4, 0, "♭7"], [4, 2, "1"], [3, -1, "2"], [3, 0, "♭3"], [3, 2, "4"], [2, 0, "5"], [2, 1, "♭6"], [1, -2, "♭7"], [1, 0, "1"], [1, 2, "2"]], "doigts": 2, "groupe": "En position"},
+  {"n": "Pentatonique majeure", "notes": [[6, 0, "1"], [6, 2, "2"], [5, -1, "3"], [5, 2, "5"], [4, -1, "6"], [4, 2, "1"], [3, -1, "2"], [3, 1, "3"], [2, 0, "5"], [2, 2, "6"], [1, 0, "1"], [1, 2, "2"]], "doigts": 2, "groupe": "En position"},
+  {"n": "Pentatonique mineure", "notes": [[6, 0, "1"], [6, 3, "♭3"], [5, 0, "4"], [5, 2, "5"], [4, 0, "♭7"], [4, 2, "1"], [3, 0, "♭3"], [3, 2, "4"], [2, 0, "5"], [2, 3, "♭7"], [1, 0, "1"], [1, 3, "♭3"]], "doigts": 1, "groupe": "En position"},
+  {"n": "Gamme chromatique", "notes": [[6, 0, "1"], [6, 1, "♭2"], [6, 2, "2"], [6, 3, "♭3"], [5, -1, "3"], [5, 0, "4"], [5, 1, "♯4"], [5, 2, "5"], [5, 3, "♭6"], [4, -1, "6"], [4, 0, "♭7"], [4, 1, "7"], [4, 2, "1"], [4, 3, "♭2"], [3, -1, "2"], [3, 0, "♭3"], [3, 1, "3"], [3, 2, "4"], [3, 3, "♯4"], [2, 0, "5"], [2, 1, "♭6"], [2, 2, "6"], [2, 3, "♭7"], [1, -1, "7"], [1, 0, "1"]], "groupe": "Gamme chromatique"}
 ]},
 {id:"ouverts",titre:"Accords ouverts",intro:"O = corde à vide, X = corde étouffée. Ces accords ne se transposent pas : ils utilisent les cordes à vide.",formes:[
   {"n":"C","notes":[[5,3,"1"],[4,2,"3"],[3,0,"5"],[2,1,"1"],[1,0,"3"]],"x":[6],"fixe":true},
@@ -87,27 +85,39 @@ const CHAPITRES=[
   {"n": "Cordes 4, 5, 6 : 1er renversement", "notes": [[6, 1, "♭3"], [5, -1, "♭5"], [4, 0, "1"]], "x": [1, 2, 3], "groupe": "Cordes 4, 5, 6"},
   {"n": "Cordes 4, 5, 6 : 2e renversement", "notes": [[6, -1, "♭5"], [5, 0, "1"], [4, -2, "♭3"]], "x": [1, 2, 3], "groupe": "Cordes 4, 5, 6"}
 ]},
-{id:"triades-ouv",titre:"Triades majeures en position ouverte",intro:"Position ouverte (ou écartée) : la note du milieu de la position serrée est montée d'une octave, et on saute une corde. Intervalles 1 3 5. x = corde non jouée.",formes:[
-  {"n": "Cordes 6, 4, 3 : position fondamentale", "notes": [[6, 0, "1"], [4, -3, "5"], [3, 1, "3"]], "x": [1, 2, 5], "groupe": "Cordes 6, 4, 3"},
-  {"n": "Cordes 6, 4, 3 : 1er renversement", "notes": [[6, 2, "3"], [4, 0, "1"], [3, 2, "5"]], "x": [1, 2, 5], "groupe": "Cordes 6, 4, 3"},
-  {"n": "Cordes 6, 4, 3 : 2e renversement", "notes": [[6, -2, "5"], [4, -3, "3"], [3, 0, "1"]], "x": [1, 2, 5], "groupe": "Cordes 6, 4, 3"},
-  {"n": "Cordes 5, 3, 2 : position fondamentale", "notes": [[5, 0, "1"], [3, -3, "5"], [2, 2, "3"]], "x": [1, 4, 6], "groupe": "Cordes 5, 3, 2"},
-  {"n": "Cordes 5, 3, 2 : 1er renversement", "notes": [[5, 2, "3"], [3, 0, "1"], [2, 3, "5"]], "x": [1, 4, 6], "groupe": "Cordes 5, 3, 2"},
-  {"n": "Cordes 5, 3, 2 : 2e renversement", "notes": [[5, -3, "5"], [3, -4, "3"], [2, 0, "1"]], "x": [1, 4, 6], "groupe": "Cordes 5, 3, 2"},
-  {"n": "Cordes 4, 2, 1 : position fondamentale", "notes": [[4, 0, "1"], [2, -2, "5"], [1, 2, "3"]], "x": [3, 5, 6], "groupe": "Cordes 4, 2, 1"},
-  {"n": "Cordes 4, 2, 1 : 1er renversement", "notes": [[4, 1, "3"], [2, 0, "1"], [1, 2, "5"]], "x": [3, 5, 6], "groupe": "Cordes 4, 2, 1"},
-  {"n": "Cordes 4, 2, 1 : 2e renversement", "notes": [[4, -3, "5"], [2, -3, "3"], [1, 0, "1"]], "x": [3, 5, 6], "groupe": "Cordes 4, 2, 1"}
+{id:"triades-ouv",titre:"Triades majeures en position ouverte",intro:"Position ouverte (ou écartée) : les trois notes de l'accord sont réparties sur plus d'une octave, en sautant une corde. x = corde non jouée. Intervalles 1 3 5.",formes:[
+  {"n": "En partant de la corde 6 : position fondamentale", "notes": [[6, 0, "1"], [5, 2, "5"], [3, 1, "3"]], "x": [1, 2, 4], "groupe": "En partant de la corde 6", "ouv": true},
+  {"n": "En partant de la corde 6 : 1er renversement", "notes": [[6, 2, "3"], [4, 0, "1"], [3, 2, "5"]], "x": [1, 2, 5], "groupe": "En partant de la corde 6", "ouv": true},
+  {"n": "En partant de la corde 6 : 1er renversement", "notes": [[6, -3, "3"], [5, 0, "1"], [3, -3, "5"]], "x": [1, 2, 4], "groupe": "En partant de la corde 6", "ouv": true, "alt": true},
+  {"n": "En partant de la corde 6 : 2e renversement", "notes": [[6, -2, "5"], [4, -3, "3"], [3, 0, "1"]], "x": [1, 2, 5], "groupe": "En partant de la corde 6", "ouv": true},
+  {"n": "En partant de la corde 5 : position fondamentale", "notes": [[5, 0, "1"], [4, 2, "5"], [2, 2, "3"]], "x": [1, 3, 6], "groupe": "En partant de la corde 5", "ouv": true},
+  {"n": "En partant de la corde 5 : 1er renversement", "notes": [[5, -3, "3"], [4, 0, "1"], [2, -2, "5"]], "x": [1, 3, 6], "groupe": "En partant de la corde 5", "ouv": true},
+  {"n": "En partant de la corde 5 : 2e renversement", "notes": [[5, -3, "5"], [4, 1, "3"], [2, 0, "1"]], "x": [1, 3, 6], "groupe": "En partant de la corde 5", "ouv": true},
+  {"n": "En partant de la corde 4 : position fondamentale", "notes": [[4, 0, "1"], [3, 2, "5"], [1, 2, "3"]], "x": [2, 5, 6], "groupe": "En partant de la corde 4", "ouv": true},
+  {"n": "En partant de la corde 4 : 1er renversement", "notes": [[4, 1, "3"], [2, 0, "1"], [1, 2, "5"]], "x": [3, 5, 6], "groupe": "En partant de la corde 4", "ouv": true},
+  {"n": "En partant de la corde 4 : 2e renversement", "notes": [[4, -3, "5"], [2, -3, "3"], [1, 0, "1"]], "x": [3, 5, 6], "groupe": "En partant de la corde 4", "ouv": true}
 ]},
-{id:"triades-ouv-min",titre:"Triades mineures en position ouverte",intro:"Position ouverte (ou écartée) : la note du milieu de la position serrée est montée d'une octave, et on saute une corde. Intervalles 1 ♭3 5. x = corde non jouée.",formes:[
-  {"n": "Cordes 6, 4, 3 : position fondamentale", "notes": [[6, 0, "1"], [4, -3, "5"], [3, 0, "♭3"]], "x": [1, 2, 5], "groupe": "Cordes 6, 4, 3"},
-  {"n": "Cordes 6, 4, 3 : 1er renversement", "notes": [[6, 1, "♭3"], [4, 0, "1"], [3, 2, "5"]], "x": [1, 2, 5], "groupe": "Cordes 6, 4, 3"},
-  {"n": "Cordes 6, 4, 3 : 2e renversement", "notes": [[6, -2, "5"], [4, -4, "♭3"], [3, 0, "1"]], "x": [1, 2, 5], "groupe": "Cordes 6, 4, 3"},
-  {"n": "Cordes 5, 3, 2 : position fondamentale", "notes": [[5, 0, "1"], [3, -3, "5"], [2, 1, "♭3"]], "x": [1, 4, 6], "groupe": "Cordes 5, 3, 2"},
-  {"n": "Cordes 5, 3, 2 : 1er renversement", "notes": [[5, 1, "♭3"], [3, 0, "1"], [2, 3, "5"]], "x": [1, 4, 6], "groupe": "Cordes 5, 3, 2"},
-  {"n": "Cordes 5, 3, 2 : 2e renversement", "notes": [[5, -3, "5"], [3, -5, "♭3"], [2, 0, "1"]], "x": [1, 4, 6], "groupe": "Cordes 5, 3, 2"},
-  {"n": "Cordes 4, 2, 1 : position fondamentale", "notes": [[4, 0, "1"], [2, -2, "5"], [1, 1, "♭3"]], "x": [3, 5, 6], "groupe": "Cordes 4, 2, 1"},
-  {"n": "Cordes 4, 2, 1 : 1er renversement", "notes": [[4, 0, "♭3"], [2, 0, "1"], [1, 2, "5"]], "x": [3, 5, 6], "groupe": "Cordes 4, 2, 1"},
-  {"n": "Cordes 4, 2, 1 : 2e renversement", "notes": [[4, -3, "5"], [2, -4, "♭3"], [1, 0, "1"]], "x": [3, 5, 6], "groupe": "Cordes 4, 2, 1"}
+{id:"triades-ouv-min",titre:"Triades mineures en position ouverte",intro:"Position ouverte (ou écartée) : les trois notes de l'accord sont réparties sur plus d'une octave, en sautant une corde. x = corde non jouée. Intervalles 1 ♭3 5.",formes:[
+  {"n": "En partant de la corde 6 : position fondamentale", "notes": [[6, 0, "1"], [5, 2, "5"], [3, 0, "♭3"]], "x": [1, 2, 4], "groupe": "En partant de la corde 6", "ouv": true},
+  {"n": "En partant de la corde 6 : 1er renversement", "notes": [[6, 1, "♭3"], [4, 0, "1"], [3, 2, "5"]], "x": [1, 2, 5], "groupe": "En partant de la corde 6", "ouv": true},
+  {"n": "En partant de la corde 6 : 2e renversement", "notes": [[6, -2, "5"], [4, -4, "♭3"], [3, 0, "1"]], "x": [1, 2, 5], "groupe": "En partant de la corde 6", "ouv": true},
+  {"n": "En partant de la corde 5 : position fondamentale", "notes": [[5, 0, "1"], [4, 2, "5"], [2, 1, "♭3"]], "x": [1, 3, 6], "groupe": "En partant de la corde 5", "ouv": true},
+  {"n": "En partant de la corde 5 : 1er renversement", "notes": [[5, 1, "♭3"], [3, 0, "1"], [2, 3, "5"]], "x": [1, 4, 6], "groupe": "En partant de la corde 5", "ouv": true},
+  {"n": "En partant de la corde 5 : 2e renversement", "notes": [[5, -3, "5"], [4, 0, "♭3"], [2, 0, "1"]], "x": [1, 3, 6], "groupe": "En partant de la corde 5", "ouv": true},
+  {"n": "En partant de la corde 4 : position fondamentale", "notes": [[4, 0, "1"], [3, 2, "5"], [1, 1, "♭3"]], "x": [2, 5, 6], "groupe": "En partant de la corde 4", "ouv": true},
+  {"n": "En partant de la corde 4 : 1er renversement", "notes": [[4, 0, "♭3"], [2, 0, "1"], [1, 2, "5"]], "x": [3, 5, 6], "groupe": "En partant de la corde 4", "ouv": true},
+  {"n": "En partant de la corde 4 : 2e renversement", "notes": [[4, -3, "5"], [3, 0, "♭3"], [1, 0, "1"]], "x": [2, 5, 6], "groupe": "En partant de la corde 4", "ouv": true}
+]},
+{id:"triades-ouv-dim",titre:"Triades diminuées en position ouverte",intro:"Position ouverte (ou écartée) : les trois notes de l'accord sont réparties sur plus d'une octave, en sautant une corde. x = corde non jouée. Intervalles 1 ♭3 ♭5.",formes:[
+  {"n": "En partant de la corde 6 : position fondamentale", "notes": [[6, 0, "1"], [5, 1, "♭5"], [3, 0, "♭3"]], "x": [1, 2, 4], "groupe": "En partant de la corde 6", "ouv": true},
+  {"n": "En partant de la corde 6 : 1er renversement", "notes": [[6, 1, "♭3"], [4, 0, "1"], [3, 1, "♭5"]], "x": [1, 2, 5], "groupe": "En partant de la corde 6", "ouv": true},
+  {"n": "En partant de la corde 6 : 2e renversement", "notes": [[6, -3, "♭5"], [4, -4, "♭3"], [3, 0, "1"]], "x": [1, 2, 5], "groupe": "En partant de la corde 6", "ouv": true},
+  {"n": "En partant de la corde 5 : position fondamentale", "notes": [[5, 0, "1"], [4, 1, "♭5"], [2, 1, "♭3"]], "x": [1, 3, 6], "groupe": "En partant de la corde 5", "ouv": true},
+  {"n": "En partant de la corde 5 : 1er renversement", "notes": [[5, 1, "♭3"], [3, 0, "1"], [2, 2, "♭5"]], "x": [1, 4, 6], "groupe": "En partant de la corde 5", "ouv": true},
+  {"n": "En partant de la corde 5 : 2e renversement", "notes": [[5, 1, "♭5"], [3, 0, "♭3"], [1, 0, "1"]], "x": [2, 4, 6], "groupe": "En partant de la corde 5", "ouv": true},
+  {"n": "En partant de la corde 4 : position fondamentale", "notes": [[4, 0, "1"], [3, 1, "♭5"], [1, 1, "♭3"]], "x": [2, 5, 6], "groupe": "En partant de la corde 4", "ouv": true},
+  {"n": "En partant de la corde 4 : 1er renversement", "notes": [[4, 0, "♭3"], [2, 0, "1"], [1, 1, "♭5"]], "x": [3, 5, 6], "groupe": "En partant de la corde 4", "ouv": true},
+  {"n": "En partant de la corde 4 : 2e renversement", "notes": [[4, -4, "♭5"], [3, 0, "♭3"], [1, 0, "1"]], "x": [2, 5, 6], "groupe": "En partant de la corde 4", "ouv": true}
 ]},
 {id:"drop2",titre:"Drop 2 : accords à 4 sons et renversements",intro:"Drop 2 : on part de l'accord en position serrée (les 4 notes les plus proches) et on descend d'une octave la 2e voix en partant du haut. Les « renversements sur les cordes 1 à 4 » du niveau 2 sont déjà des drop 2. x = corde non jouée.",formes:[
   {"n": "Cordes 4, 3, 2, 1 : position fondamentale", "notes": [[4, 0, "1"], [3, 2, "5"], [2, 2, "7"], [1, 2, "3"]], "x": [5, 6], "groupe": "Cordes 4, 3, 2, 1", "acc": "Maj7"},
@@ -349,32 +359,77 @@ const CHAPITRES=[
   {"n":"m7♭5, cordes 3, 2, 1","notes":[[3,0,"1"],[2,-1,"♭3"],[1,-3,"♭5"],[1,1,"♭7"]],"x":[4,5,6],"groupe":"Cordes 3, 2, 1","acc":"m7♭5","arp":true},
   {"n":"dim7, cordes 3, 2, 1","notes":[[3,0,"1"],[2,-1,"♭3"],[1,-3,"♭5"],[1,0,"𝄫7"]],"x":[4,5,6],"groupe":"Cordes 3, 2, 1","acc":"dim7","arp":true}
 ]},
-{id:"modes",titre:"Modes et gammes dérivés",intro:"Sur une corde et en position.",formes:[
-  {"n":"Ionien","notes":[[6,0,"1"],[6,2,"2"],[5,-1,"3"],[5,0,"4"],[5,2,"5"],[4,-1,"6"],[4,1,"7"],[4,2,"1"],[3,-1,"2"],[3,1,"3"],[3,2,"4"],[2,0,"5"],[2,2,"6"],[1,-1,"7"],[1,0,"1"]],"groupe":"Modes de la gamme majeure"},
-  {"n":"Dorien","notes":[[6,0,"1"],[6,2,"2"],[5,-2,"♭3"],[5,0,"4"],[5,2,"5"],[4,-1,"6"],[4,0,"♭7"],[4,2,"1"],[3,-1,"2"],[3,0,"♭3"],[3,2,"4"],[2,0,"5"],[2,2,"6"],[1,-2,"♭7"],[1,0,"1"]],"groupe":"Modes de la gamme majeure"},
-  {"n":"Phrygien","notes":[[6,0,"1"],[6,1,"♭2"],[5,-2,"♭3"],[5,0,"4"],[5,2,"5"],[4,-2,"♭6"],[4,0,"♭7"],[4,2,"1"],[3,-2,"♭2"],[3,0,"♭3"],[3,2,"4"],[2,0,"5"],[2,1,"♭6"],[1,-2,"♭7"],[1,0,"1"]],"groupe":"Modes de la gamme majeure"},
-  {"n":"Lydien","notes":[[6,0,"1"],[6,2,"2"],[5,-1,"3"],[5,1,"♯4"],[5,2,"5"],[4,-1,"6"],[4,1,"7"],[4,2,"1"],[3,-1,"2"],[3,1,"3"],[2,-1,"♯4"],[2,0,"5"],[2,2,"6"],[1,-1,"7"],[1,0,"1"]],"groupe":"Modes de la gamme majeure"},
-  {"n":"Mixolydien","notes":[[6,0,"1"],[6,2,"2"],[5,-1,"3"],[5,0,"4"],[5,2,"5"],[4,-1,"6"],[4,0,"♭7"],[4,2,"1"],[3,-1,"2"],[3,1,"3"],[3,2,"4"],[2,0,"5"],[2,2,"6"],[1,-2,"♭7"],[1,0,"1"]],"groupe":"Modes de la gamme majeure"},
-  {"n":"Éolien","notes":[[6,0,"1"],[6,2,"2"],[5,-2,"♭3"],[5,0,"4"],[5,2,"5"],[4,-2,"♭6"],[4,0,"♭7"],[4,2,"1"],[3,-1,"2"],[3,0,"♭3"],[3,2,"4"],[2,0,"5"],[2,1,"♭6"],[1,-2,"♭7"],[1,0,"1"]],"groupe":"Modes de la gamme majeure"},
-  {"n":"Locrien","notes":[[6,0,"1"],[6,1,"♭2"],[5,-2,"♭3"],[5,0,"4"],[5,1,"♭5"],[4,-2,"♭6"],[4,0,"♭7"],[4,2,"1"],[3,-2,"♭2"],[3,0,"♭3"],[3,2,"4"],[2,-1,"♭5"],[2,1,"♭6"],[1,-2,"♭7"],[1,0,"1"]],"groupe":"Modes de la gamme majeure"},
-  {"n":"Mineur mélodique","notes":[[6,0,"1"],[6,2,"2"],[5,-2,"♭3"],[5,0,"4"],[5,2,"5"],[4,-1,"6"],[4,1,"7"],[4,2,"1"],[3,-1,"2"],[3,0,"♭3"],[3,2,"4"],[2,0,"5"],[2,2,"6"],[1,-1,"7"],[1,0,"1"]],"groupe":"Modes du mineur mélodique"},
-  {"n":"Dorien ♭2","notes":[[6,0,"1"],[6,1,"♭2"],[5,-2,"♭3"],[5,0,"4"],[5,2,"5"],[4,-1,"6"],[4,0,"♭7"],[4,2,"1"],[3,-2,"♭2"],[3,0,"♭3"],[3,2,"4"],[2,0,"5"],[2,2,"6"],[1,-2,"♭7"],[1,0,"1"]],"groupe":"Modes du mineur mélodique"},
-  {"n":"Lydien augmenté","notes":[[6,0,"1"],[6,2,"2"],[5,-1,"3"],[5,1,"♯4"],[5,3,"♯5"],[4,-1,"6"],[4,1,"7"],[4,2,"1"],[3,-1,"2"],[3,1,"3"],[2,-1,"♯4"],[2,1,"♯5"],[2,2,"6"],[1,-1,"7"],[1,0,"1"]],"groupe":"Modes du mineur mélodique"},
-  {"n":"Lydien dominant","notes":[[6,0,"1"],[6,2,"2"],[5,-1,"3"],[5,1,"♯4"],[5,2,"5"],[4,-1,"6"],[4,0,"♭7"],[4,2,"1"],[3,-1,"2"],[3,1,"3"],[2,-1,"♯4"],[2,0,"5"],[2,2,"6"],[1,-2,"♭7"],[1,0,"1"]],"groupe":"Modes du mineur mélodique"},
-  {"n":"Mixolydien ♭6","notes":[[6,0,"1"],[6,2,"2"],[5,-1,"3"],[5,0,"4"],[5,2,"5"],[4,-2,"♭6"],[4,0,"♭7"],[4,2,"1"],[3,-1,"2"],[3,1,"3"],[3,2,"4"],[2,0,"5"],[2,1,"♭6"],[1,-2,"♭7"],[1,0,"1"]],"groupe":"Modes du mineur mélodique"},
-  {"n":"Locrien ♯2","notes":[[6,0,"1"],[6,2,"2"],[5,-2,"♭3"],[5,0,"4"],[5,1,"♭5"],[4,-2,"♭6"],[4,0,"♭7"],[4,2,"1"],[3,-1,"2"],[3,0,"♭3"],[3,2,"4"],[2,-1,"♭5"],[2,1,"♭6"],[1,-2,"♭7"],[1,0,"1"]],"groupe":"Modes du mineur mélodique"},
-  {"n":"Altéré","notes":[[6,0,"1"],[6,1,"♭9"],[5,-2,"♯9"],[5,-1,"3"],[5,1,"♭5"],[4,-2,"♯5"],[4,0,"♭7"],[4,2,"1"],[3,-2,"♭9"],[3,0,"♯9"],[3,1,"3"],[2,-1,"♭5"],[2,1,"♯5"],[1,-2,"♭7"],[1,0,"1"]],"groupe":"Modes du mineur mélodique"},
-  {"n":"Mineur harmonique","notes":[[6,0,"1"],[6,2,"2"],[5,-2,"♭3"],[5,0,"4"],[5,2,"5"],[4,-2,"♭6"],[4,1,"7"],[4,2,"1"],[3,-1,"2"],[3,0,"♭3"],[3,2,"4"],[2,0,"5"],[2,1,"♭6"],[1,-1,"7"],[1,0,"1"]],"groupe":"Modes du mineur harmonique"},
-  {"n":"Locrien ♯6","notes":[[6,0,"1"],[6,1,"♭2"],[5,-2,"♭3"],[5,0,"4"],[5,1,"♭5"],[4,-1,"6"],[4,0,"♭7"],[4,2,"1"],[3,-2,"♭2"],[3,0,"♭3"],[3,2,"4"],[2,-1,"♭5"],[2,2,"6"],[1,-2,"♭7"],[1,0,"1"]],"groupe":"Modes du mineur harmonique"},
-  {"n":"Ionien ♯5","notes":[[6,0,"1"],[6,2,"2"],[5,-1,"3"],[5,0,"4"],[5,3,"♯5"],[4,-1,"6"],[4,1,"7"],[4,2,"1"],[3,-1,"2"],[3,1,"3"],[3,2,"4"],[2,1,"♯5"],[2,2,"6"],[1,-1,"7"],[1,0,"1"]],"groupe":"Modes du mineur harmonique"},
-  {"n":"Dorien ♯4","notes":[[6,0,"1"],[6,2,"2"],[5,-2,"♭3"],[5,1,"♯4"],[5,2,"5"],[4,-1,"6"],[4,0,"♭7"],[4,2,"1"],[3,-1,"2"],[3,0,"♭3"],[2,-1,"♯4"],[2,0,"5"],[2,2,"6"],[1,-2,"♭7"],[1,0,"1"]],"groupe":"Modes du mineur harmonique"},
-  {"n":"Phrygien dominant","notes":[[6,0,"1"],[6,1,"♭2"],[5,-1,"3"],[5,0,"4"],[5,2,"5"],[4,-2,"♭6"],[4,0,"♭7"],[4,2,"1"],[3,-2,"♭2"],[3,1,"3"],[3,2,"4"],[2,0,"5"],[2,1,"♭6"],[1,-2,"♭7"],[1,0,"1"]],"groupe":"Modes du mineur harmonique"},
-  {"n":"Lydien ♯2","notes":[[6,0,"1"],[6,3,"♯2"],[5,-1,"3"],[5,1,"♯4"],[5,2,"5"],[4,-1,"6"],[4,1,"7"],[4,2,"1"],[3,0,"♯2"],[3,1,"3"],[2,-1,"♯4"],[2,0,"5"],[2,2,"6"],[1,-1,"7"],[1,0,"1"]],"groupe":"Modes du mineur harmonique"},
-  {"n":"Super-locrien ♭♭7","notes":[[6,0,"1"],[6,1,"♭2"],[5,-2,"♭3"],[5,-1,"3"],[5,1,"♭5"],[4,-2,"♭6"],[4,-1,"𝄫7"],[4,2,"1"],[3,-2,"♭2"],[3,0,"♭3"],[3,1,"3"],[2,-1,"♭5"],[2,1,"♭6"],[1,-3,"𝄫7"],[1,0,"1"]],"groupe":"Modes du mineur harmonique"},
-  {"n":"Diminuée demi-ton/ton","notes":[[6,-2,"♭7"],[6,0,"1"],[6,1,"♭2"],[5,-2,"♭3"],[5,-1,"3"],[5,1,"♯4"],[5,2,"5"],[4,-1,"6"],[4,0,"♭7"],[4,2,"1"],[3,-2,"♭2"],[3,0,"♭3"],[3,1,"3"],[2,-1,"♯4"],[2,0,"5"],[2,2,"6"],[1,-2,"♭7"],[1,0,"1"]],"groupe":"Gammes symétriques"},
-  {"n":"Diminuée ton/demi-ton","notes":[[6,0,"1"],[6,2,"2"],[6,3,"♭3"],[5,0,"4"],[5,1,"♭5"],[5,3,"♭6"],[5,4,"6"],[4,1,"7"],[4,2,"1"],[4,4,"2"],[3,0,"♭3"],[3,2,"4"],[3,3,"♭5"],[2,1,"♭6"],[2,2,"6"],[2,4,"7"],[1,0,"1"]],"groupe":"Gammes symétriques"},
-  {"n":"Gamme par tons","notes":[[6,-2,"♭7"],[6,0,"1"],[6,2,"2"],[5,-1,"3"],[5,1,"♯4"],[4,-2,"♯5"],[4,0,"♭7"],[4,2,"1"],[3,-1,"2"],[3,1,"3"],[2,-1,"♯4"],[2,1,"♯5"],[1,-2,"♭7"],[1,0,"1"]],"groupe":"Gammes symétriques"},
-  {"n":"Gamme chromatique","notes":[[6,0,"1"],[6,1,"♭2"],[6,2,"2"],[6,3,"♭3"],[5,-1,"3"],[5,0,"4"],[5,1,"♯4"],[5,2,"5"],[5,3,"♭6"],[4,-1,"6"],[4,0,"♭7"],[4,1,"7"],[4,2,"1"],[4,3,"♭2"],[3,-1,"2"],[3,0,"♭3"],[3,1,"3"],[3,2,"4"],[3,3,"♯4"],[2,0,"5"],[2,1,"♭6"],[2,2,"6"],[2,3,"♭7"],[1,-1,"7"],[1,0,"1"]],"groupe":"Gammes symétriques"}
+{id:"penta",titre:"Pentatoniques sur tout le manche",intro:"Les 5 positions de la pentatonique couvrent tout le manche : chaque position commence là où la précédente s'arrête. Coche « Manche entier » pour les voir toutes ensemble.",formes:[
+  {"n": "Pentatonique mineure, position 1 (départ sur la tonique)", "notes": [[6, 0, "1"], [6, 3, "♭3"], [5, 0, "4"], [5, 2, "5"], [4, 0, "♭7"], [4, 2, "1"], [3, 0, "♭3"], [3, 2, "4"], [2, 0, "5"], [2, 3, "♭7"], [1, 0, "1"], [1, 3, "♭3"]], "groupe": "Pentatonique mineure : les 5 positions"},
+  {"n": "Pentatonique mineure, position 2 (départ sur le ♭3)", "notes": [[6, 1, "♭3"], [6, 3, "4"], [5, 0, "5"], [5, 3, "♭7"], [4, 0, "1"], [4, 3, "♭3"], [3, 0, "4"], [3, 2, "5"], [2, 1, "♭7"], [2, 3, "1"], [1, 1, "♭3"], [1, 3, "4"]], "groupe": "Pentatonique mineure : les 5 positions"},
+  {"n": "Pentatonique mineure, position 3 (départ sur le 4)", "notes": [[6, -2, "4"], [6, 0, "5"], [5, -2, "♭7"], [5, 0, "1"], [4, -2, "♭3"], [4, 0, "4"], [3, -3, "5"], [3, 0, "♭7"], [2, -2, "1"], [2, 1, "♭3"], [1, -2, "4"], [1, 0, "5"]], "groupe": "Pentatonique mineure : les 5 positions"},
+  {"n": "Pentatonique mineure, position 4 (départ sur le 5)", "notes": [[6, 0, "5"], [6, 3, "♭7"], [5, 0, "1"], [5, 3, "♭3"], [4, 0, "4"], [4, 2, "5"], [3, 0, "♭7"], [3, 2, "1"], [2, 1, "♭3"], [2, 3, "4"], [1, 0, "5"], [1, 3, "♭7"]], "groupe": "Pentatonique mineure : les 5 positions"},
+  {"n": "Pentatonique mineure, position 5 (départ sur le ♭7)", "notes": [[6, -2, "♭7"], [6, 0, "1"], [5, -2, "♭3"], [5, 0, "4"], [4, -3, "5"], [4, 0, "♭7"], [3, -3, "1"], [3, 0, "♭3"], [2, -2, "4"], [2, 0, "5"], [1, -2, "♭7"], [1, 0, "1"]], "groupe": "Pentatonique mineure : les 5 positions"},
+  {"n": "Pentatonique majeure, position 1 (départ sur la tonique)", "notes": [[6, 0, "1"], [6, 2, "2"], [5, -1, "3"], [5, 2, "5"], [4, -1, "6"], [4, 2, "1"], [3, -1, "2"], [3, 1, "3"], [2, 0, "5"], [2, 2, "6"], [1, 0, "1"], [1, 2, "2"]], "groupe": "Pentatonique majeure : les 5 positions"},
+  {"n": "Pentatonique majeure, position 2 (départ sur le 2)", "notes": [[6, 0, "2"], [6, 2, "3"], [5, 0, "5"], [5, 2, "6"], [4, 0, "1"], [4, 2, "2"], [3, -1, "3"], [3, 2, "5"], [2, 0, "6"], [2, 3, "1"], [1, 0, "2"], [1, 2, "3"]], "groupe": "Pentatonique majeure : les 5 positions"},
+  {"n": "Pentatonique majeure, position 3 (départ sur le 3)", "notes": [[6, -3, "3"], [6, 0, "5"], [5, -3, "6"], [5, 0, "1"], [4, -3, "2"], [4, -1, "3"], [3, -3, "5"], [3, -1, "6"], [2, -2, "1"], [2, 0, "2"], [1, -3, "3"], [1, 0, "5"]], "groupe": "Pentatonique majeure : les 5 positions"},
+  {"n": "Pentatonique majeure, position 4 (départ sur le 5)", "notes": [[6, 0, "5"], [6, 2, "6"], [5, 0, "1"], [5, 2, "2"], [4, -1, "3"], [4, 2, "5"], [3, -1, "6"], [3, 2, "1"], [2, 0, "2"], [2, 2, "3"], [1, 0, "5"], [1, 2, "6"]], "groupe": "Pentatonique majeure : les 5 positions"},
+  {"n": "Pentatonique majeure, position 5 (départ sur le 6)", "notes": [[6, -3, "6"], [6, 0, "1"], [5, -3, "2"], [5, -1, "3"], [4, -3, "5"], [4, -1, "6"], [3, -3, "1"], [3, -1, "2"], [2, -3, "3"], [2, 0, "5"], [1, -3, "6"], [1, 0, "1"]], "groupe": "Pentatonique majeure : les 5 positions"},
+  {"n": "Pentatonique mineure, positions 5, 1 et 2", "notes": [[6, -2, "♭7"], [6, 0, "1"], [6, 3, "♭3"], [6, 5, "4"], [5, -2, "♭3"], [5, 0, "4"], [5, 2, "5"], [5, 5, "♭7"], [4, -3, "5"], [4, 0, "♭7"], [4, 2, "1"], [4, 5, "♭3"], [3, -3, "1"], [3, 0, "♭3"], [3, 2, "4"], [3, 4, "5"], [2, -2, "4"], [2, 0, "5"], [2, 3, "♭7"], [2, 5, "1"], [1, -2, "♭7"], [1, 0, "1"], [1, 3, "♭3"], [1, 5, "4"]], "groupe": "Enchaîner les positions"},
+  {"n": "Pentatonique majeure en diagonale", "notes": [[6, 0, "1"], [6, 2, "2"], [5, -1, "3"], [5, 2, "5"], [5, 4, "6"], [4, 2, "1"], [4, 4, "2"], [3, 1, "3"], [3, 4, "5"], [3, 6, "6"], [2, 5, "1"], [2, 7, "2"], [1, 4, "3"], [1, 7, "5"], [1, 9, "6"]], "groupe": "Diagonales (3 octaves)", "diag": true},
+  {"n": "Pentatonique mineure en diagonale", "notes": [[6, -2, "♭7"], [6, 0, "1"], [5, -2, "♭3"], [5, 0, "4"], [5, 2, "5"], [4, 0, "♭7"], [4, 2, "1"], [3, 0, "♭3"], [3, 2, "4"], [3, 4, "5"], [2, 3, "♭7"], [2, 5, "1"], [1, 3, "♭3"], [1, 5, "4"], [1, 7, "5"]], "groupe": "Diagonales (3 octaves)", "diag": true}
+]},
+{id:"modes",titre:"Modes et gammes dérivés",intro:"En position ou sur une corde.",formes:[
+  {"n": "Ionien", "notes": [[6, 0, "1"], [6, 2, "2"], [5, -1, "3"], [5, 0, "4"], [5, 2, "5"], [4, -1, "6"], [4, 1, "7"], [4, 2, "1"], [3, -1, "2"], [3, 1, "3"], [3, 2, "4"], [2, 0, "5"], [2, 2, "6"], [1, -1, "7"], [1, 0, "1"]], "groupe": "Modes de la gamme majeure"},
+  {"n": "Dorien", "notes": [[6, 0, "1"], [6, 2, "2"], [5, -2, "♭3"], [5, 0, "4"], [5, 2, "5"], [4, -1, "6"], [4, 0, "♭7"], [4, 2, "1"], [3, -1, "2"], [3, 0, "♭3"], [3, 2, "4"], [2, 0, "5"], [2, 2, "6"], [1, -2, "♭7"], [1, 0, "1"]], "groupe": "Modes de la gamme majeure"},
+  {"n": "Phrygien", "notes": [[6, 0, "1"], [6, 1, "♭2"], [5, -2, "♭3"], [5, 0, "4"], [5, 2, "5"], [4, -2, "♭6"], [4, 0, "♭7"], [4, 2, "1"], [3, -2, "♭2"], [3, 0, "♭3"], [3, 2, "4"], [2, 0, "5"], [2, 1, "♭6"], [1, -2, "♭7"], [1, 0, "1"]], "groupe": "Modes de la gamme majeure"},
+  {"n": "Lydien", "notes": [[6, 0, "1"], [6, 2, "2"], [5, -1, "3"], [5, 1, "♯4"], [5, 2, "5"], [4, -1, "6"], [4, 1, "7"], [4, 2, "1"], [3, -1, "2"], [3, 1, "3"], [2, -1, "♯4"], [2, 0, "5"], [2, 2, "6"], [1, -1, "7"], [1, 0, "1"]], "groupe": "Modes de la gamme majeure"},
+  {"n": "Mixolydien", "notes": [[6, 0, "1"], [6, 2, "2"], [5, -1, "3"], [5, 0, "4"], [5, 2, "5"], [4, -1, "6"], [4, 0, "♭7"], [4, 2, "1"], [3, -1, "2"], [3, 1, "3"], [3, 2, "4"], [2, 0, "5"], [2, 2, "6"], [1, -2, "♭7"], [1, 0, "1"]], "groupe": "Modes de la gamme majeure"},
+  {"n": "Éolien", "notes": [[6, 0, "1"], [6, 2, "2"], [5, -2, "♭3"], [5, 0, "4"], [5, 2, "5"], [4, -2, "♭6"], [4, 0, "♭7"], [4, 2, "1"], [3, -1, "2"], [3, 0, "♭3"], [3, 2, "4"], [2, 0, "5"], [2, 1, "♭6"], [1, -2, "♭7"], [1, 0, "1"]], "groupe": "Modes de la gamme majeure"},
+  {"n": "Locrien", "notes": [[6, 0, "1"], [6, 1, "♭2"], [5, -2, "♭3"], [5, 0, "4"], [5, 1, "♭5"], [4, -2, "♭6"], [4, 0, "♭7"], [4, 2, "1"], [3, -2, "♭2"], [3, 0, "♭3"], [3, 2, "4"], [2, -1, "♭5"], [2, 1, "♭6"], [1, -2, "♭7"], [1, 0, "1"]], "groupe": "Modes de la gamme majeure"},
+  {"n": "Mineur mélodique", "notes": [[6, 0, "1"], [6, 2, "2"], [5, -2, "♭3"], [5, 0, "4"], [5, 2, "5"], [4, -1, "6"], [4, 1, "7"], [4, 2, "1"], [3, -1, "2"], [3, 0, "♭3"], [3, 2, "4"], [2, 0, "5"], [2, 2, "6"], [1, -1, "7"], [1, 0, "1"]], "groupe": "Modes du mineur mélodique"},
+  {"n": "Dorien ♭2", "notes": [[6, 0, "1"], [6, 1, "♭2"], [5, -2, "♭3"], [5, 0, "4"], [5, 2, "5"], [4, -1, "6"], [4, 0, "♭7"], [4, 2, "1"], [3, -2, "♭2"], [3, 0, "♭3"], [3, 2, "4"], [2, 0, "5"], [2, 2, "6"], [1, -2, "♭7"], [1, 0, "1"]], "groupe": "Modes du mineur mélodique"},
+  {"n": "Lydien augmenté", "notes": [[6, 0, "1"], [6, 2, "2"], [5, -1, "3"], [5, 1, "♯4"], [5, 3, "♯5"], [4, -1, "6"], [4, 1, "7"], [4, 2, "1"], [3, -1, "2"], [3, 1, "3"], [2, -1, "♯4"], [2, 1, "♯5"], [2, 2, "6"], [1, -1, "7"], [1, 0, "1"]], "groupe": "Modes du mineur mélodique"},
+  {"n": "Lydien dominant", "notes": [[6, 0, "1"], [6, 2, "2"], [5, -1, "3"], [5, 1, "♯4"], [5, 2, "5"], [4, -1, "6"], [4, 0, "♭7"], [4, 2, "1"], [3, -1, "2"], [3, 1, "3"], [2, -1, "♯4"], [2, 0, "5"], [2, 2, "6"], [1, -2, "♭7"], [1, 0, "1"]], "groupe": "Modes du mineur mélodique"},
+  {"n": "Mixolydien ♭6", "notes": [[6, 0, "1"], [6, 2, "2"], [5, -1, "3"], [5, 0, "4"], [5, 2, "5"], [4, -2, "♭6"], [4, 0, "♭7"], [4, 2, "1"], [3, -1, "2"], [3, 1, "3"], [3, 2, "4"], [2, 0, "5"], [2, 1, "♭6"], [1, -2, "♭7"], [1, 0, "1"]], "groupe": "Modes du mineur mélodique"},
+  {"n": "Locrien ♯2", "notes": [[6, 0, "1"], [6, 2, "2"], [5, -2, "♭3"], [5, 0, "4"], [5, 1, "♭5"], [4, -2, "♭6"], [4, 0, "♭7"], [4, 2, "1"], [3, -1, "2"], [3, 0, "♭3"], [3, 2, "4"], [2, -1, "♭5"], [2, 1, "♭6"], [1, -2, "♭7"], [1, 0, "1"]], "groupe": "Modes du mineur mélodique"},
+  {"n": "Altéré", "notes": [[6, 0, "1"], [6, 1, "♭9"], [5, -2, "♯9"], [5, -1, "3"], [5, 1, "♭5"], [4, -2, "♯5"], [4, 0, "♭7"], [4, 2, "1"], [3, -2, "♭9"], [3, 0, "♯9"], [3, 1, "3"], [2, -1, "♭5"], [2, 1, "♯5"], [1, -2, "♭7"], [1, 0, "1"]], "groupe": "Modes du mineur mélodique"},
+  {"n": "Mineur harmonique", "notes": [[6, 0, "1"], [6, 2, "2"], [5, -2, "♭3"], [5, 0, "4"], [5, 2, "5"], [4, -2, "♭6"], [4, 1, "7"], [4, 2, "1"], [3, -1, "2"], [3, 0, "♭3"], [3, 2, "4"], [2, 0, "5"], [2, 1, "♭6"], [1, -1, "7"], [1, 0, "1"]], "groupe": "Modes du mineur harmonique"},
+  {"n": "Locrien ♯6", "notes": [[6, 0, "1"], [6, 1, "♭2"], [5, -2, "♭3"], [5, 0, "4"], [5, 1, "♭5"], [4, -1, "6"], [4, 0, "♭7"], [4, 2, "1"], [3, -2, "♭2"], [3, 0, "♭3"], [3, 2, "4"], [2, -1, "♭5"], [2, 2, "6"], [1, -2, "♭7"], [1, 0, "1"]], "groupe": "Modes du mineur harmonique"},
+  {"n": "Ionien ♯5", "notes": [[6, 0, "1"], [6, 2, "2"], [5, -1, "3"], [5, 0, "4"], [5, 3, "♯5"], [4, -1, "6"], [4, 1, "7"], [4, 2, "1"], [3, -1, "2"], [3, 1, "3"], [3, 2, "4"], [2, 1, "♯5"], [2, 2, "6"], [1, -1, "7"], [1, 0, "1"]], "groupe": "Modes du mineur harmonique"},
+  {"n": "Dorien ♯4", "notes": [[6, 0, "1"], [6, 2, "2"], [5, -2, "♭3"], [5, 1, "♯4"], [5, 2, "5"], [4, -1, "6"], [4, 0, "♭7"], [4, 2, "1"], [3, -1, "2"], [3, 0, "♭3"], [2, -1, "♯4"], [2, 0, "5"], [2, 2, "6"], [1, -2, "♭7"], [1, 0, "1"]], "groupe": "Modes du mineur harmonique"},
+  {"n": "Phrygien dominant", "notes": [[6, 0, "1"], [6, 1, "♭2"], [5, -1, "3"], [5, 0, "4"], [5, 2, "5"], [4, -2, "♭6"], [4, 0, "♭7"], [4, 2, "1"], [3, -2, "♭2"], [3, 1, "3"], [3, 2, "4"], [2, 0, "5"], [2, 1, "♭6"], [1, -2, "♭7"], [1, 0, "1"]], "groupe": "Modes du mineur harmonique"},
+  {"n": "Lydien ♯2", "notes": [[6, 0, "1"], [6, 3, "♯2"], [5, -1, "3"], [5, 1, "♯4"], [5, 2, "5"], [4, -1, "6"], [4, 1, "7"], [4, 2, "1"], [3, 0, "♯2"], [3, 1, "3"], [2, -1, "♯4"], [2, 0, "5"], [2, 2, "6"], [1, -1, "7"], [1, 0, "1"]], "groupe": "Modes du mineur harmonique"},
+  {"n": "Super-locrien ♭♭7", "notes": [[6, 0, "1"], [6, 1, "♭2"], [5, -2, "♭3"], [5, -1, "3"], [5, 1, "♭5"], [4, -2, "♭6"], [4, -1, "𝄫7"], [4, 2, "1"], [3, -2, "♭2"], [3, 0, "♭3"], [3, 1, "3"], [2, -1, "♭5"], [2, 1, "♭6"], [1, -3, "𝄫7"], [1, 0, "1"]], "groupe": "Modes du mineur harmonique"},
+  {"n": "Diminuée demi-ton/ton", "notes": [[6, -2, "♭7"], [6, 0, "1"], [6, 1, "♭2"], [5, -2, "♭3"], [5, -1, "3"], [5, 1, "♯4"], [5, 2, "5"], [4, -1, "6"], [4, 0, "♭7"], [4, 2, "1"], [3, -2, "♭2"], [3, 0, "♭3"], [3, 1, "3"], [2, -1, "♯4"], [2, 0, "5"], [2, 2, "6"], [1, -2, "♭7"], [1, 0, "1"]], "groupe": "Gammes symétriques"},
+  {"n": "Diminuée ton/demi-ton", "notes": [[6, 0, "1"], [6, 2, "2"], [6, 3, "♭3"], [5, 0, "4"], [5, 1, "♭5"], [5, 3, "♭6"], [5, 4, "6"], [4, 1, "7"], [4, 2, "1"], [4, 4, "2"], [3, 0, "♭3"], [3, 2, "4"], [3, 3, "♭5"], [2, 1, "♭6"], [2, 2, "6"], [2, 4, "7"], [1, 0, "1"]], "groupe": "Gammes symétriques"},
+  {"n": "Gamme par tons", "notes": [[6, -2, "♭7"], [6, 0, "1"], [6, 2, "2"], [5, -1, "3"], [5, 1, "♯4"], [4, -2, "♯5"], [4, 0, "♭7"], [4, 2, "1"], [3, -1, "2"], [3, 1, "3"], [2, -1, "♯4"], [2, 1, "♯5"], [1, -2, "♭7"], [1, 0, "1"]], "groupe": "Gammes symétriques"}
+]},
+{id:"arp-mmaj7",titre:"Arpèges m(Maj7)",intro:"Arpège m(Maj7) : 1 ♭3 5 7, l'accord du 1er degré du mineur mélodique.",formes:[
+  {"n": "m(Maj7), fondamentale sur corde 6", "notes": [[6, 0, "1"], [6, 3, "♭3"], [5, 2, "5"], [4, 1, "7"]], "groupe": "Une octave", "acc": "m(Maj7)", "arp": true, "x": [1, 2, 3]},
+  {"n": "m(Maj7), fondamentale sur corde 5", "notes": [[5, 0, "1"], [5, 3, "♭3"], [4, 2, "5"], [3, 1, "7"]], "groupe": "Une octave", "acc": "m(Maj7)", "arp": true, "x": [1, 2, 6]},
+  {"n": "m(Maj7), fondamentale sur corde 4", "notes": [[4, 0, "1"], [4, 3, "♭3"], [3, 2, "5"], [2, 2, "7"]], "groupe": "Une octave", "acc": "m(Maj7)", "arp": true, "x": [1, 5, 6]},
+  {"n": "m(Maj7), fondamentale sur corde 3", "notes": [[3, 0, "1"], [3, 3, "♭3"], [2, 3, "5"], [1, 2, "7"]], "groupe": "Une octave", "acc": "m(Maj7)", "arp": true, "x": [4, 5, 6]},
+  {"n": "m(Maj7), position complète (fondamentale corde 6)", "notes": [[6, -1, "7"], [6, 0, "1"], [5, 2, "5"], [4, 1, "7"], [4, 2, "1"], [3, 0, "♭3"], [2, 0, "5"], [1, -1, "7"], [1, 0, "1"]], "groupe": "Position complète", "acc": "m(Maj7)", "arp": true},
+  {"n": "m(Maj7), position complète (fondamentale corde 5)", "notes": [[6, 0, "5"], [5, -1, "7"], [5, 0, "1"], [4, 2, "5"], [3, 1, "7"], [3, 2, "1"], [2, 1, "♭3"], [1, 0, "5"]], "groupe": "Position complète", "acc": "m(Maj7)", "arp": true}
+]},
+{id:"arp-maj7s5",titre:"Arpèges Maj7♯5",intro:"Arpège Maj7♯5 : 1 3 ♯5 7, l'accord du 3e degré du mineur mélodique (lydien augmenté).",formes:[
+  {"n": "Maj7♯5, fondamentale sur corde 6", "notes": [[6, 0, "1"], [5, -1, "3"], [5, 3, "♯5"], [4, 1, "7"]], "groupe": "Une octave", "acc": "Maj7♯5", "arp": true, "x": [1, 2, 3]},
+  {"n": "Maj7♯5, fondamentale sur corde 5", "notes": [[5, 0, "1"], [4, -1, "3"], [4, 3, "♯5"], [3, 1, "7"]], "groupe": "Une octave", "acc": "Maj7♯5", "arp": true, "x": [1, 2, 6]},
+  {"n": "Maj7♯5, fondamentale sur corde 4", "notes": [[4, 0, "1"], [3, -1, "3"], [2, -1, "♯5"], [2, 2, "7"]], "groupe": "Une octave", "acc": "Maj7♯5", "arp": true, "x": [1, 5, 6]},
+  {"n": "Maj7♯5, fondamentale sur corde 3", "notes": [[3, 0, "1"], [2, 0, "3"], [1, -1, "♯5"], [1, 2, "7"]], "groupe": "Une octave", "acc": "Maj7♯5", "arp": true, "x": [4, 5, 6]},
+  {"n": "Maj7♯5, position complète (fondamentale corde 6)", "notes": [[6, -1, "7"], [6, 0, "1"], [5, -1, "3"], [4, 1, "7"], [4, 2, "1"], [3, 1, "3"], [2, 1, "♯5"], [1, -1, "7"], [1, 0, "1"]], "groupe": "Position complète", "acc": "Maj7♯5", "arp": true},
+  {"n": "Maj7♯5, position complète (fondamentale corde 5)", "notes": [[6, 1, "♯5"], [5, -1, "7"], [5, 0, "1"], [4, -1, "3"], [3, 1, "7"], [3, 2, "1"], [2, 2, "3"], [1, 1, "♯5"]], "groupe": "Position complète", "acc": "Maj7♯5", "arp": true}
+]},
+{id:"arp-7s5",titre:"Arpèges 7♯5",intro:"Arpège 7♯5 : 1 3 ♯5 ♭7, accord de dominante altérée (gamme par tons, altéré).",formes:[
+  {"n": "7♯5, fondamentale sur corde 6", "notes": [[6, 0, "1"], [5, -1, "3"], [5, 3, "♯5"], [4, 0, "♭7"]], "groupe": "Une octave", "acc": "7♯5", "arp": true, "x": [1, 2, 3]},
+  {"n": "7♯5, fondamentale sur corde 5", "notes": [[5, 0, "1"], [4, -1, "3"], [4, 3, "♯5"], [3, 0, "♭7"]], "groupe": "Une octave", "acc": "7♯5", "arp": true, "x": [1, 2, 6]},
+  {"n": "7♯5, fondamentale sur corde 4", "notes": [[4, 0, "1"], [3, -1, "3"], [2, -1, "♯5"], [2, 1, "♭7"]], "groupe": "Une octave", "acc": "7♯5", "arp": true, "x": [1, 5, 6]},
+  {"n": "7♯5, fondamentale sur corde 3", "notes": [[3, 0, "1"], [2, 0, "3"], [1, -1, "♯5"], [1, 1, "♭7"]], "groupe": "Une octave", "acc": "7♯5", "arp": true, "x": [4, 5, 6]},
+  {"n": "7♯5, position complète (fondamentale corde 6)", "notes": [[6, -2, "♭7"], [6, 0, "1"], [5, -1, "3"], [4, -2, "♯5"], [4, 0, "♭7"], [3, 1, "3"], [2, 1, "♯5"], [1, -2, "♭7"], [1, 0, "1"]], "groupe": "Position complète", "acc": "7♯5", "arp": true},
+  {"n": "7♯5, position complète (fondamentale corde 5)", "notes": [[6, 1, "♯5"], [6, 3, "♭7"], [5, 0, "1"], [4, 3, "♯5"], [3, 0, "♭7"], [3, 2, "1"], [2, 2, "3"], [1, 1, "♯5"], [1, 3, "♭7"]], "groupe": "Position complète", "acc": "7♯5", "arp": true}
+]},
+{id:"arp-diag",titre:"Arpèges sur 3 octaves en diagonale",intro:"Sur trois octaves, en glissant le long du manche : 7-1 sur une corde, puis 3-5 sur la suivante, et ainsi de suite.",formes:[
+  {"n": "Maj7, 3 octaves en diagonale (7-1 puis 3-5)", "notes": [[6, -1, "7"], [6, 0, "1"], [5, -1, "3"], [5, 2, "5"], [4, 1, "7"], [4, 2, "1"], [3, 1, "3"], [3, 4, "5"], [2, 4, "7"], [2, 5, "1"], [1, 4, "3"], [1, 7, "5"]], "groupe": "Deux et trois octaves", "acc": "Maj7", "arp": true, "diag": true},
+  {"n": "7, 3 octaves en diagonale (7-1 puis 3-5)", "notes": [[6, -2, "♭7"], [6, 0, "1"], [5, -1, "3"], [5, 2, "5"], [4, 0, "♭7"], [4, 2, "1"], [3, 1, "3"], [3, 4, "5"], [2, 3, "♭7"], [2, 5, "1"], [1, 4, "3"], [1, 7, "5"]], "groupe": "Deux et trois octaves", "acc": "7", "arp": true, "diag": true},
+  {"n": "m7, 3 octaves en diagonale (7-1 puis 3-5)", "notes": [[6, -2, "♭7"], [6, 0, "1"], [5, -2, "♭3"], [5, 2, "5"], [4, 0, "♭7"], [4, 2, "1"], [3, 0, "♭3"], [3, 4, "5"], [2, 3, "♭7"], [2, 5, "1"], [1, 3, "♭3"], [1, 7, "5"]], "groupe": "Deux et trois octaves", "acc": "m7", "arp": true, "diag": true},
+  {"n": "m7♭5, 3 octaves en diagonale (7-1 puis 3-5)", "notes": [[6, -2, "♭7"], [6, 0, "1"], [5, -2, "♭3"], [5, 1, "♭5"], [4, 0, "♭7"], [4, 2, "1"], [3, 0, "♭3"], [3, 3, "♭5"], [2, 3, "♭7"], [2, 5, "1"], [1, 3, "♭3"], [1, 6, "♭5"]], "groupe": "Deux et trois octaves", "acc": "m7♭5", "arp": true, "diag": true},
+  {"n": "dim7, 3 octaves en diagonale (7-1 puis 3-5)", "notes": [[6, -3, "𝄫7"], [6, 0, "1"], [5, -2, "♭3"], [5, 1, "♭5"], [4, -1, "𝄫7"], [4, 2, "1"], [3, 0, "♭3"], [3, 3, "♭5"], [2, 2, "𝄫7"], [2, 5, "1"], [1, 3, "♭3"], [1, 6, "♭5"]], "groupe": "Deux et trois octaves", "acc": "dim7", "arp": true, "diag": true}
 ]},
 {id:"enrichis",titre:"Accords enrichis",intro:"Voicings shell enrichis d'une extension sur la corde 2. À transposer en suivant le cycle des quartes.",formes:[
   {"n":"7","notes":[[6,0,"1"],[4,0,"♭7"],[3,1,"3"]],"x":[1,2,5],"groupe":"Dominante, fondamentale corde 6","acc":"7"},
@@ -390,49 +445,69 @@ const CHAPITRES=[
   {"n":"m7","notes":[[5,0,"1"],[4,-2,"♭3"],[3,0,"♭7"]],"x":[1,2,6],"groupe":"Maj9 et m9, fondamentale corde 5","acc":"m7"},
   {"n":"m9","notes":[[5,0,"1"],[4,-2,"♭3"],[3,0,"♭7"],[2,0,"9"]],"x":[1,6],"groupe":"Maj9 et m9, fondamentale corde 5","acc":"m9"}
 ]},
+{id:"arp-tri",titre:"Arpèges majeurs et mineurs",intro:"Arpège majeur : 1 3 5. Arpège mineur : 1 ♭3 5. On joue les notes de l'accord une par une.",formes:[
+  {"n": "Majeur, fondamentale sur corde 6", "notes": [[6, 0, "1"], [5, -1, "3"], [5, 2, "5"], [4, 2, "1"]], "groupe": "Une octave", "acc": "", "arp": true, "x": [1, 2, 3]},
+  {"n": "Majeur, fondamentale sur corde 5", "notes": [[5, 0, "1"], [4, -1, "3"], [4, 2, "5"], [3, 2, "1"]], "groupe": "Une octave", "acc": "", "arp": true, "x": [1, 2, 6]},
+  {"n": "Mineur, fondamentale sur corde 6", "notes": [[6, 0, "1"], [6, 3, "♭3"], [5, 2, "5"], [4, 2, "1"]], "groupe": "Une octave", "acc": "m", "arp": true, "x": [1, 2, 3]},
+  {"n": "Mineur, fondamentale sur corde 5", "notes": [[5, 0, "1"], [5, 3, "♭3"], [4, 2, "5"], [3, 2, "1"]], "groupe": "Une octave", "acc": "m", "arp": true, "x": [1, 2, 6]},
+  {"n": "Majeur, position complète (fondamentale corde 6)", "notes": [[6, 0, "1"], [5, -1, "3"], [5, 2, "5"], [4, 2, "1"], [3, 1, "3"], [2, 0, "5"], [1, 0, "1"]], "groupe": "Position complète", "acc": "", "arp": true},
+  {"n": "Majeur, position complète (fondamentale corde 5)", "notes": [[6, 0, "5"], [5, 0, "1"], [4, -1, "3"], [4, 2, "5"], [3, 2, "1"], [2, 2, "3"], [1, 0, "5"]], "groupe": "Position complète", "acc": "", "arp": true},
+  {"n": "Mineur, position complète (fondamentale corde 6)", "notes": [[6, 0, "1"], [6, 3, "♭3"], [5, 2, "5"], [4, 2, "1"], [3, 0, "♭3"], [2, 0, "5"], [1, 0, "1"], [1, 3, "♭3"]], "groupe": "Position complète", "acc": "m", "arp": true},
+  {"n": "Mineur, position complète (fondamentale corde 5)", "notes": [[6, 0, "5"], [5, 0, "1"], [5, 3, "♭3"], [4, 2, "5"], [3, 2, "1"], [2, 1, "♭3"], [1, 0, "5"]], "groupe": "Position complète", "acc": "m", "arp": true}
+]},
 {id:"arp-maj7",titre:"Arpèges Maj7",intro:"Arpège Maj7 : 1  3  5  7. Sur une octave (fondamentale sur corde 6, 5, 4 ou 3), puis sur deux octaves en position ou en enchaînant deux positions, et sur trois octaves en diagonale.",formes:[
-  {"n":"Maj7, fondamentale sur corde 6","notes":[[6,0,"1"],[5,-1,"3"],[5,2,"5"],[4,1,"7"]],"x":[1,2,3],"groupe":"Une octave","acc":"Maj7","arp":true},
-  {"n":"Maj7, fondamentale sur corde 5","notes":[[5,0,"1"],[4,-1,"3"],[4,2,"5"],[3,1,"7"]],"x":[1,2,6],"groupe":"Une octave","acc":"Maj7","arp":true},
-  {"n":"Maj7, fondamentale sur corde 4","notes":[[4,0,"1"],[3,-1,"3"],[2,-2,"5"],[2,2,"7"]],"x":[1,5,6],"groupe":"Une octave","acc":"Maj7","arp":true},
-  {"n":"Maj7, fondamentale sur corde 3","notes":[[3,0,"1"],[2,0,"3"],[1,-2,"5"],[1,2,"7"]],"x":[4,5,6],"groupe":"Une octave","acc":"Maj7","arp":true},
-  {"n":"Maj7, 2 octaves en position (fondamentale corde 6)","notes":[[6,0,"1"],[5,-1,"3"],[5,2,"5"],[4,1,"7"],[4,2,"1"],[3,1,"3"],[2,0,"5"],[1,-1,"7"],[1,0,"1"]],"groupe":"Deux et trois octaves","acc":"Maj7","arp":true},
-  {"n":"Maj7, 2 octaves en enchaînant deux positions (fondamentale corde 5)","notes":[[5,0,"1"],[4,-1,"3"],[4,2,"5"],[3,1,"7"],[3,2,"1"],[2,2,"3"],[1,0,"5"],[1,4,"7"],[1,5,"1"]],"groupe":"Deux et trois octaves","acc":"Maj7","arp":true},
-  {"n":"Maj7, 3 octaves en diagonale (7-1 puis 3-5)","notes":[[6,-1,"7"],[6,0,"1"],[5,-1,"3"],[5,2,"5"],[4,1,"7"],[4,2,"1"],[3,1,"3"],[3,4,"5"],[2,4,"7"],[2,5,"1"],[1,4,"3"],[1,7,"5"]],"groupe":"Deux et trois octaves","acc":"Maj7","arp":true,"diag":true}
+  {"n": "Maj7, fondamentale sur corde 6", "notes": [[6, 0, "1"], [5, -1, "3"], [5, 2, "5"], [4, 1, "7"]], "x": [1, 2, 3], "groupe": "Une octave", "acc": "Maj7", "arp": true},
+  {"n": "Maj7, fondamentale sur corde 5", "notes": [[5, 0, "1"], [4, -1, "3"], [4, 2, "5"], [3, 1, "7"]], "x": [1, 2, 6], "groupe": "Une octave", "acc": "Maj7", "arp": true},
+  {"n": "Maj7, fondamentale sur corde 4", "notes": [[4, 0, "1"], [3, -1, "3"], [2, -2, "5"], [2, 2, "7"]], "x": [1, 5, 6], "groupe": "Une octave", "acc": "Maj7", "arp": true},
+  {"n": "Maj7, fondamentale sur corde 3", "notes": [[3, 0, "1"], [2, 0, "3"], [1, -2, "5"], [1, 2, "7"]], "x": [4, 5, 6], "groupe": "Une octave", "acc": "Maj7", "arp": true},
+  {"n": "Maj7, 2 octaves en position (fondamentale corde 6)", "notes": [[6, 0, "1"], [5, -1, "3"], [5, 2, "5"], [4, 1, "7"], [4, 2, "1"], [3, 1, "3"], [2, 0, "5"], [1, -1, "7"], [1, 0, "1"]], "groupe": "Deux et trois octaves", "acc": "Maj7", "arp": true},
+  {"n": "Maj7, 2 octaves en enchaînant deux positions (fondamentale corde 5)", "notes": [[5, 0, "1"], [4, -1, "3"], [4, 2, "5"], [3, 1, "7"], [3, 2, "1"], [2, 2, "3"], [1, 0, "5"], [1, 4, "7"], [1, 5, "1"]], "groupe": "Deux et trois octaves", "acc": "Maj7", "arp": true},
+  {"n": "Maj7, position complète (fondamentale corde 6)", "notes": [[6, -1, "7"], [6, 0, "1"], [5, -1, "3"], [5, 2, "5"], [4, 1, "7"], [4, 2, "1"], [3, 1, "3"], [2, 0, "5"], [1, -1, "7"], [1, 0, "1"]], "groupe": "Position complète", "acc": "Maj7", "arp": true},
+  {"n": "Maj7, position complète (fondamentale corde 5)", "notes": [[6, 0, "5"], [5, -1, "7"], [5, 0, "1"], [4, -1, "3"], [4, 2, "5"], [3, 1, "7"], [3, 2, "1"], [2, 2, "3"], [1, 0, "5"]], "groupe": "Position complète", "acc": "Maj7", "arp": true},
+  {"n": "Maj7, 3 octaves en diagonale (7-1 puis 3-5)", "notes": [[6, -1, "7"], [6, 0, "1"], [5, -1, "3"], [5, 2, "5"], [4, 1, "7"], [4, 2, "1"], [3, 1, "3"], [3, 4, "5"], [2, 4, "7"], [2, 5, "1"], [1, 4, "3"], [1, 7, "5"]], "groupe": "Deux et trois octaves", "acc": "Maj7", "arp": true, "diag": true}
 ]},
 {id:"arp-7",titre:"Arpèges 7",intro:"Arpège 7 : 1  3  5  ♭7. Sur une octave (fondamentale sur corde 6, 5, 4 ou 3), puis sur deux octaves en position ou en enchaînant deux positions, et sur trois octaves en diagonale.",formes:[
-  {"n":"7, fondamentale sur corde 6","notes":[[6,0,"1"],[5,-1,"3"],[5,2,"5"],[4,0,"♭7"]],"x":[1,2,3],"groupe":"Une octave","acc":"7","arp":true},
-  {"n":"7, fondamentale sur corde 5","notes":[[5,0,"1"],[4,-1,"3"],[4,2,"5"],[3,0,"♭7"]],"x":[1,2,6],"groupe":"Une octave","acc":"7","arp":true},
-  {"n":"7, fondamentale sur corde 4","notes":[[4,0,"1"],[3,-1,"3"],[2,-2,"5"],[2,1,"♭7"]],"x":[1,5,6],"groupe":"Une octave","acc":"7","arp":true},
-  {"n":"7, fondamentale sur corde 3","notes":[[3,0,"1"],[2,0,"3"],[1,-2,"5"],[1,1,"♭7"]],"x":[4,5,6],"groupe":"Une octave","acc":"7","arp":true},
-  {"n":"7, 2 octaves en position (fondamentale corde 6)","notes":[[6,0,"1"],[5,-1,"3"],[5,2,"5"],[4,0,"♭7"],[4,2,"1"],[3,1,"3"],[2,0,"5"],[2,3,"♭7"],[1,0,"1"]],"groupe":"Deux et trois octaves","acc":"7","arp":true},
-  {"n":"7, 2 octaves en enchaînant deux positions (fondamentale corde 5)","notes":[[5,0,"1"],[4,-1,"3"],[4,2,"5"],[3,0,"♭7"],[3,2,"1"],[2,2,"3"],[1,0,"5"],[1,3,"♭7"],[1,5,"1"]],"groupe":"Deux et trois octaves","acc":"7","arp":true},
-  {"n":"7, 3 octaves en diagonale (7-1 puis 3-5)","notes":[[6,-2,"♭7"],[6,0,"1"],[5,-1,"3"],[5,2,"5"],[4,0,"♭7"],[4,2,"1"],[3,1,"3"],[3,4,"5"],[2,3,"♭7"],[2,5,"1"],[1,4,"3"],[1,7,"5"]],"groupe":"Deux et trois octaves","acc":"7","arp":true,"diag":true}
+  {"n": "7, fondamentale sur corde 6", "notes": [[6, 0, "1"], [5, -1, "3"], [5, 2, "5"], [4, 0, "♭7"]], "x": [1, 2, 3], "groupe": "Une octave", "acc": "7", "arp": true},
+  {"n": "7, fondamentale sur corde 5", "notes": [[5, 0, "1"], [4, -1, "3"], [4, 2, "5"], [3, 0, "♭7"]], "x": [1, 2, 6], "groupe": "Une octave", "acc": "7", "arp": true},
+  {"n": "7, fondamentale sur corde 4", "notes": [[4, 0, "1"], [3, -1, "3"], [2, -2, "5"], [2, 1, "♭7"]], "x": [1, 5, 6], "groupe": "Une octave", "acc": "7", "arp": true},
+  {"n": "7, fondamentale sur corde 3", "notes": [[3, 0, "1"], [2, 0, "3"], [1, -2, "5"], [1, 1, "♭7"]], "x": [4, 5, 6], "groupe": "Une octave", "acc": "7", "arp": true},
+  {"n": "7, 2 octaves en position (fondamentale corde 6)", "notes": [[6, 0, "1"], [5, -1, "3"], [5, 2, "5"], [4, 0, "♭7"], [4, 2, "1"], [3, 1, "3"], [2, 0, "5"], [2, 3, "♭7"], [1, 0, "1"]], "groupe": "Deux et trois octaves", "acc": "7", "arp": true},
+  {"n": "7, 2 octaves en enchaînant deux positions (fondamentale corde 5)", "notes": [[5, 0, "1"], [4, -1, "3"], [4, 2, "5"], [3, 0, "♭7"], [3, 2, "1"], [2, 2, "3"], [1, 0, "5"], [1, 3, "♭7"], [1, 5, "1"]], "groupe": "Deux et trois octaves", "acc": "7", "arp": true},
+  {"n": "7, position complète (fondamentale corde 6)", "notes": [[6, 0, "1"], [5, -1, "3"], [5, 2, "5"], [4, 0, "♭7"], [4, 2, "1"], [3, 1, "3"], [2, 0, "5"], [1, 0, "1"]], "groupe": "Position complète", "acc": "7", "arp": true},
+  {"n": "7, position complète (fondamentale corde 5)", "notes": [[6, 0, "5"], [6, 3, "♭7"], [5, 0, "1"], [4, 2, "5"], [3, 0, "♭7"], [3, 2, "1"], [2, 2, "3"], [1, 0, "5"], [1, 3, "♭7"]], "groupe": "Position complète", "acc": "7", "arp": true},
+  {"n": "7, 3 octaves en diagonale (7-1 puis 3-5)", "notes": [[6, -2, "♭7"], [6, 0, "1"], [5, -1, "3"], [5, 2, "5"], [4, 0, "♭7"], [4, 2, "1"], [3, 1, "3"], [3, 4, "5"], [2, 3, "♭7"], [2, 5, "1"], [1, 4, "3"], [1, 7, "5"]], "groupe": "Deux et trois octaves", "acc": "7", "arp": true, "diag": true}
 ]},
 {id:"arp-m7",titre:"Arpèges m7",intro:"Arpège m7 : 1  ♭3  5  ♭7. Sur une octave (fondamentale sur corde 6, 5, 4 ou 3), puis sur deux octaves en position ou en enchaînant deux positions, et sur trois octaves en diagonale.",formes:[
-  {"n":"m7, fondamentale sur corde 6","notes":[[6,0,"1"],[6,3,"♭3"],[5,2,"5"],[4,0,"♭7"]],"x":[1,2,3],"groupe":"Une octave","acc":"m7","arp":true},
-  {"n":"m7, fondamentale sur corde 5","notes":[[5,0,"1"],[5,3,"♭3"],[4,2,"5"],[3,0,"♭7"]],"x":[1,2,6],"groupe":"Une octave","acc":"m7","arp":true},
-  {"n":"m7, fondamentale sur corde 4","notes":[[4,0,"1"],[3,-2,"♭3"],[2,-2,"5"],[2,1,"♭7"]],"x":[1,5,6],"groupe":"Une octave","acc":"m7","arp":true},
-  {"n":"m7, fondamentale sur corde 3","notes":[[3,0,"1"],[2,-1,"♭3"],[1,-2,"5"],[1,1,"♭7"]],"x":[4,5,6],"groupe":"Une octave","acc":"m7","arp":true},
-  {"n":"m7, 2 octaves en position (fondamentale corde 6)","notes":[[6,0,"1"],[6,3,"♭3"],[5,2,"5"],[4,0,"♭7"],[4,2,"1"],[3,0,"♭3"],[2,0,"5"],[2,3,"♭7"],[1,0,"1"]],"groupe":"Deux et trois octaves","acc":"m7","arp":true},
-  {"n":"m7, 2 octaves en enchaînant deux positions (fondamentale corde 5)","notes":[[5,0,"1"],[5,3,"♭3"],[4,2,"5"],[3,0,"♭7"],[3,2,"1"],[2,1,"♭3"],[1,0,"5"],[1,3,"♭7"],[1,5,"1"]],"groupe":"Deux et trois octaves","acc":"m7","arp":true},
-  {"n":"m7, 3 octaves en diagonale (7-1 puis 3-5)","notes":[[6,-2,"♭7"],[6,0,"1"],[5,-2,"♭3"],[5,2,"5"],[4,0,"♭7"],[4,2,"1"],[3,0,"♭3"],[3,4,"5"],[2,3,"♭7"],[2,5,"1"],[1,3,"♭3"],[1,7,"5"]],"groupe":"Deux et trois octaves","acc":"m7","arp":true,"diag":true}
+  {"n": "m7, fondamentale sur corde 6", "notes": [[6, 0, "1"], [6, 3, "♭3"], [5, 2, "5"], [4, 0, "♭7"]], "x": [1, 2, 3], "groupe": "Une octave", "acc": "m7", "arp": true},
+  {"n": "m7, fondamentale sur corde 5", "notes": [[5, 0, "1"], [5, 3, "♭3"], [4, 2, "5"], [3, 0, "♭7"]], "x": [1, 2, 6], "groupe": "Une octave", "acc": "m7", "arp": true},
+  {"n": "m7, fondamentale sur corde 4", "notes": [[4, 0, "1"], [3, -2, "♭3"], [2, -2, "5"], [2, 1, "♭7"]], "x": [1, 5, 6], "groupe": "Une octave", "acc": "m7", "arp": true},
+  {"n": "m7, fondamentale sur corde 3", "notes": [[3, 0, "1"], [2, -1, "♭3"], [1, -2, "5"], [1, 1, "♭7"]], "x": [4, 5, 6], "groupe": "Une octave", "acc": "m7", "arp": true},
+  {"n": "m7, 2 octaves en position (fondamentale corde 6)", "notes": [[6, 0, "1"], [6, 3, "♭3"], [5, 2, "5"], [4, 0, "♭7"], [4, 2, "1"], [3, 0, "♭3"], [2, 0, "5"], [2, 3, "♭7"], [1, 0, "1"]], "groupe": "Deux et trois octaves", "acc": "m7", "arp": true},
+  {"n": "m7, 2 octaves en enchaînant deux positions (fondamentale corde 5)", "notes": [[5, 0, "1"], [5, 3, "♭3"], [4, 2, "5"], [3, 0, "♭7"], [3, 2, "1"], [2, 1, "♭3"], [1, 0, "5"], [1, 3, "♭7"], [1, 5, "1"]], "groupe": "Deux et trois octaves", "acc": "m7", "arp": true},
+  {"n": "m7, position complète (fondamentale corde 6)", "notes": [[6, 0, "1"], [6, 3, "♭3"], [5, 2, "5"], [4, 0, "♭7"], [4, 2, "1"], [3, 0, "♭3"], [2, 0, "5"], [2, 3, "♭7"], [1, 0, "1"], [1, 3, "♭3"]], "groupe": "Position complète", "acc": "m7", "arp": true},
+  {"n": "m7, position complète (fondamentale corde 5)", "notes": [[6, 0, "5"], [6, 3, "♭7"], [5, 0, "1"], [5, 3, "♭3"], [4, 2, "5"], [3, 0, "♭7"], [3, 2, "1"], [2, 1, "♭3"], [1, 0, "5"], [1, 3, "♭7"]], "groupe": "Position complète", "acc": "m7", "arp": true},
+  {"n": "m7, 3 octaves en diagonale (7-1 puis 3-5)", "notes": [[6, -2, "♭7"], [6, 0, "1"], [5, -2, "♭3"], [5, 2, "5"], [4, 0, "♭7"], [4, 2, "1"], [3, 0, "♭3"], [3, 4, "5"], [2, 3, "♭7"], [2, 5, "1"], [1, 3, "♭3"], [1, 7, "5"]], "groupe": "Deux et trois octaves", "acc": "m7", "arp": true, "diag": true}
 ]},
 {id:"arp-m7b5",titre:"Arpèges m7♭5",intro:"Arpège m7♭5 : 1  ♭3  ♭5  ♭7. Sur une octave (fondamentale sur corde 6, 5, 4 ou 3), puis sur deux octaves en position ou en enchaînant deux positions, et sur trois octaves en diagonale.",formes:[
-  {"n":"m7♭5, fondamentale sur corde 6","notes":[[6,0,"1"],[6,3,"♭3"],[5,1,"♭5"],[4,0,"♭7"]],"x":[1,2,3],"groupe":"Une octave","acc":"m7♭5","arp":true},
-  {"n":"m7♭5, fondamentale sur corde 5","notes":[[5,0,"1"],[5,3,"♭3"],[4,1,"♭5"],[3,0,"♭7"]],"x":[1,2,6],"groupe":"Une octave","acc":"m7♭5","arp":true},
-  {"n":"m7♭5, fondamentale sur corde 4","notes":[[4,0,"1"],[3,-2,"♭3"],[2,-3,"♭5"],[2,1,"♭7"]],"x":[1,5,6],"groupe":"Une octave","acc":"m7♭5","arp":true},
-  {"n":"m7♭5, fondamentale sur corde 3","notes":[[3,0,"1"],[2,-1,"♭3"],[1,-3,"♭5"],[1,1,"♭7"]],"x":[4,5,6],"groupe":"Une octave","acc":"m7♭5","arp":true},
-  {"n":"m7♭5, 2 octaves en position (fondamentale corde 6)","notes":[[6,0,"1"],[6,3,"♭3"],[5,1,"♭5"],[4,0,"♭7"],[4,2,"1"],[3,0,"♭3"],[3,3,"♭5"],[2,3,"♭7"],[1,0,"1"]],"groupe":"Deux et trois octaves","acc":"m7♭5","arp":true},
-  {"n":"m7♭5, 2 octaves en enchaînant deux positions (fondamentale corde 5)","notes":[[5,0,"1"],[5,3,"♭3"],[4,1,"♭5"],[3,0,"♭7"],[3,2,"1"],[2,1,"♭3"],[1,-1,"♭5"],[1,3,"♭7"],[1,5,"1"]],"groupe":"Deux et trois octaves","acc":"m7♭5","arp":true},
-  {"n":"m7♭5, 3 octaves en diagonale (7-1 puis 3-5)","notes":[[6,-2,"♭7"],[6,0,"1"],[5,-2,"♭3"],[5,1,"♭5"],[4,0,"♭7"],[4,2,"1"],[3,0,"♭3"],[3,3,"♭5"],[2,3,"♭7"],[2,5,"1"],[1,3,"♭3"],[1,6,"♭5"]],"groupe":"Deux et trois octaves","acc":"m7♭5","arp":true,"diag":true}
+  {"n": "m7♭5, fondamentale sur corde 6", "notes": [[6, 0, "1"], [6, 3, "♭3"], [5, 1, "♭5"], [4, 0, "♭7"]], "x": [1, 2, 3], "groupe": "Une octave", "acc": "m7♭5", "arp": true},
+  {"n": "m7♭5, fondamentale sur corde 5", "notes": [[5, 0, "1"], [5, 3, "♭3"], [4, 1, "♭5"], [3, 0, "♭7"]], "x": [1, 2, 6], "groupe": "Une octave", "acc": "m7♭5", "arp": true},
+  {"n": "m7♭5, fondamentale sur corde 4", "notes": [[4, 0, "1"], [3, -2, "♭3"], [2, -3, "♭5"], [2, 1, "♭7"]], "x": [1, 5, 6], "groupe": "Une octave", "acc": "m7♭5", "arp": true},
+  {"n": "m7♭5, fondamentale sur corde 3", "notes": [[3, 0, "1"], [2, -1, "♭3"], [1, -3, "♭5"], [1, 1, "♭7"]], "x": [4, 5, 6], "groupe": "Une octave", "acc": "m7♭5", "arp": true},
+  {"n": "m7♭5, 2 octaves en position (fondamentale corde 6)", "notes": [[6, 0, "1"], [6, 3, "♭3"], [5, 1, "♭5"], [4, 0, "♭7"], [4, 2, "1"], [3, 0, "♭3"], [3, 3, "♭5"], [2, 3, "♭7"], [1, 0, "1"]], "groupe": "Deux et trois octaves", "acc": "m7♭5", "arp": true},
+  {"n": "m7♭5, 2 octaves en enchaînant deux positions (fondamentale corde 5)", "notes": [[5, 0, "1"], [5, 3, "♭3"], [4, 1, "♭5"], [3, 0, "♭7"], [3, 2, "1"], [2, 1, "♭3"], [1, -1, "♭5"], [1, 3, "♭7"], [1, 5, "1"]], "groupe": "Deux et trois octaves", "acc": "m7♭5", "arp": true},
+  {"n": "m7♭5, position complète (fondamentale corde 6)", "notes": [[6, 0, "1"], [6, 3, "♭3"], [5, 1, "♭5"], [4, 0, "♭7"], [4, 2, "1"], [3, 0, "♭3"], [3, 3, "♭5"], [2, 3, "♭7"], [1, 0, "1"], [1, 3, "♭3"]], "groupe": "Position complète", "acc": "m7♭5", "arp": true},
+  {"n": "m7♭5, position complète (fondamentale corde 5)", "notes": [[6, -1, "♭5"], [5, -2, "♭7"], [5, 0, "1"], [4, -2, "♭3"], [4, 1, "♭5"], [3, 0, "♭7"], [2, -2, "1"], [2, 1, "♭3"], [1, -1, "♭5"]], "groupe": "Position complète", "acc": "m7♭5", "arp": true},
+  {"n": "m7♭5, 3 octaves en diagonale (7-1 puis 3-5)", "notes": [[6, -2, "♭7"], [6, 0, "1"], [5, -2, "♭3"], [5, 1, "♭5"], [4, 0, "♭7"], [4, 2, "1"], [3, 0, "♭3"], [3, 3, "♭5"], [2, 3, "♭7"], [2, 5, "1"], [1, 3, "♭3"], [1, 6, "♭5"]], "groupe": "Deux et trois octaves", "acc": "m7♭5", "arp": true, "diag": true}
 ]},
 {id:"arp-dim7",titre:"Arpèges dim7",intro:"Arpège dim7 : 1  ♭3  ♭5  𝄫7. Sur une octave (fondamentale sur corde 6, 5, 4 ou 3), puis sur deux octaves en position ou en enchaînant deux positions, et sur trois octaves en diagonale.",formes:[
-  {"n":"dim7, fondamentale sur corde 6","notes":[[6,0,"1"],[6,3,"♭3"],[5,1,"♭5"],[4,-1,"𝄫7"]],"x":[1,2,3],"groupe":"Une octave","acc":"dim7","arp":true},
-  {"n":"dim7, fondamentale sur corde 5","notes":[[5,0,"1"],[5,3,"♭3"],[4,1,"♭5"],[3,-1,"𝄫7"]],"x":[1,2,6],"groupe":"Une octave","acc":"dim7","arp":true},
-  {"n":"dim7, fondamentale sur corde 4","notes":[[4,0,"1"],[3,-2,"♭3"],[2,-3,"♭5"],[2,0,"𝄫7"]],"x":[1,5,6],"groupe":"Une octave","acc":"dim7","arp":true},
-  {"n":"dim7, fondamentale sur corde 3","notes":[[3,0,"1"],[2,-1,"♭3"],[1,-3,"♭5"],[1,0,"𝄫7"]],"x":[4,5,6],"groupe":"Une octave","acc":"dim7","arp":true},
-  {"n":"dim7, 2 octaves en position (fondamentale corde 6)","notes":[[6,0,"1"],[6,3,"♭3"],[5,1,"♭5"],[4,-1,"𝄫7"],[4,2,"1"],[3,0,"♭3"],[3,3,"♭5"],[2,2,"𝄫7"],[1,0,"1"]],"groupe":"Deux et trois octaves","acc":"dim7","arp":true},
-  {"n":"dim7, 2 octaves en enchaînant deux positions (fondamentale corde 5)","notes":[[5,0,"1"],[5,3,"♭3"],[4,1,"♭5"],[3,-1,"𝄫7"],[3,2,"1"],[2,1,"♭3"],[1,-1,"♭5"],[1,2,"𝄫7"],[1,5,"1"]],"groupe":"Deux et trois octaves","acc":"dim7","arp":true},
-  {"n":"dim7, 3 octaves en diagonale (7-1 puis 3-5)","notes":[[6,-3,"𝄫7"],[6,0,"1"],[5,-2,"♭3"],[5,1,"♭5"],[4,-1,"𝄫7"],[4,2,"1"],[3,0,"♭3"],[3,3,"♭5"],[2,2,"𝄫7"],[2,5,"1"],[1,3,"♭3"],[1,6,"♭5"]],"groupe":"Deux et trois octaves","acc":"dim7","arp":true,"diag":true}
-]}
+  {"n": "dim7, fondamentale sur corde 6", "notes": [[6, 0, "1"], [6, 3, "♭3"], [5, 1, "♭5"], [4, -1, "𝄫7"]], "x": [1, 2, 3], "groupe": "Une octave", "acc": "dim7", "arp": true},
+  {"n": "dim7, fondamentale sur corde 5", "notes": [[5, 0, "1"], [5, 3, "♭3"], [4, 1, "♭5"], [3, -1, "𝄫7"]], "x": [1, 2, 6], "groupe": "Une octave", "acc": "dim7", "arp": true},
+  {"n": "dim7, fondamentale sur corde 4", "notes": [[4, 0, "1"], [3, -2, "♭3"], [2, -3, "♭5"], [2, 0, "𝄫7"]], "x": [1, 5, 6], "groupe": "Une octave", "acc": "dim7", "arp": true},
+  {"n": "dim7, fondamentale sur corde 3", "notes": [[3, 0, "1"], [2, -1, "♭3"], [1, -3, "♭5"], [1, 0, "𝄫7"]], "x": [4, 5, 6], "groupe": "Une octave", "acc": "dim7", "arp": true},
+  {"n": "dim7, 2 octaves en position (fondamentale corde 6)", "notes": [[6, 0, "1"], [6, 3, "♭3"], [5, 1, "♭5"], [4, -1, "𝄫7"], [4, 2, "1"], [3, 0, "♭3"], [3, 3, "♭5"], [2, 2, "𝄫7"], [1, 0, "1"]], "groupe": "Deux et trois octaves", "acc": "dim7", "arp": true},
+  {"n": "dim7, 2 octaves en enchaînant deux positions (fondamentale corde 5)", "notes": [[5, 0, "1"], [5, 3, "♭3"], [4, 1, "♭5"], [3, -1, "𝄫7"], [3, 2, "1"], [2, 1, "♭3"], [1, -1, "♭5"], [1, 2, "𝄫7"], [1, 5, "1"]], "groupe": "Deux et trois octaves", "acc": "dim7", "arp": true},
+  {"n": "dim7, position complète (fondamentale corde 6)", "notes": [[6, 0, "1"], [6, 3, "♭3"], [5, 1, "♭5"], [4, 2, "1"], [3, 0, "♭3"], [3, 3, "♭5"], [2, 2, "𝄫7"], [1, 0, "1"], [1, 3, "♭3"]], "groupe": "Position complète", "acc": "dim7", "arp": true},
+  {"n": "dim7, position complète (fondamentale corde 5)", "notes": [[6, -1, "♭5"], [6, 2, "𝄫7"], [5, 0, "1"], [4, 1, "♭5"], [3, -1, "𝄫7"], [3, 2, "1"], [2, 1, "♭3"], [1, -1, "♭5"], [1, 2, "𝄫7"]], "groupe": "Position complète", "acc": "dim7", "arp": true},
+  {"n": "dim7, 3 octaves en diagonale (7-1 puis 3-5)", "notes": [[6, -3, "𝄫7"], [6, 0, "1"], [5, -2, "♭3"], [5, 1, "♭5"], [4, -1, "𝄫7"], [4, 2, "1"], [3, 0, "♭3"], [3, 3, "♭5"], [2, 2, "𝄫7"], [2, 5, "1"], [1, 3, "♭3"], [1, 6, "♭5"]], "groupe": "Deux et trois octaves", "acc": "dim7", "arp": true, "diag": true}
+]},
 ];

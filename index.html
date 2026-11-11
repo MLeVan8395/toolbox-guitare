@@ -52,9 +52,10 @@ nav a:hover{color:var(--ink)}
 .subnav .sep{flex:0 0 1px;background:var(--line);margin:4px 4px}
 .staffwrap{border:1px solid var(--line);border-radius:10px;background:var(--sheet);padding:6px 4px;margin-top:14px;color:var(--ink)}
 .staffwrap svg{display:block;width:100%;height:auto}
+.minigrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(230px,1fr));gap:10px;padding:4px 8px}.mini svg{display:block;width:100%;height:auto;min-width:0!important}.mini b{display:block;font-size:13px;color:var(--muted);margin:0 0 2px 4px}
 .chordgrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:14px}
 .chordgrid .card{padding:14px}.chordgrid h3{margin:0 0 6px;font-family:var(--chord);font-size:22px}
-.subnav .brk{flex-basis:100%;height:0}.subnav .niv{font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:var(--muted);align-self:center;margin-right:4px}
+.subnav .brk{flex-basis:100%;height:0}.subnav .nivbtn{font-weight:700;border-width:2px}.subnav .nivbtn[aria-current]{background:var(--accent);color:var(--bg);border-color:var(--accent)}.subnav .niv{font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:var(--muted);align-self:center;margin-right:4px}
 .vxbar{position:relative;height:26px;border-radius:99px;background:var(--paper);border:1px solid var(--line);overflow:hidden;max-width:520px}
 .vxbar::before{content:"";position:absolute;top:0;bottom:0;left:45%;width:10%;background:color-mix(in srgb,var(--green) 30%,transparent)}
 .vxbar::after{content:"";position:absolute;top:0;bottom:0;left:50%;width:2px;background:var(--muted)}
@@ -217,6 +218,13 @@ label.chk input{width:18px;height:18px;accent-color:var(--accent)}
     <div class="board" id="ntBoard"></div>
     <div class="meta">Cordes de haut en bas : Mi aigu, Si, Sol, Ré, La, Mi grave. Les altérations sont écrites avec leurs deux noms (Fa♯ / Sol♭).</div>
   </div>
+  <div class="card" style="margin-top:16px">
+    <h3 style="margin-top:0">Comment les notes se placent</h3>
+    <p style="margin:0 0 6px">Entre deux notes naturelles qui se suivent, il y a <b>un ton = 2 cases</b>.</p>
+    <p style="margin:0 0 6px">Sauf entre <b>Mi et Fa</b> et entre <b>Si et Do</b> : <b>un demi-ton = 1 case</b>.</p>
+    <p class="meta" style="margin:0 0 10px">Exemple sur la corde de La : La (à vide), Si (case 2), Do (case 3), Ré (case 5), Mi (case 7), Fa (case 8), Sol (case 10), La (case 12). Les cases entre deux portent un dièse ou un bémol (La♯ = Si♭).</p>
+    <div class="board" id="ntTons"></div>
+  </div>
 </section>
 
 <section class="panel" id="p-accordeur" aria-labelledby="h-acc">
@@ -269,7 +277,7 @@ label.chk input{width:18px;height:18px;accent-color:var(--accent)}
 </section>
 
 </main>
-<footer class="meta" style="max-width:1100px;margin:0 auto;padding:0 20px 30px;text-align:center">Boîte à outils guitare · <span id="appver">version 49</span><br><span style="font-size:12px">Sons : basse <a href="https://www.karoryfer.com/karoryfer-samples" target="_blank" rel="noopener">Karoryfer Samples</a> (CC BY 3.0) · batterie Virtuosity Drums et contrebasse <a href="https://github.com/sgossner/VSCO-2-CE" target="_blank" rel="noopener">VSCO 2</a> (CC0)</span></footer>
+<footer class="meta" style="max-width:1100px;margin:0 auto;padding:0 20px 30px;text-align:center">Boîte à outils guitare · <span id="appver">version 50</span><br><span style="font-size:12px">Sons : basse <a href="https://www.karoryfer.com/karoryfer-samples" target="_blank" rel="noopener">Karoryfer Samples</a> (CC BY 3.0) · batterie Virtuosity Drums et contrebasse <a href="https://github.com/sgossner/VSCO-2-CE" target="_blank" rel="noopener">VSCO 2</a> (CC0)</span></footer>
 <script src="contenu/formes.js"></script>
 <script>
 'use strict';
@@ -542,7 +550,7 @@ const isChord=(f,ch)=>!!(f.acc!==undefined||(['ouverts','power','shell','positio
 function intervalsOf(f){const seen=[];[...f.notes].map(n=>n[2]).sort((a,b)=>SEMI[a]-SEMI[b]||degOf(a)-degOf(b)).forEach(l=>{if(!seen.includes(l))seen.push(l);});return seen;}
 function restOf(n){const m=n.match(/[(:,]\s*(.*?)\)?$/);return m?m[1]:'';}
 // suffixe d'accord de chaque chapitre de triades
-const TSUF={'triades':'','triades-min':'m','triades-dim':'dim','triades-ouv':'','triades-ouv-min':'m'};
+const TSUF={'triades':'','triades-min':'m','triades-dim':'dim','triades-ouv':'','triades-ouv-min':'m','triades-ouv-dim':'dim'};
 const isDrop=ch=>/^drop/.test(ch.id);
 // ce que montre la page en cours (niveaux) : formes retenues, groupes de cordes retenus, grille d'accords ouverts, qualité des drops
 const VIEW={filt:null,grps:null,grid:null,niv:0};
@@ -564,7 +572,7 @@ function shapeName(f,ch,key){
 
 // ---- Gammes sur une octave, fondamentale sur la corde 6, 5, 4 ou 3 : doigté en position calculé (fenêtre de 4 ou 5 cases) ----
 const EXT=/^(9|♭9|♯9|11|♯11|13|♭13)$/;
-const isScaleChap=ch=>ch.id==='gammes'||ch.id==='modes';
+const isScaleChap=ch=>ch.id==='gammes'||ch.id==='modes'||ch.id==='penta';
 function octaveShape(f,rs){
   const ivs=intervalsOf(f).filter(l=>!EXT.test(l)),tones=ivs.map(l=>[SEMI[l],l]).concat([[12,'1']]);
   let best=null;
@@ -680,9 +688,12 @@ const chordWritten=(pl,key)=>pl.map(n=>{const L=(key[2]+degOf(n.l)-1)%7;return {
 // accord parfait de départ pour un accord à 4 sons (même position) : 7, ♭7, 𝄫7 -> 1 ; ♭5 -> 5
 const TO_TRIAD={'7':['1',1],'♭7':['1',2],'𝄫7':['1',3],'♭5':['5',1]};
 // ---- Motifs pour jouer les gammes ----
+// motifs d'arpèges : on compte en notes de l'arpège (1 3 5 7)
+const ARPMOT=[['lin','Arpège simple'],['s','Avec sauts (1 5, 3 7…)'],['sa','Avec sauts alternés (1 5, 7 3…)'],['b3','Brisé par 3 (1 3 5, 3 5 7…)'],['b4','Brisé par 4 (1 3 5 7, 3 5 7 1…)']];
 const MOTIFS=[['lin','Gamme simple']].concat(...[['3','tierces'],['4','quartes'],['5','quintes'],['6','sixtes'],['7','septièmes']].map(([v,n])=>[[v,'En '+n],[v+'a','En '+n+' alternées']]))
   .concat([['tri','En triades'],['tria','En triades alternées'],['b3','Gamme brisée par 3'],['b4','Gamme brisée par 4']]);
 function motifSpec(mot){if(!mot||mot==='lin')return null;const alt=/a$/.test(mot);
+  if(mot==='s'||mot==='sa')return {kk:2,nn:2,alt:mot==='sa'};
   if(mot.startsWith('tri'))return {kk:2,nn:3,alt};if(mot==='b3')return {kk:1,nn:3,alt:false};if(mot==='b4')return {kk:1,nn:4,alt:false};
   const k=parseInt(mot,10);return k?{kk:k-1,nn:2,alt}:null;}
 // notes de la gamme au-delà du schéma (au-dessus ou au-dessous), placées au plus près de la position
@@ -710,7 +721,18 @@ const ascOf=pl=>[...pl].sort((a,b)=>a.m-b.m).filter((n,i,A)=>i===0||n.m!==A[i-1]
 // ---- Triades : les quatre états sur un même schéma ----
 const INV3=['position fondamentale','1er renversement','2e renversement'];
 const INVALL=['position fondamentale','1er renversement','2e renversement','3e renversement'],INVS=['fondamentale','1er renv.','2e renv.','3e renv.'];
+// triades ouvertes : chaque état a sa position (corde sautée selon le renversement) ; une variante à vide quand elle est plus grave
+function openClimb(fs,grp,key){
+  const lo=pl=>Math.min(...pl.map(x=>x.fr)),hi=pl=>Math.max(...pl.map(x=>x.fr)),up=pl=>pl.map(x=>({...x,fr:x.fr+12,m:x.m+12})),dn=pl=>pl.map(x=>({...x,fr:x.fr-12,m:x.m-12})),bass=pl=>Math.min(...pl.map(x=>x.m));
+  const prim=INVALL.slice(0,3).map(r=>fs.find(f=>f.groupe===grp&&restName(f.n)===r&&!f.alt)),alt=INVALL.slice(0,3).map(r=>fs.find(f=>f.groupe===grp&&restName(f.n)===r&&f.alt));
+  const B=[0,1,2].map(r=>{const c=[place(prim[r],key,{floor:0})];if(alt[r])c.push(place(alt[r],key,{floor:0}));return c.reduce((a,b)=>bass(b)<bass(a)?b:a);});
+  const st=[0,1,2].reduce((a,b)=>bass(B[b])<bass(B[a])?b:a,0),ord=[st,(st+1)%3,(st+2)%3],seq=[B[st]];
+  ord.slice(1).forEach(j=>{let pl=place(prim[j],key,{floor:0});while(bass(pl)<=bass(seq[seq.length-1]))pl=up(pl);seq.push(pl);});
+  let oc=place(prim[st],key,{floor:0});while(bass(oc)<bass(seq[0])+12)oc=up(oc);while(bass(oc)>bass(seq[0])+12&&lo(oc)>=12)oc=dn(oc);
+  seq.push(oc);return {seq,ord,top:hi(oc),sh:prim};
+}
 function triadClimb(fs,grp,key){
+  if(fs.some(f=>f.ouv))return openClimb(fs,grp,key);
   const sh=INVALL.map(r=>fs.find(f=>f.groupe===grp&&restName(f.n)===r)).filter(Boolean),N=sh.length;
   const lo=pl=>Math.min(...pl.map(x=>x.fr)),hi=pl=>Math.max(...pl.map(x=>x.fr)),up=pl=>pl.map(x=>({...x,fr:x.fr+12,m:x.m+12}));
   // on part toujours de l'état le plus grave sur le manche, quel qu'il soit, puis on monte jusqu'à son octave
@@ -812,7 +834,7 @@ function renderShape(){
       '<b>Emploi :</b> '+esc((f0.emploi||'').replace('{IV}',slashName({tri:['4','']},key).split('/')[0]))].join('<br>');}
   if(ch.id==='slash'&&!corde){const LS={};f.notes.forEach(n=>LS[n[0]]=n[2]);const pl=notes.map(n=>({s:n.s,fr:n.fr,m:n.m,l:LS[n.s]}));
     $('shStaff').hidden=false;$('shStaff').innerHTML=chordStaff([{name:slashName(f0,key),notes:chordWritten(pl,key),lab:'= '+chordName(key,'')+f0.son}],-1);}
-  if((isScaleChap(ch)&&scale)||f0.arp){const pl=corde?notes:place(f,key,f.diag?{floor:0}:{}),M=motifSeq(ascOf(pl),f0.arp?'lin':val('gMot')),SK=staffKeyOf(f0,key);
+  if((isScaleChap(ch)&&scale)||f0.arp){const pl=corde?notes:place(f,key,f.diag?{floor:0}:{}),M=motifSeq(ascOf(pl),val('gMot')),SK=staffKeyOf(f0,key);
     const sub=+(val('gSub')||1),R=rhythmItems(spellSeq(M.seq,SK.K),sub,mod(-M.seq.length,4*sub),keyTupleOf(SK.K,SK.sig,f0.n==='Gamme mineure naturelle'),SK.sig,0,0);
     $('shStaff').hidden=false;$('shStaff').innerHTML=rhythmPages(R.items,R.items[0].key,!!f0.arp);}
   SH.cur={f,ch,key,notes,corde};
@@ -842,7 +864,12 @@ function renderTriads(ch,key,lbl){
   T.seq.forEach((pl,j)=>{const r=T.ord[j%N];pl.forEach(n=>notes.push({s:n.s,fr:n.fr,m:n.m,root:n.l==='1',txt:lbl==='note'?spell(key,n.l):n.l}));
     labels.push({a:Math.min(...pl.map(n=>n.fr)),b:Math.max(...pl.map(n=>n.fr)),t:INVS[r]+(j===N?' à l\'octave':'')});});
   const frs=notes.map(n=>n.fr),from=Math.max(0,Math.min(...frs)-1),to=Math.max(...frs)+1;
-  drawBoard($('shBoard'),{from,to,notes,x:f.x,labels,label:$('shTitle').textContent,focus:Math.round((from+to)/2)});
+  if(chapForms(ch).some(x=>x.ouv)){ // positions qui se chevauchent : un petit schéma par état
+    const box=$('shBoard');box.innerHTML='<div class="minigrid"></div>';const g=box.firstChild;
+    T.seq.forEach((pl,j)=>{const d=document.createElement('div');d.className='mini';d.innerHTML=`<b>${esc(labels[j].t)}</b><div></div>`;g.appendChild(d);
+      const fr=pl.map(n=>n.fr),SPN=Math.max(...T.seq.map(q=>Math.max(...q.map(n=>n.fr))-Math.min(...q.map(n=>n.fr))))+2,a=Math.max(0,Math.min(...fr)-1),b=a+Math.max(SPN,4),sf=T.sh[T.ord[j%N]]; // même largeur pour les quatre schémas
+      drawBoard(d.lastChild,{from:a,to:b,notes:pl.map(n=>({s:n.s,fr:n.fr,m:n.m,root:n.l==='1',txt:lbl==='note'?spell(key,n.l):n.l})),x:[1,2,3,4,5,6].filter(s=>!pl.some(n=>n.s===s)),label:labels[j].t});});}
+  else drawBoard($('shBoard'),{from,to,notes,x:f.x,labels,label:$('shTitle').textContent,focus:Math.round((from+to)/2)});
   $('shInfo').textContent='On part de l\'état le plus grave sur le manche ('+INVALL[T.ord[0]]+'), puis on monte les renversements jusqu\'à son octave.';
   const CH=T.seq.map((pl,j)=>({name:chordName(key,suf),notes:chordWritten(pl,key),lab:labels[j].t}));
   $('shStaff').hidden=false;$('shStaff').innerHTML=chordStaff(CH,-1);
@@ -861,7 +888,12 @@ function playShape(){
 }
 
 // ===================== Onglet Toutes les notes =====================
-function renderNotes(){
+function renderTons(){ // la corde de La : notes naturelles, avec « 1 ton » ou « ½ ton » sous chaque intervalle
+  const fr=[0,2,3,5,7,8,10,12],labels=fr.slice(1).map((b,i)=>({a:fr[i],b,t:b-fr[i]===1?'½ ton':'1 ton'}));
+  drawBoard($('ntTons'),{from:0,to:12,notes:fr.map(f=>{const pc=mod(45+f,12);return {s:5,fr:f,m:45+f,root:false,txt:PC2[pc].split(' / ')[0]};}),labels,fw:58,sg:30,label:'Tons et demi-tons sur la corde de La',
+    onTap:n=>pluck(n.m)});
+}
+function renderNotes(){renderTons();
   const nat=$('ntNat').checked,hide=$('ntHide').checked,notes=[];
   for(let s=1;s<=6;s++)for(let fr=0;fr<=12;fr++){const pc=mod(TUN[s]+fr,12);if(nat&&!NAT.includes(pc))continue;
     const two=PC2[pc].split(' / ');
@@ -1003,7 +1035,7 @@ const GAMES=[
  {id:'gamme',titre:'Jouer au métronome',
   desc:'Le schéma affiché, monté puis descendu au métronome : la note à jouer s\'allume sur le manche. Avec le cycle des quartes, la tonalité change à chaque tour.',
   // ce jeu s'affiche directement sous le schéma de la gamme ou de l'arpège (forme et tonalité choisies au-dessus)
-  opts:()=>opt('gSub','Valeurs',[[1,'Noires'],[2,'Croches'],[3,'Triolets'],[4,'Doubles croches']],1)+((CHAPITRES[SH.ch]||{}).id&&!(CHAPITRES[SH.ch].formes[SH.f]||{}).arp&&!String(CHAPITRES[SH.ch].id).startsWith('arp')?opt('gMot','Motif',MOTIFS,'lin'):'')+opt('gNxt','Après chaque tour',[['same','Même tonalité'],['q','Cycle des quartes']],'same')
+  opts:()=>opt('gSub','Valeurs',[[1,'Noires'],[2,'Croches'],[3,'Triolets'],[4,'Doubles croches']],1)+((CHAPITRES[SH.ch]||{}).id?(String(CHAPITRES[SH.ch].id).startsWith('arp')?opt('gMot','Motif',ARPMOT,'lin'):opt('gMot','Motif',MOTIFS,'lin')):'')+opt('gNxt','Après chaque tour',[['same','Même tonalité'],['q','Cycle des quartes']],'same')
       +opt('gAcc','Accompagnement',ACCOPTS,'none')
       +'<label class="chk" style="align-self:end;padding-bottom:8px"><input type="checkbox" id="gSnd" checked> Entendre les notes</label>',
   make:()=>{
@@ -1012,7 +1044,7 @@ const GAMES=[
     let pos=null;const tours=[];
     const tour=n=>{while(tours.length<=n){const key=cyc?KEYQ[(startQ+tours.length)%12]:KEYS[k0];
         const pl=place(f,key,pos===null?(f.diag?{floor:0}:{}):{near:pos,floor:f.diag?0:1});pos=pl.reduce((a,b)=>a+b.fr,0)/pl.length;
-        const M=motifSeq(ascOf(pl),f0.arp?'lin':val('gMot')),seq=M.seq,SK=staffKeyOf(f0,key),bar=(cyc&&SK.sig?16:4)*sub,pad=mod(-seq.length,bar); // cycle avec armure : un tour = des lignes entières
+        const M=motifSeq(ascOf(pl),val('gMot')),seq=M.seq,SK=staffKeyOf(f0,key),bar=(cyc&&SK.sig?16:4)*sub,pad=mod(-seq.length,bar); // cycle avec armure : un tour = des lignes entières
         const prev=tours[tours.length-1],b0=prev?prev.b0+(prev.seq.length+prev.pad)/(4*sub):0,i0=prev?prev.i0+prev.R.items.length:0;
         const R=rhythmItems(spellSeq(seq,SK.K),sub,pad,keyTupleOf(SK.K,SK.sig,f0.n==='Gamme mineure naturelle'),SK.sig,b0,i0);
         tours.push({key,pl,seq,pad,ext:M.ext,b0,i0,R});}return tours[n];};
@@ -1114,7 +1146,7 @@ const FAMILLES=[['power:','Power chords',1],['positions:','Majeur (accord comple
   ['positions:7','7 (accord complet)',2],['positions:Maj7','Maj7 (accord complet)',2],['positions:m7','m7 (accord complet)',2],['positions:m7b5','m7♭5 (accord complet)',2],['positions:dim7','dim7 (accord complet)',2],['positions:6','6 (accord complet)',2],['positions:m6','m6 (accord complet)',2],
   ['cordes1234:Maj7','Maj7 sur les cordes 1 à 4',2],['cordes1234:7','7 sur les cordes 1 à 4',2],['cordes1234:m7','m7 sur les cordes 1 à 4',2],['cordes1234:m7b5','m7♭5 sur les cordes 1 à 4',2],['cordes1234:dim7','dim7 sur les cordes 1 à 4',2],
   ['enrichis:7','7 (corde 6 ou 5)',2],['enrichis:9','9 (enrichi)',2],['enrichis:13','13 (enrichi)',2],['enrichis:Maj9','Maj9',2],['enrichis:m9','m9',2],
-  ['triades-ouv:','Triades majeures en position ouverte',3],['triades-ouv-min:','Triades mineures en position ouverte',3]]
+  ['triades-ouv:','Triades majeures en position ouverte',3],['triades-ouv-min:','Triades mineures en position ouverte',3],['triades-ouv-dim:','Triades diminuées en position ouverte',3]]
   .concat(...[['drop2','Drop 2'],['drop3','Drop 3'],['drop24','Drop 2+4']].map(([c,t])=>['Maj7','7','m7','m7b5','dim7'].map(q=>[c+':'+q,t+' '+q.replace('b5','♭5'),3])));
 const FAM_GRPS={'triades:':G12,'triades-min:':G12,'triades:#2':G34,'triades-min:#2':G34};
 const famsOf=n=>FAMILLES.filter(f=>!n||f[2]===n).map(f=>[f[0],f[1]]);
@@ -1138,7 +1170,7 @@ const GEN_LV={
     ['Accords enrichis : 9, 13, Maj9, m9…',()=>[...new Set(CHP('enrichis').formes.map(f=>f.acc))].map(a=>GT('enrichis',a))],
     ['Accords à 4 sons et accords enrichis',()=>POS4.slice(0,4).map(a=>GT('positions',a)).concat([...new Set(CHP('enrichis').formes.map(f=>f.acc))].map(a=>GT('enrichis',a)))]],
  3:[['Drop 2',()=>DROPS(['drop2'])],['Drop 3',()=>DROPS(['drop3'])],['Drop 2+4',()=>DROPS(['drop24'])],['Tous les drops',()=>DROPS(['drop2','drop3','drop24'])],
-    ['Triades en position ouverte',()=>[GT('triades-ouv',null,null,''),GT('triades-ouv-min',null,null,'m')]],
+    ['Triades en position ouverte',()=>[GT('triades-ouv',null,x=>!x.alt,''),GT('triades-ouv-min',null,null,'m'),GT('triades-ouv-dim',null,null,'dim')]],
     ['Triades avec basse étrangère',()=>[...new Set(CHP('slash').formes.map(f=>f.tri.join('|')))].map(t=>{const fs=CHP('slash').formes.filter(f=>f.tri.join('|')===t);
       return {acc:'slash',fs,nm:(k,f)=>slashName(f||fs[0],k),sc:['modes',SLASH_SC[fs[0].mode[0]]||'Ionien']};})]]};
 const LENS=[[2,'2 temps par accord'],[4,'1 mesure par accord'],[8,'2 mesures par accord'],[16,'4 mesures par accord']];
@@ -1579,7 +1611,11 @@ const MENU=[
  {id:'presentation',t:'Présentation',items:[{id:'accueil',t:'Présentation',view:'presentation'}]},
  {id:'manche',t:'Manche',items:[{id:'notes',t:'Toutes les notes',view:'notes'},{id:'mains',t:'Les mains',view:'mains'},
    {id:'quartes',t:'Cycle des quartes sur une corde',view:'game',game:'quartes'}]},
- {id:'gammes',t:'Gammes',items:[{id:'premieres',t:'Premières gammes',view:'schema',chap:'gammes'},{id:'modes',t:'Modes et gammes dérivés',view:'schema',chap:'modes'}]},
+ {id:'gammes',t:'Gammes',items:[
+   {id:'premieres',niv:1,t:'Premières gammes',view:'schema',chap:'gammes'},
+   {id:'modes',niv:2,t:'Modes de la gamme majeure',view:'schema',chap:'modes',filt:'gmaj'},{id:'penta',niv:2,t:'Pentatoniques sur tout le manche',view:'schema',chap:'penta'},
+   {id:'melodique',niv:3,t:'Modes du mineur mélodique',view:'schema',chap:'modes',filt:'gmm'},{id:'harmonique',niv:3,t:'Modes du mineur harmonique',view:'schema',chap:'modes',filt:'gmh'},
+   {id:'symetriques',niv:3,t:'Gammes symétriques',view:'schema',chap:'modes',filt:'gsym'}]},
  {id:'accords',t:'Accords',items:[
    // niveau 1
    {id:'ouverts-maj',niv:1,t:'Accords ouverts majeurs',view:'schema',chap:'ouverts',grid:['C','D','E','G','A'],intro:'Les accords ouverts majeurs, tous sur la même page. Les cordes à vide sonnent : x = corde non jouée.'},
@@ -1599,11 +1635,17 @@ const MENU=[
    {id:'renversements',niv:2,t:'Renversements (cordes 1 à 4)',view:'schema',chap:'cordes1234'},{id:'enrichis',niv:2,t:'Accords enrichis',view:'schema',chap:'enrichis'},
    {id:'enchainements-2',niv:2,t:'Enchaînements',view:'game',game:'accords'},{id:'generateur-2',niv:2,t:'Générateur',view:'game',game:'generateur'},
    // niveau 3
-   {id:'triades-ouv',niv:3,t:'Triades ouvertes majeures',view:'schema',chap:'triades-ouv'},{id:'triades-ouv-min',niv:3,t:'Triades ouvertes mineures',view:'schema',chap:'triades-ouv-min'},
+   {id:'triades-ouv',niv:3,t:'Triades ouvertes majeures',view:'schema',chap:'triades-ouv'},{id:'triades-ouv-min',niv:3,t:'Triades ouvertes mineures',view:'schema',chap:'triades-ouv-min'},{id:'triades-ouv-dim',niv:3,t:'Triades ouvertes diminuées',view:'schema',chap:'triades-ouv-dim'},
    {id:'drop2',niv:3,t:'Drop 2',view:'schema',chap:'drop2'},{id:'drop3',niv:3,t:'Drop 3',view:'schema',chap:'drop3'},{id:'drop24',niv:3,t:'Drop 2+4',view:'schema',chap:'drop24'},
    {id:'slash',niv:3,t:'Triades avec basse étrangère',view:'schema',chap:'slash'},
    {id:'enchainements-3',niv:3,t:'Enchaînements',view:'game',game:'accords'},{id:'generateur-3',niv:3,t:'Générateur',view:'game',game:'generateur'}]},
- {id:'arpeges',t:'Arpèges',items:[{id:'maj7',t:'Maj7',view:'schema',chap:'arp-maj7'},{id:'7',t:'7',view:'schema',chap:'arp-7'},{id:'m7',t:'m7',view:'schema',chap:'arp-m7'},{id:'m7b5',t:'m7♭5',view:'schema',chap:'arp-m7b5'},{id:'dim7',t:'dim7',view:'schema',chap:'arp-dim7'}]},
+ {id:'arpeges',t:'Arpèges',items:[
+   {id:'maj-min',niv:1,t:'Majeur et mineur (une octave)',view:'schema',chap:'arp-tri',filt:'oct'},{id:'7-octave',niv:1,t:'7 (une octave)',view:'schema',chap:'arp-7',filt:'oct65'},
+   {id:'maj-min-complet',niv:2,t:'Majeur et mineur (position complète)',view:'schema',chap:'arp-tri',filt:'full'},
+   {id:'maj7',niv:2,t:'Maj7',view:'schema',chap:'arp-maj7',filt:'nodiag'},{id:'7',niv:2,t:'7',view:'schema',chap:'arp-7',filt:'nodiag'},{id:'m7',niv:2,t:'m7',view:'schema',chap:'arp-m7',filt:'nodiag'},
+   {id:'m7b5',niv:2,t:'m7♭5',view:'schema',chap:'arp-m7b5',filt:'nodiag'},{id:'dim7',niv:2,t:'dim7',view:'schema',chap:'arp-dim7',filt:'nodiag'},
+   {id:'diagonales',niv:3,t:'Sur 3 octaves en diagonale',view:'schema',chap:'arp-diag'},
+   {id:'mmaj7',niv:3,t:'m(Maj7)',view:'schema',chap:'arp-mmaj7'},{id:'maj7s5',niv:3,t:'Maj7♯5',view:'schema',chap:'arp-maj7s5'},{id:'7s5',niv:3,t:'7♯5',view:'schema',chap:'arp-7s5'}]},
  {id:'accordeur',t:'Accordeur',items:[{id:'guitare',t:'Accordeur',view:'accordeur'}]}
 ];
 let CUR={},EMB=false; // EMB : le jeu au métronome est affiché sous le schéma (gammes, modes, arpèges)
@@ -1619,9 +1661,13 @@ function route(){
   if(RUN.on)stopGame();
   CUR=it;
   $('tabs').innerHTML=MENU.map(t=>`<a href="#${t.id}-${(t===tab?it:t.items[0]).id}"${t===tab?' aria-current="page"':''}>${esc(t.t)}</a>`).join('');
-  $('subnav').innerHTML=tab.items.length<2?'':tab.items.map((x,i)=>(x.niv&&(!i||tab.items[i-1].niv!==x.niv)?(i?'<span class="brk"></span>':'')+`<span class="niv">Niveau ${x.niv}</span>`:'')+(x.view==='game'&&i&&tab.items[i-1].view!=='game'?'<span class="sep"></span>':'')+`<a href="#${tab.id}-${x.id}" class="${x.view==='game'?'jeu':''}"${x===it?' aria-current="page"':''}>${esc(x.t)}</a>`).join('');
+  // onglets à niveaux : on ne voit que les pages du niveau choisi ; un clic sur un niveau l'ouvre
+  const lv=it.niv,vis=lv?tab.items.filter(x=>x.niv===lv):tab.items,levels=[...new Set(tab.items.map(x=>x.niv).filter(Boolean))];
+  $('subnav').innerHTML=tab.items.length<2?'':(levels.length?levels.map(n=>`<a href="#${tab.id}-${tab.items.find(x=>x.niv===n).id}" class="nivbtn"${n===lv?' aria-current="true"':''}>Niveau ${n}</a>`).join('')+'<span class="brk"></span>':'')+vis.map((x,i)=>(x.view==='game'&&i&&vis[i-1].view!=='game'?'<span class="sep"></span>':'')+`<a href="#${tab.id}-${x.id}" class="${x.view==='game'?'jeu':''}"${x===it?' aria-current="page"':''}>${esc(x.t)}</a>`).join('');
   [$('subnav'),$('tabs')].forEach(box=>{const c=box.querySelector('[aria-current]');if(c&&box.scrollWidth>box.clientWidth)box.scrollLeft=c.offsetLeft-box.clientWidth/2+c.offsetWidth/2;});
-  const FILTS={majmin:f=>f.acc===''||f.acc==='m',quatre:f=>!(f.acc===''||f.acc==='m')};
+  const FILTS={majmin:f=>f.acc===''||f.acc==='m',quatre:f=>!(f.acc===''||f.acc==='m'),
+    oct:f=>f.groupe==='Une octave',oct65:f=>f.groupe==='Une octave'&&/corde [65]$/.test(f.n),full:f=>f.groupe==='Position complète',nodiag:f=>!f.diag,
+    gmaj:f=>f.groupe==='Modes de la gamme majeure',gmm:f=>f.groupe==='Modes du mineur mélodique',gmh:f=>f.groupe==='Modes du mineur harmonique',gsym:f=>f.groupe==='Gammes symétriques'};
   Object.assign(VIEW,{filt:FILTS[it.filt]||null,grps:it.grps||null,grid:it.grid||null,gridIntro:it.intro||'',niv:it.niv||0});
   const panel=it.view==='schema'?'schemas':it.view==='game'?'jeux':it.view;
   PANELS.forEach(p=>$('p-'+p).classList.toggle('on',p===panel));
