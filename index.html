@@ -263,7 +263,7 @@ label.chk input{width:18px;height:18px;accent-color:var(--accent)}
 </section>
 
 </main>
-<footer class="meta" style="max-width:1100px;margin:0 auto;padding:0 20px 30px;text-align:center">Boîte à outils guitare · <span id="appver">version 44</span><br><span style="font-size:12px">Sons : basse <a href="https://www.karoryfer.com/karoryfer-samples" target="_blank" rel="noopener">Karoryfer Samples</a> (CC BY 3.0) · batterie Virtuosity Drums et contrebasse <a href="https://github.com/sgossner/VSCO-2-CE" target="_blank" rel="noopener">VSCO 2</a> (CC0)</span></footer>
+<footer class="meta" style="max-width:1100px;margin:0 auto;padding:0 20px 30px;text-align:center">Boîte à outils guitare · <span id="appver">version 45</span><br><span style="font-size:12px">Sons : basse <a href="https://www.karoryfer.com/karoryfer-samples" target="_blank" rel="noopener">Karoryfer Samples</a> (CC BY 3.0) · batterie Virtuosity Drums et contrebasse <a href="https://github.com/sgossner/VSCO-2-CE" target="_blank" rel="noopener">VSCO 2</a> (CC0)</span></footer>
 <script src="contenu/formes.js"></script>
 <script>
 'use strict';
@@ -532,15 +532,21 @@ function place(f,key,opts){
     if(mid-opts.near>6&&base-12+mn>=floor)base-=12;else if(opts.near-mid>6&&base+12+Math.max(...f.notes.map(n=>n[1]))<=15)base+=12;}
   return f.notes.map(([s,r,l])=>({s,fr:base+r,l,m:TUN[s]+base+r}));
 }
-const isChord=(f,ch)=>!!(f.acc!==undefined||['ouverts','power','triades','triades-min','shell','positions','cordes1234','enrichis'].includes(ch.id))&&!f.arp;
+const isChord=(f,ch)=>!!(f.acc!==undefined||(['ouverts','power','shell','positions','cordes1234','enrichis','slash'].includes(ch.id)||TSUF[ch.id]!==undefined))&&!f.arp;
 function intervalsOf(f){const seen=[];[...f.notes].map(n=>n[2]).sort((a,b)=>SEMI[a]-SEMI[b]||degOf(a)-degOf(b)).forEach(l=>{if(!seen.includes(l))seen.push(l);});return seen;}
 function restOf(n){const m=n.match(/[(:,]\s*(.*?)\)?$/);return m?m[1]:'';}
+// suffixe d'accord de chaque chapitre de triades
+const TSUF={'triades':'','triades-min':'m','triades-dim':'dim','triades-ouv':'','triades-ouv-min':'m'};
+const TINTS={'':'1  3  5','m':'1  ♭3  5','dim':'1  ♭3  ♭5'};
+// triade sur basse étrangère : nom de la triade (lettre) à partir de la basse et du degré
+function slashName(f,key){const [deg,q]=f.tri,L=(key[2]+degOf(deg)-1)%7,pc=mod(key[1]+SEMI[deg],12);let a=mod(pc-NAT[L],12);if(a>6)a-=12;
+  const tk=['CDEFGAB'[L]+(a>0?'♯'.repeat(a):'♭'.repeat(-a)),pc,L];return chordName(tk,q)+'/'+chordName(key,'');}
 function shapeName(f,ch,key){
+  if(ch.id==='slash')return slashName(f,key)+' (= '+chordName(key,'')+f.son+') — basse '+(f.groupe.includes('Mi')?'corde 6':'corde 5');
   if(f.fixe)return f.n;
   if(f.arp)return 'Arpège '+chordName(key,f.acc)+' — '+(f.n.includes(', ')?f.n.split(', ').slice(1).join(', '):restOf(f.n));
   if(f.acc!==undefined){const r=restOf(f.n);return chordName(key,f.acc)+(r?' — '+r:'');}
-  if(ch.id==='triades')return chordName(key,'')+' — '+f.n;
-  if(ch.id==='triades-min')return chordName(key,'m')+' — '+f.n;
+  if(TSUF[ch.id]!==undefined)return chordName(key,TSUF[ch.id])+' — '+f.n;
   return f.n+' de '+keyName(key);
 }
 
@@ -701,7 +707,7 @@ function triadClimb(fs,grp,key){
   ord.slice(1).forEach(j=>{let pl=place(sh[j],key,{floor:0});while(lo(pl)<=lo(seq[seq.length-1]))pl=up(pl);seq.push(pl);});
   seq.push(up(p0));return {seq,ord,top:hi(seq[3]),sh};
 }
-const isTriadChap=ch=>ch.id==='triades'||ch.id==='triades-min';
+const isTriadChap=ch=>TSUF[ch.id]!==undefined;
 const triadGroups=ch=>[...new Set(ch.formes.map(f=>f.groupe))];
 // ===================== Onglet Schémas =====================
 const SH={ch:0,f:0,key:+store.get('key',0)};
@@ -772,6 +778,8 @@ function renderShape(){
     const CH=[{name:bn,notes:chordWritten(base,key),lab:'accord parfait'},{name:cn,notes:chordWritten(pl,key),lab:restName(f0.n)||''}];
     $('shStaff').hidden=false;$('shStaff').innerHTML=chordStaff(CH,-1);
     SH.cur={f,ch,key,notes:pl,corde,base,CH};store.set('key',SH.key);return;}
+  if(ch.id==='slash'&&!corde){const LS={};f.notes.forEach(n=>LS[n[0]]=n[2]);const pl=notes.map(n=>({s:n.s,fr:n.fr,m:n.m,l:LS[n.s]}));
+    $('shStaff').hidden=false;$('shStaff').innerHTML=chordStaff([{name:slashName(f0,key),notes:chordWritten(pl,key),lab:'= '+chordName(key,'')+f0.son}],-1);}
   if((isScaleChap(ch)&&scale)||f0.arp){const pl=corde?notes:place(f,key,f.diag?{floor:0}:{}),M=motifSeq(ascOf(pl),f0.arp?'lin':val('gMot')),SK=staffKeyOf(f0,key);
     const sub=+(val('gSub')||1),R=rhythmItems(spellSeq(M.seq,SK.K),sub,mod(-M.seq.length,4*sub),keyTupleOf(SK.K,SK.sig,f0.n==='Gamme mineure naturelle'),SK.sig,0,0);
     $('shStaff').hidden=false;$('shStaff').innerHTML=rhythmPages(R.items,R.items[0].key,!!f0.arp);}
@@ -780,10 +788,10 @@ function renderShape(){
   if(EMB&&!RUN.on)preview();
 }
 function renderTriads(ch,key,lbl){
-  const grp=triadGroups(ch)[SH.f]||triadGroups(ch)[0],T=triadClimb(ch.formes,grp,key),suf=ch.id==='triades-min'?'m':'';
+  const grp=triadGroups(ch)[SH.f]||triadGroups(ch)[0],T=triadClimb(ch.formes,grp,key),suf=TSUF[ch.id];
   $('keyWrap').hidden=false;$('viewWrap').hidden=true;$('cordeWrap').hidden=true;$('etWrap').hidden=true;
   $('shTitle').textContent=chordName(key,suf)+' — '+grp.toLowerCase()+' : les quatre états';
-  $('shInts').textContent=suf?'1  ♭3  5':'1  3  5';
+  $('shInts').textContent=TINTS[suf];
   const f=T.sh[0];$('legX').hidden=false;$('legX').textContent='× = corde non jouée';
   const notes=[],labels=[];
   T.seq.forEach((pl,j)=>{const r=T.ord[j%3];pl.forEach(n=>notes.push({s:n.s,fr:n.fr,m:n.m,root:n.l==='1',txt:lbl==='note'?spell(key,n.l):n.l}));
@@ -1058,7 +1066,7 @@ const GAMES=[
   }}
 ];
 const FAMILLES=[['shell:7','Shell 7 (1 3 ♭7)'],['shell:Maj7','Shell Maj7 (1 3 7)'],['shell:m7','Shell m7 (1 ♭3 ♭7)'],['shell:6','Shell 6 (1 3 6)'],['shell:m6','Shell m6 (1 ♭3 6)'],
-  ['triades:','Triades majeures'],['triades-min:','Triades mineures'],
+  ['triades:','Triades majeures'],['triades-min:','Triades mineures'],['triades-dim:','Triades diminuées'],['triades-ouv:','Triades majeures en position ouverte'],['triades-ouv-min:','Triades mineures en position ouverte'],
   ['positions:','Majeur (accord complet)'],['positions:m','Mineur (accord complet)'],['positions:7','7 (accord complet)'],['positions:Maj7','Maj7 (accord complet)'],['positions:m7','m7 (accord complet)'],['positions:m7b5','m7♭5 (accord complet)'],['positions:dim7','dim7 (accord complet)'],
   ['cordes1234:Maj7','Maj7 sur les cordes 1 à 4'],['cordes1234:7','7 sur les cordes 1 à 4'],['cordes1234:m7','m7 sur les cordes 1 à 4'],['cordes1234:m7b5','m7♭5 sur les cordes 1 à 4'],['cordes1234:dim7','dim7 sur les cordes 1 à 4'],
   ['enrichis:7','7 (corde 6 ou 5)'],['enrichis:9','9 (enrichi)'],['enrichis:13','13 (enrichi)'],['enrichis:Maj9','Maj9'],['enrichis:m9','m9'],['power:','Power chords']];
@@ -1070,7 +1078,7 @@ function restName(n){if(n.includes(' : '))return n.split(' : ').pop();const r=re
 function chordFamily(fam){
   const [cid,acc]=(fam||'shell:7').split(':'),ch=CHAPITRES.find(c=>c.id===cid),accN=acc.replace('b5','♭5');
   const fs=cid==='power'?ch.formes.slice(0,2):cid.startsWith('triades')?ch.formes:ch.formes.filter(f=>(f.acc||'')===accN);
-  return {cid,ch,fs,suf:cid==='triades-min'?'m':accN};
+  return {cid,ch,fs,suf:TSUF[cid]!==undefined?TSUF[cid]:accN};
 }
 function nearest(fs,key,pos){let best=null;
   fs.forEach(f=>{const pl=place(f,key,pos===null?{}:{near:pos});const c=pl.reduce((a,b)=>a+b.fr,0)/pl.length,d=Math.abs(c-(pos===null?5:pos));if(!best||d<best.d)best={d,pl,f,c};});
@@ -1502,7 +1510,8 @@ const MENU=[
    {id:'quartes',t:'Cycle des quartes sur une corde',view:'game',game:'quartes'}]},
  {id:'gammes',t:'Gammes',items:[{id:'premieres',t:'Premières gammes',view:'schema',chap:'gammes'},{id:'modes',t:'Modes et gammes dérivés',view:'schema',chap:'modes'}]},
  {id:'accords',t:'Accords',items:[{id:'ouverts',t:'Accords ouverts',view:'schema',chap:'ouverts'},{id:'power',t:'Power chords et octaves',view:'schema',chap:'power'},
-   {id:'triades',t:'Triades majeures',view:'schema',chap:'triades'},{id:'triades-min',t:'Triades mineures',view:'schema',chap:'triades-min'},
+   {id:'triades',t:'Triades majeures',view:'schema',chap:'triades'},{id:'triades-min',t:'Triades mineures',view:'schema',chap:'triades-min'},{id:'triades-dim',t:'Triades diminuées',view:'schema',chap:'triades-dim'},
+   {id:'triades-ouv',t:'Triades ouvertes majeures',view:'schema',chap:'triades-ouv'},{id:'triades-ouv-min',t:'Triades ouvertes mineures',view:'schema',chap:'triades-ouv-min'},{id:'slash',t:'Triades avec basse étrangère',view:'schema',chap:'slash'},
    {id:'shell',t:'Jazz shells',view:'schema',chap:'shell'},{id:'positions',t:'Positions transposables',view:'schema',chap:'positions'},
    {id:'renversements',t:'Renversements (cordes 1 à 4)',view:'schema',chap:'cordes1234'},{id:'enrichis',t:'Accords enrichis',view:'schema',chap:'enrichis'},
    {id:'enchainements',t:'Enchaînements d\'accords',view:'game',game:'accords'},{id:'generateur',t:'Générateur d\'accords',view:'game',game:'generateur'}]},
@@ -1529,7 +1538,7 @@ function route(){
   if(it.view==='schema'){const ci=CHAPITRES.findIndex(c=>c.id===it.chap);if(ci!==SH.ch){SH.ch=ci;SH.f=0;}$('h-sch').textContent=it.t;
     const C=CHAPITRES[SH.ch];EMB=isScaleChap(C)||C.id.startsWith('arp-');
     if(EMB){$('shPlayBox').appendChild($('gCard'));GI=GAMES.findIndex(g=>g.id==='gamme');}else $('p-jeux').appendChild($('gCard'));
-    $('shGame').hidden=EMB;fillShapes();renderShape();if(EMB)renderGame();}
+    $('shGame').hidden=EMB||C.id==='slash';fillShapes();renderShape();if(EMB)renderGame();}
   else{EMB=false;$('p-jeux').appendChild($('gCard'));}
   if(it.view==='game'){GI=Math.max(0,GAMES.findIndex(g=>g.id===it.game));renderGame();}
   if(it.view==='notes')renderNotes();

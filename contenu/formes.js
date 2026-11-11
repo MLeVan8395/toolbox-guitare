@@ -73,6 +73,54 @@ const CHAPITRES=[
   {"n":"Cordes 4, 5, 6 : 1er renversement","notes":[[6,1,"♭3"],[5,0,"5"],[4,0,"1"]],"x":[1,2,3],"groupe":"Cordes 4, 5, 6"},
   {"n":"Cordes 4, 5, 6 : 2e renversement","notes":[[6,0,"5"],[5,0,"1"],[4,-2,"♭3"]],"x":[1,2,3],"groupe":"Cordes 4, 5, 6"}
 ]},
+{id:"triades-dim",titre:"Triades diminuées et renversements",intro:"Intervalles 1 ♭3 ♭5 : la triade mineure avec la quinte baissée d'un demi-ton. x = corde non jouée.",formes:[
+  {"n": "Cordes 1, 2, 3 : position fondamentale", "notes": [[3, 0, "1"], [2, -1, "♭3"], [1, -3, "♭5"]], "x": [4, 5, 6], "groupe": "Cordes 1, 2, 3"},
+  {"n": "Cordes 1, 2, 3 : 1er renversement", "notes": [[3, 0, "♭3"], [2, -1, "♭5"], [1, 0, "1"]], "x": [4, 5, 6], "groupe": "Cordes 1, 2, 3"},
+  {"n": "Cordes 1, 2, 3 : 2e renversement", "notes": [[3, -2, "♭5"], [2, 0, "1"], [1, -2, "♭3"]], "x": [4, 5, 6], "groupe": "Cordes 1, 2, 3"},
+  {"n": "Cordes 2, 3, 4 : position fondamentale", "notes": [[4, 0, "1"], [3, -2, "♭3"], [2, -3, "♭5"]], "x": [1, 5, 6], "groupe": "Cordes 2, 3, 4"},
+  {"n": "Cordes 2, 3, 4 : 1er renversement", "notes": [[4, 0, "♭3"], [3, -2, "♭5"], [2, 0, "1"]], "x": [1, 5, 6], "groupe": "Cordes 2, 3, 4"},
+  {"n": "Cordes 2, 3, 4 : 2e renversement", "notes": [[4, -1, "♭5"], [3, 0, "1"], [2, -1, "♭3"]], "x": [1, 5, 6], "groupe": "Cordes 2, 3, 4"},
+  {"n": "Cordes 3, 4, 5 : position fondamentale", "notes": [[5, 0, "1"], [4, -2, "♭3"], [3, -4, "♭5"]], "x": [1, 2, 6], "groupe": "Cordes 3, 4, 5"},
+  {"n": "Cordes 3, 4, 5 : 1er renversement", "notes": [[5, 1, "♭3"], [4, -1, "♭5"], [3, 0, "1"]], "x": [1, 2, 6], "groupe": "Cordes 3, 4, 5"},
+  {"n": "Cordes 3, 4, 5 : 2e renversement", "notes": [[5, -1, "♭5"], [4, 0, "1"], [3, -2, "♭3"]], "x": [1, 2, 6], "groupe": "Cordes 3, 4, 5"},
+  {"n": "Cordes 4, 5, 6 : position fondamentale", "notes": [[6, 0, "1"], [5, -2, "♭3"], [4, -4, "♭5"]], "x": [1, 2, 3], "groupe": "Cordes 4, 5, 6"},
+  {"n": "Cordes 4, 5, 6 : 1er renversement", "notes": [[6, 1, "♭3"], [5, -1, "♭5"], [4, 0, "1"]], "x": [1, 2, 3], "groupe": "Cordes 4, 5, 6"},
+  {"n": "Cordes 4, 5, 6 : 2e renversement", "notes": [[6, -1, "♭5"], [5, 0, "1"], [4, -2, "♭3"]], "x": [1, 2, 3], "groupe": "Cordes 4, 5, 6"}
+]},
+{id:"triades-ouv",titre:"Triades majeures en position ouverte",intro:"Position ouverte (ou écartée) : la note du milieu de la position serrée est montée d'une octave, et on saute une corde. Intervalles 1 3 5. x = corde non jouée.",formes:[
+  {"n": "Cordes 6, 4, 3 : position fondamentale", "notes": [[6, 0, "1"], [4, -3, "5"], [3, 1, "3"]], "x": [1, 2, 5], "groupe": "Cordes 6, 4, 3"},
+  {"n": "Cordes 6, 4, 3 : 1er renversement", "notes": [[6, 2, "3"], [4, 0, "1"], [3, 2, "5"]], "x": [1, 2, 5], "groupe": "Cordes 6, 4, 3"},
+  {"n": "Cordes 6, 4, 3 : 2e renversement", "notes": [[6, -2, "5"], [4, -3, "3"], [3, 0, "1"]], "x": [1, 2, 5], "groupe": "Cordes 6, 4, 3"},
+  {"n": "Cordes 5, 3, 2 : position fondamentale", "notes": [[5, 0, "1"], [3, -3, "5"], [2, 2, "3"]], "x": [1, 4, 6], "groupe": "Cordes 5, 3, 2"},
+  {"n": "Cordes 5, 3, 2 : 1er renversement", "notes": [[5, 2, "3"], [3, 0, "1"], [2, 3, "5"]], "x": [1, 4, 6], "groupe": "Cordes 5, 3, 2"},
+  {"n": "Cordes 5, 3, 2 : 2e renversement", "notes": [[5, -3, "5"], [3, -4, "3"], [2, 0, "1"]], "x": [1, 4, 6], "groupe": "Cordes 5, 3, 2"},
+  {"n": "Cordes 4, 2, 1 : position fondamentale", "notes": [[4, 0, "1"], [2, -2, "5"], [1, 2, "3"]], "x": [3, 5, 6], "groupe": "Cordes 4, 2, 1"},
+  {"n": "Cordes 4, 2, 1 : 1er renversement", "notes": [[4, 1, "3"], [2, 0, "1"], [1, 2, "5"]], "x": [3, 5, 6], "groupe": "Cordes 4, 2, 1"},
+  {"n": "Cordes 4, 2, 1 : 2e renversement", "notes": [[4, -3, "5"], [2, -3, "3"], [1, 0, "1"]], "x": [3, 5, 6], "groupe": "Cordes 4, 2, 1"}
+]},
+{id:"triades-ouv-min",titre:"Triades mineures en position ouverte",intro:"Position ouverte (ou écartée) : la note du milieu de la position serrée est montée d'une octave, et on saute une corde. Intervalles 1 ♭3 5. x = corde non jouée.",formes:[
+  {"n": "Cordes 6, 4, 3 : position fondamentale", "notes": [[6, 0, "1"], [4, -3, "5"], [3, 0, "♭3"]], "x": [1, 2, 5], "groupe": "Cordes 6, 4, 3"},
+  {"n": "Cordes 6, 4, 3 : 1er renversement", "notes": [[6, 1, "♭3"], [4, 0, "1"], [3, 2, "5"]], "x": [1, 2, 5], "groupe": "Cordes 6, 4, 3"},
+  {"n": "Cordes 6, 4, 3 : 2e renversement", "notes": [[6, -2, "5"], [4, -4, "♭3"], [3, 0, "1"]], "x": [1, 2, 5], "groupe": "Cordes 6, 4, 3"},
+  {"n": "Cordes 5, 3, 2 : position fondamentale", "notes": [[5, 0, "1"], [3, -3, "5"], [2, 1, "♭3"]], "x": [1, 4, 6], "groupe": "Cordes 5, 3, 2"},
+  {"n": "Cordes 5, 3, 2 : 1er renversement", "notes": [[5, 1, "♭3"], [3, 0, "1"], [2, 3, "5"]], "x": [1, 4, 6], "groupe": "Cordes 5, 3, 2"},
+  {"n": "Cordes 5, 3, 2 : 2e renversement", "notes": [[5, -3, "5"], [3, -5, "♭3"], [2, 0, "1"]], "x": [1, 4, 6], "groupe": "Cordes 5, 3, 2"},
+  {"n": "Cordes 4, 2, 1 : position fondamentale", "notes": [[4, 0, "1"], [2, -2, "5"], [1, 1, "♭3"]], "x": [3, 5, 6], "groupe": "Cordes 4, 2, 1"},
+  {"n": "Cordes 4, 2, 1 : 1er renversement", "notes": [[4, 0, "♭3"], [2, 0, "1"], [1, 2, "5"]], "x": [3, 5, 6], "groupe": "Cordes 4, 2, 1"},
+  {"n": "Cordes 4, 2, 1 : 2e renversement", "notes": [[4, -3, "5"], [2, -4, "♭3"], [1, 0, "1"]], "x": [3, 5, 6], "groupe": "Cordes 4, 2, 1"}
+]},
+{id:"slash",titre:"Triades avec basse étrangère",intro:"Une triade jouée sur une basse qui ne lui appartient pas (accord « slash », noté triade/basse) : on obtient un accord plus riche. Les intervalles sont comptés depuis la basse.",formes:[
+  {"n": "Triade majeure un ton sous la basse (♭VII/I), basse corde 6", "notes": [[6, 0, "1"], [4, 0, "♭7"], [3, -1, "9"], [2, -2, "11"]], "x": [1, 5], "groupe": "Basse sur la corde de Mi", "tri": ["♭7", ""], "son": "9sus4"},
+  {"n": "Triade majeure un ton sous la basse (♭VII/I), basse corde 5", "notes": [[5, 0, "1"], [3, 0, "♭7"], [2, 0, "9"], [1, -2, "11"]], "x": [4, 6], "groupe": "Basse sur la corde de La", "tri": ["♭7", ""], "son": "9sus4"},
+  {"n": "Triade majeure un ton au-dessus de la basse (II/I), basse corde 6", "notes": [[6, 0, "1"], [4, -1, "13"], [3, -1, "9"], [2, -1, "♯11"]], "x": [1, 5], "groupe": "Basse sur la corde de Mi", "tri": ["2", ""], "son": "Maj7♯11 (lydien)"},
+  {"n": "Triade majeure un ton au-dessus de la basse (II/I), basse corde 5", "notes": [[5, 0, "1"], [3, -1, "13"], [2, 0, "9"], [1, -1, "♯11"]], "x": [4, 6], "groupe": "Basse sur la corde de La", "tri": ["2", ""], "son": "Maj7♯11 (lydien)"},
+  {"n": "Triade mineure sur la tierce de la basse (IIIm/I), basse corde 6", "notes": [[6, 0, "1"], [4, 1, "7"], [3, 1, "3"], [2, 0, "5"]], "x": [1, 5], "groupe": "Basse sur la corde de Mi", "tri": ["3", "m"], "son": "Maj7"},
+  {"n": "Triade mineure sur la tierce de la basse (IIIm/I), basse corde 5", "notes": [[5, 0, "1"], [3, 1, "7"], [2, 2, "3"], [1, 0, "5"]], "x": [4, 6], "groupe": "Basse sur la corde de La", "tri": ["3", "m"], "son": "Maj7"},
+  {"n": "Triade majeure sur la quinte de la basse (V/I), basse corde 6", "notes": [[6, 0, "1"], [4, 1, "7"], [3, -1, "9"], [2, 0, "5"]], "x": [1, 5], "groupe": "Basse sur la corde de Mi", "tri": ["5", ""], "son": "Maj9 sans tierce"},
+  {"n": "Triade majeure sur la quinte de la basse (V/I), basse corde 5", "notes": [[5, 0, "1"], [3, 1, "7"], [2, 0, "9"], [1, 0, "5"]], "x": [4, 6], "groupe": "Basse sur la corde de La", "tri": ["5", ""], "son": "Maj9 sans tierce"},
+  {"n": "Triade mineure sur la quinte de la basse (Vm/I), basse corde 6", "notes": [[6, 0, "1"], [4, 0, "♭7"], [3, -1, "9"], [2, 0, "5"]], "x": [1, 5], "groupe": "Basse sur la corde de Mi", "tri": ["5", "m"], "son": "9 sans tierce"},
+  {"n": "Triade mineure sur la quinte de la basse (Vm/I), basse corde 5", "notes": [[5, 0, "1"], [3, 0, "♭7"], [2, 0, "9"], [1, 0, "5"]], "x": [4, 6], "groupe": "Basse sur la corde de La", "tri": ["5", "m"], "son": "9 sans tierce"}
+]},
 {id:"shell",titre:"Accords jazz faciles (shell)",intro:"3 sons : la fondamentale, la tierce et la 7e (ou la 6te). À transposer en suivant le cycle des quartes.",formes:[
   {"n":"7 (fondamentale corde 6)","notes":[[6,0,"1"],[4,0,"♭7"],[3,1,"3"]],"x":[1,2,5],"groupe":"Fondamentale sur la corde de Mi","acc":"7"},
   {"n":"6 (fondamentale corde 6)","notes":[[6,0,"1"],[4,-1,"6"],[3,1,"3"]],"x":[1,2,5],"groupe":"Fondamentale sur la corde de Mi","acc":"6"},
