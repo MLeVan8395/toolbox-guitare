@@ -278,7 +278,7 @@ label.chk input{width:18px;height:18px;accent-color:var(--accent)}
 </section>
 
 </main>
-<footer class="meta" style="max-width:1100px;margin:0 auto;padding:0 20px 30px;text-align:center">Boîte à outils guitare · <span id="appver">version 58</span><br><span style="font-size:12px">Sons : basse <a href="https://www.karoryfer.com/karoryfer-samples" target="_blank" rel="noopener">Karoryfer Samples</a> (CC BY 3.0) · batterie Virtuosity Drums et contrebasse <a href="https://github.com/sgossner/VSCO-2-CE" target="_blank" rel="noopener">VSCO 2</a> (CC0)</span></footer>
+<footer class="meta" style="max-width:1100px;margin:0 auto;padding:0 20px 30px;text-align:center">Boîte à outils guitare · <span id="appver">version 59</span><br><span style="font-size:12px">Sons : basse <a href="https://www.karoryfer.com/karoryfer-samples" target="_blank" rel="noopener">Karoryfer Samples</a> (CC BY 3.0) · batterie Virtuosity Drums et contrebasse <a href="https://github.com/sgossner/VSCO-2-CE" target="_blank" rel="noopener">VSCO 2</a> (CC0)</span></footer>
 <script src="contenu/formes.js"></script>
 <script>
 'use strict';
@@ -1066,9 +1066,12 @@ const GAMES=[
  {id:'gamme',titre:'Jouer au métronome',
   desc:'Le schéma affiché, monté puis descendu au métronome : la note à jouer s\'allume sur le manche. Après chaque tour, on peut rester dans la tonalité ou en changer : cycle des quartes, un demi-ton plus haut, ou au hasard.',
   // ce jeu s'affiche directement sous le schéma de la gamme ou de l'arpège (forme et tonalité choisies au-dessus)
-  opts:()=>opt('gSub','Valeurs',[[1,'Noires'],[2,'Croches'],[3,'Triolets'],[4,'Doubles croches']],1)+((CHAPITRES[SH.ch]||{}).id?(String(CHAPITRES[SH.ch].id).startsWith('arp')?opt('gMot','Motif',ARPMOT,'lin'):opt('gMot','Motif',MOTIFS,'lin')):'')+opt('gNxt','Après chaque tour',[['same','Même tonalité'],['q','Cycle des quartes'],['c','Un demi-ton plus haut'],['r','Tonalité au hasard']],'same')
+  opts:()=>{const cid=String((CHAPITRES[SH.ch]||{}).id||''),arp=cid.startsWith('arp'),lv=!arp&&cid&&CUR.view==='schema'&&CUR.niv?CUR.niv:3;
+    // gammes : niveau 1 noires/croches et gamme simple ; niveau 2 + triolets, doubles croches, tierces, brisées par 3 et 4 ; niveau 3 tout
+    const VAL=[[1,'Noires'],[2,'Croches'],[3,'Triolets'],[4,'Doubles croches']].slice(0,lv===1?2:4),MOT=lv===1?MOTIFS.slice(0,1):lv===2?MOTIFS.filter(m=>['lin','3','b3','b4'].includes(m[0])):MOTIFS;
+    return opt('gSub','Valeurs',VAL,1)+(cid?(arp?opt('gMot','Motif',ARPMOT,'lin'):opt('gMot','Motif',MOT,'lin')):'')+opt('gNxt','Après chaque tour',[['same','Même tonalité'],['q','Cycle des quartes'],['c','Un demi-ton plus haut'],['r','Tonalité au hasard']],'same')
       +opt('gAcc','Accompagnement',ACCOPTS,'none')
-      +'<label class="chk" style="align-self:end;padding-bottom:8px"><input type="checkbox" id="gSnd" checked> Entendre les notes</label>',
+      +'<label class="chk" style="align-self:end;padding-bottom:8px"><input type="checkbox" id="gSnd" checked> Entendre les notes</label>';},
   make:()=>{
     const ch=CHAPITRES[SH.ch],f0=ch.formes[SH.f],f=shapeForPlay(f0,ch),sub=+val('gSub')||1,k0=SH.key,nxt=val('gNxt')||'same',cyc=nxt!=='same';
     const startQ=KEYQ.findIndex(k=>k===KEYS[k0]);
