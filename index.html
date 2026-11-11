@@ -277,7 +277,7 @@ label.chk input{width:18px;height:18px;accent-color:var(--accent)}
 </section>
 
 </main>
-<footer class="meta" style="max-width:1100px;margin:0 auto;padding:0 20px 30px;text-align:center">Boîte à outils guitare · <span id="appver">version 55</span><br><span style="font-size:12px">Sons : basse <a href="https://www.karoryfer.com/karoryfer-samples" target="_blank" rel="noopener">Karoryfer Samples</a> (CC BY 3.0) · batterie Virtuosity Drums et contrebasse <a href="https://github.com/sgossner/VSCO-2-CE" target="_blank" rel="noopener">VSCO 2</a> (CC0)</span></footer>
+<footer class="meta" style="max-width:1100px;margin:0 auto;padding:0 20px 30px;text-align:center">Boîte à outils guitare · <span id="appver">version 56</span><br><span style="font-size:12px">Sons : basse <a href="https://www.karoryfer.com/karoryfer-samples" target="_blank" rel="noopener">Karoryfer Samples</a> (CC BY 3.0) · batterie Virtuosity Drums et contrebasse <a href="https://github.com/sgossner/VSCO-2-CE" target="_blank" rel="noopener">VSCO 2</a> (CC0)</span></footer>
 <script src="contenu/formes.js"></script>
 <script>
 'use strict';
@@ -827,7 +827,7 @@ function renderShape(){
     SH.cur={f,ch,key,notes:pl,corde,base,CH};store.set('key',SH.key);return;}
   if(ch.id==='slash'&&!corde&&f0.mode){const [mn,pl,pd,nt]=f0.mode,[deg,q]=f0.tri,rm=(f0.n.match(/\(([^)]*)\)/)||[])[1]||'';
     const tl=f0.notes.map(n=>n[2]).filter(l=>l!=='1').sort((a,b)=>mod(SEMI[a]-SEMI[deg],12)-mod(SEMI[b]-SEMI[deg],12));
-    const ENH=deg==='♯4'?{'♯13':'♭7','♯1':'♭9'}:deg==='7'?{'♯9':'♭3','♯11':'♭5'}:{},tn=slashName(f0,key).split('/')[0];
+    const ENH=deg==='♯4'?{'♯13':'♭7','♯1':'♭9'}:deg==='7'&&q!=='m'?{'♯9':'♭3','♯11':'♭5'}:{},tn=slashName({tri:[deg,'']},key).split('/')[0];
     $('shInfo').innerHTML=['<b>Construction :</b> triade de '+esc(tn)+' '+(q==='m'?'mineur':'majeur')+' sur une basse de '+esc(keyName(key))+' ('+esc(rm)+').',
       '<b>Notes :</b> '+esc(keyName(key))+' (basse), puis '+tl.map(l=>esc(spell(key,l))).join(', ')+'.',
       '<b>Intervalles depuis la basse :</b> 1, '+tl.map(l=>esc(l)+(ENH[l]?' (= '+ENH[l]+')':'')).join(', ')+'.',
