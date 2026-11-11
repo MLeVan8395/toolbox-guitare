@@ -55,7 +55,7 @@ nav a:hover{color:var(--ink)}
 .minigrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(230px,1fr));gap:10px;padding:4px 8px}.mini svg{display:block;width:100%;height:auto;min-width:0!important}.mini b{display:block;font-size:13px;color:var(--muted);margin:0 0 2px 4px}
 .chordgrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:14px}
 .chordgrid .card{padding:14px}.gridrow{font-size:16px;margin:18px 0 10px;grid-column:1/-1}.chordgrid h3{margin:0 0 6px;font-family:var(--chord);font-size:22px}
-.subnav .brk{flex-basis:100%;height:0}.subnav .nivbtn{font-weight:700;border-width:2px}.subnav .nivbtn[aria-current]{background:var(--accent);color:var(--bg);border-color:var(--accent)}.subnav .niv{font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:var(--muted);align-self:center;margin-right:4px}
+.subnav .brk{flex-basis:100%;height:0}.grpwrap{display:flex;align-items:center;gap:10px;font-weight:700;margin:-4px 0 12px}.grpwrap[hidden]{display:none}.grpwrap select{font-size:17px;font-weight:700;padding:8px 12px;flex:1;max-width:340px}.subnav .nivbtn{font-weight:700;border-width:2px}.subnav .nivbtn[aria-current]{background:var(--accent);color:var(--bg);border-color:var(--accent)}.subnav .niv{font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:var(--muted);align-self:center;margin-right:4px}
 .vxbar{position:relative;height:26px;border-radius:99px;background:var(--paper);border:1px solid var(--line);overflow:hidden;max-width:520px}
 .vxbar::before{content:"";position:absolute;top:0;bottom:0;left:45%;width:10%;background:color-mix(in srgb,var(--green) 30%,transparent)}
 .vxbar::after{content:"";position:absolute;top:0;bottom:0;left:50%;width:2px;background:var(--muted)}
@@ -140,6 +140,7 @@ label.chk input{width:18px;height:18px;accent-color:var(--accent)}
 
 <section class="panel" id="p-schemas" aria-labelledby="h-sch">
   <h2 id="h-sch">Schémas</h2>
+  <label id="grpWrap" class="grpwrap" hidden>Choix <select id="grpSel" onchange="location.hash=this.value"></select></label>
   <p class="lead">Choisis un schéma et une tonalité : il se place tout seul sur le manche. Touche une pastille pour l'entendre.</p>
   <div class="card">
     <p class="meta" id="chapIntro" style="margin:0 0 12px"></p>
@@ -277,7 +278,7 @@ label.chk input{width:18px;height:18px;accent-color:var(--accent)}
 </section>
 
 </main>
-<footer class="meta" style="max-width:1100px;margin:0 auto;padding:0 20px 30px;text-align:center">Boîte à outils guitare · <span id="appver">version 57</span><br><span style="font-size:12px">Sons : basse <a href="https://www.karoryfer.com/karoryfer-samples" target="_blank" rel="noopener">Karoryfer Samples</a> (CC BY 3.0) · batterie Virtuosity Drums et contrebasse <a href="https://github.com/sgossner/VSCO-2-CE" target="_blank" rel="noopener">VSCO 2</a> (CC0)</span></footer>
+<footer class="meta" style="max-width:1100px;margin:0 auto;padding:0 20px 30px;text-align:center">Boîte à outils guitare · <span id="appver">version 58</span><br><span style="font-size:12px">Sons : basse <a href="https://www.karoryfer.com/karoryfer-samples" target="_blank" rel="noopener">Karoryfer Samples</a> (CC BY 3.0) · batterie Virtuosity Drums et contrebasse <a href="https://github.com/sgossner/VSCO-2-CE" target="_blank" rel="noopener">VSCO 2</a> (CC0)</span></footer>
 <script src="contenu/formes.js"></script>
 <script>
 'use strict';
@@ -1650,28 +1651,28 @@ const MENU=[
    {id:'symetriques',niv:3,t:'Gammes symétriques',view:'schema',chap:'modes',filt:'gsym'}]},
  {id:'accords',t:'Accords',items:[
    // niveau 1
-   {id:'ouverts-maj',niv:1,t:'Accords ouverts majeurs',view:'schema',chap:'ouverts',grid:['C','D','E','G','A'],intro:'Les accords ouverts majeurs, tous sur la même page. Les cordes à vide sonnent : x = corde non jouée.'},
-   {id:'ouverts-min',niv:1,t:'Accords ouverts mineurs',view:'schema',chap:'ouverts',grid:['Am','Dm','Em'],intro:'Les accords ouverts mineurs, tous sur la même page. x = corde non jouée.'},
-   {id:'ouverts-7',niv:1,t:'Accords ouverts 7',view:'schema',chap:'ouverts',grid:['C7','D7','E7','G7','A7','B7'],intro:'Les accords ouverts de 7 (septième de dominante), tous sur la même page. x = corde non jouée.'},
-   {id:'power',niv:1,t:'Power chords',view:'schema',chap:'power',grid:'transpose',gfilt:'pw',intro:'Les power chords (fondamentale et quinte), tous sur la même page. Choisis la tonalité.'},
-   {id:'octaves',niv:1,t:'Octaves',view:'schema',chap:'power',grid:'transpose',gfilt:'oct',intro:'Les octaves depuis chaque corde, toutes sur la même page. Choisis la tonalité.'},
+   {id:'ouverts-maj',g:'Accords ouverts',st:'Majeurs',niv:1,t:'Accords ouverts majeurs',view:'schema',chap:'ouverts',grid:['C','D','E','G','A'],intro:'Les accords ouverts majeurs, tous sur la même page. Les cordes à vide sonnent : x = corde non jouée.'},
+   {id:'ouverts-min',g:'Accords ouverts',st:'Mineurs',niv:1,t:'Accords ouverts mineurs',view:'schema',chap:'ouverts',grid:['Am','Dm','Em'],intro:'Les accords ouverts mineurs, tous sur la même page. x = corde non jouée.'},
+   {id:'ouverts-7',g:'Accords ouverts',st:'7 (septième de dominante)',niv:1,t:'Accords ouverts 7',view:'schema',chap:'ouverts',grid:['C7','D7','E7','G7','A7','B7'],intro:'Les accords ouverts de 7 (septième de dominante), tous sur la même page. x = corde non jouée.'},
+   {id:'power',g:'Power chords et octaves',st:'Power chords',niv:1,t:'Power chords',view:'schema',chap:'power',grid:'transpose',gfilt:'pw',intro:'Les power chords (fondamentale et quinte), tous sur la même page. Choisis la tonalité.'},
+   {id:'octaves',g:'Power chords et octaves',st:'Octaves',niv:1,t:'Octaves',view:'schema',chap:'power',grid:'transpose',gfilt:'oct',intro:'Les octaves depuis chaque corde, toutes sur la même page. Choisis la tonalité.'},
    {id:'positions',niv:1,t:'Positions transposables : majeurs et mineurs',view:'schema',chap:'positions',grid:'transpose',gfilt:'majmin',intro:'Les accords majeurs et mineurs transposables (barrés), fondamentale sur la corde 6 ou 5, tous sur la même page. Choisis la tonalité.'},
-   {id:'shell-6',niv:1,t:'Jazz shells, fondamentale corde 6',view:'schema',chap:'shell',grid:'transpose',gfilt:'mi',intro:'Les jazz shells (fondamentale, tierce, septième ou sixte), fondamentale sur la corde de Mi grave, tous sur la même page. Choisis la tonalité.'},
-   {id:'shell-5',niv:1,t:'Jazz shells, fondamentale corde 5',view:'schema',chap:'shell',grid:'transpose',gfilt:'la',intro:'Les jazz shells (fondamentale, tierce, septième ou sixte), fondamentale sur la corde de La, tous sur la même page. Choisis la tonalité.'},
-   {id:'triades',niv:1,t:'Triades majeures (cordes 1 à 4)',view:'schema',chap:'triades',grps:G12},
-   {id:'triades-min',niv:1,t:'Triades mineures (cordes 1 à 4)',view:'schema',chap:'triades-min',grps:G12},
+   {id:'shell-6',g:'Jazz shells',st:'Fondamentale corde 6',niv:1,t:'Jazz shells, fondamentale corde 6',view:'schema',chap:'shell',grid:'transpose',gfilt:'mi',intro:'Les jazz shells (fondamentale, tierce, septième ou sixte), fondamentale sur la corde de Mi grave, tous sur la même page. Choisis la tonalité.'},
+   {id:'shell-5',g:'Jazz shells',st:'Fondamentale corde 5',niv:1,t:'Jazz shells, fondamentale corde 5',view:'schema',chap:'shell',grid:'transpose',gfilt:'la',intro:'Les jazz shells (fondamentale, tierce, septième ou sixte), fondamentale sur la corde de La, tous sur la même page. Choisis la tonalité.'},
+   {id:'triades',g:'Triades',st:'Majeures',niv:1,t:'Triades majeures (cordes 1 à 4)',view:'schema',chap:'triades',grps:G12},
+   {id:'triades-min',g:'Triades',st:'Mineures',niv:1,t:'Triades mineures (cordes 1 à 4)',view:'schema',chap:'triades-min',grps:G12},
    {id:'enchainements',niv:1,t:'Enchaînements',view:'game',game:'accords'},{id:'generateur',niv:1,t:'Générateur',view:'game',game:'generateur'},
    // niveau 2
-   {id:'triades-2',niv:2,t:'Triades majeures (cordes 3 à 6)',view:'schema',chap:'triades',grps:G34},
-   {id:'triades-min-2',niv:2,t:'Triades mineures (cordes 3 à 6)',view:'schema',chap:'triades-min',grps:G34},
-   {id:'triades-dim',niv:2,t:'Triades diminuées',view:'schema',chap:'triades-dim'},
+   {id:'triades-2',g:'Triades (cordes 3 à 6)',st:'Majeures',niv:2,t:'Triades majeures (cordes 3 à 6)',view:'schema',chap:'triades',grps:G34},
+   {id:'triades-min-2',g:'Triades (cordes 3 à 6)',st:'Mineures',niv:2,t:'Triades mineures (cordes 3 à 6)',view:'schema',chap:'triades-min',grps:G34},
+   {id:'triades-dim',g:'Triades (cordes 3 à 6)',st:'Diminuées',niv:2,t:'Triades diminuées',view:'schema',chap:'triades-dim'},
    {id:'positions-4',niv:2,t:'Positions transposables : accords à 4 sons',view:'schema',chap:'positions',filt:'quatre'},
-   {id:'renversements',niv:2,t:'Renversements (cordes 1 à 4)',view:'schema',chap:'cordes1234'},{id:'enrichis-6',niv:2,t:'Accords enrichis, fondamentale corde 6',view:'schema',chap:'enrichis',grid:'transpose',gmode:'ext',gfilt:'c6',intro:'Accords enrichis, fondamentale sur la corde de Mi grave, tous sur la même page : rangés par jazz shell de départ. Choisis la tonalité.'},
-   {id:'enrichis-5',niv:2,t:'Accords enrichis, fondamentale corde 5',view:'schema',chap:'enrichis',grid:'transpose',gmode:'ext',gfilt:'c5',intro:'Accords enrichis, fondamentale sur la corde de La, tous sur la même page : rangés par jazz shell de départ. Choisis la tonalité.'},
+   {id:'renversements',niv:2,t:'Renversements (cordes 1 à 4)',view:'schema',chap:'cordes1234'},{id:'enrichis-6',g:'Accords enrichis',st:'Fondamentale corde 6',niv:2,t:'Accords enrichis, fondamentale corde 6',view:'schema',chap:'enrichis',grid:'transpose',gmode:'ext',gfilt:'c6',intro:'Accords enrichis, fondamentale sur la corde de Mi grave, tous sur la même page : rangés par jazz shell de départ. Choisis la tonalité.'},
+   {id:'enrichis-5',g:'Accords enrichis',st:'Fondamentale corde 5',niv:2,t:'Accords enrichis, fondamentale corde 5',view:'schema',chap:'enrichis',grid:'transpose',gmode:'ext',gfilt:'c5',intro:'Accords enrichis, fondamentale sur la corde de La, tous sur la même page : rangés par jazz shell de départ. Choisis la tonalité.'},
    {id:'enchainements-2',niv:2,t:'Enchaînements',view:'game',game:'accords'},{id:'generateur-2',niv:2,t:'Générateur',view:'game',game:'generateur'},
    // niveau 3
-   {id:'triades-ouv',niv:3,t:'Triades ouvertes majeures',view:'schema',chap:'triades-ouv'},{id:'triades-ouv-min',niv:3,t:'Triades ouvertes mineures',view:'schema',chap:'triades-ouv-min'},{id:'triades-ouv-dim',niv:3,t:'Triades ouvertes diminuées',view:'schema',chap:'triades-ouv-dim'},
-   {id:'drop2',niv:3,t:'Drop 2',view:'schema',chap:'drop2'},{id:'drop3',niv:3,t:'Drop 3',view:'schema',chap:'drop3'},{id:'drop24',niv:3,t:'Drop 2+4',view:'schema',chap:'drop24'},
+   {id:'triades-ouv',g:'Triades ouvertes',st:'Majeures',niv:3,t:'Triades ouvertes majeures',view:'schema',chap:'triades-ouv'},{id:'triades-ouv-min',g:'Triades ouvertes',st:'Mineures',niv:3,t:'Triades ouvertes mineures',view:'schema',chap:'triades-ouv-min'},{id:'triades-ouv-dim',g:'Triades ouvertes',st:'Diminuées',niv:3,t:'Triades ouvertes diminuées',view:'schema',chap:'triades-ouv-dim'},
+   {id:'drop2',g:'Drops',st:'Drop 2',niv:3,t:'Drop 2',view:'schema',chap:'drop2'},{id:'drop3',g:'Drops',st:'Drop 3',niv:3,t:'Drop 3',view:'schema',chap:'drop3'},{id:'drop24',g:'Drops',st:'Drop 2+4',niv:3,t:'Drop 2+4',view:'schema',chap:'drop24'},
    {id:'slash',niv:3,t:'Triades avec basse étrangère',view:'schema',chap:'slash'},
    {id:'enchainements-3',niv:3,t:'Enchaînements',view:'game',game:'accords'},{id:'generateur-3',niv:3,t:'Générateur',view:'game',game:'generateur'}]},
  {id:'arpeges',t:'Arpèges',items:[
@@ -1694,11 +1695,15 @@ function route(){
   const r=findRoute(h)||findRoute(store.get('route','presentation'))||[MENU[0],MENU[0].items[0]];
   const [tab,it]=r;store.set('route',tab.id+'-'+it.id);
   if(RUN.on)stopGame();
-  CUR=it;
+  CUR=it;if(it.g)store.set('grp-'+tab.id+'-'+it.g,it.id);
   $('tabs').innerHTML=MENU.map(t=>`<a href="#${t.id}-${(t===tab?it:t.items[0]).id}"${t===tab?' aria-current="page"':''}>${esc(t.t)}</a>`).join('');
   // onglets à niveaux : on ne voit que les pages du niveau choisi ; un clic sur un niveau l'ouvre
   const lv=it.niv,vis=lv?tab.items.filter(x=>x.niv===lv):tab.items,levels=[...new Set(tab.items.map(x=>x.niv).filter(Boolean))];
-  $('subnav').innerHTML=tab.items.length<2?'':(levels.length?levels.map(n=>`<a href="#${tab.id}-${tab.items.find(x=>x.niv===n).id}" class="nivbtn"${n===lv?' aria-current="true"':''}>Niveau ${n}</a>`).join('')+'<span class="brk"></span>':'')+vis.map((x,i)=>(x.view==='game'&&i&&vis[i-1].view!=='game'?'<span class="sep"></span>':'')+`<a href="#${tab.id}-${x.id}" class="${x.view==='game'?'jeu':''}"${x===it?' aria-current="page"':''}>${esc(x.t)}</a>`).join('');
+  $('subnav').innerHTML=tab.items.length<2?'':(levels.length?levels.map(n=>`<a href="#${tab.id}-${tab.items.find(x=>x.niv===n).id}" class="nivbtn"${n===lv?' aria-current="true"':''}>Niveau ${n}</a>`).join('')+'<span class="brk"></span>':'')+vis.filter((x,i)=>!x.g||!i||vis[i-1].g!==x.g).map((x,i,a)=>{const mem=x.g&&vis.find(y=>y.g===x.g&&y.id===store.get('grp-'+tab.id+'-'+x.g,'')),to=mem||x,on=x.g?it.g===x.g&&it.niv===x.niv:x===it;
+    return (x.view==='game'&&i&&a[i-1].view!=='game'?'<span class="sep"></span>':'')+`<a href="#${tab.id}-${to.id}" class="${x.view==='game'?'jeu':''}"${on?' aria-current="page"':''}>${esc(x.g||x.t)}</a>`;}).join('');
+  // menu déroulant à l'intérieur d'une page de groupe (majeurs, mineurs, 7…)
+  {const sib=it.g?vis.filter(y=>y.g===it.g):[];
+   $('grpWrap').hidden=sib.length<2;$('grpSel').innerHTML=sib.map(y=>`<option value="${tab.id}-${y.id}"${y===it?' selected':''}>${esc(y.st)}</option>`).join('');}
   [$('subnav'),$('tabs')].forEach(box=>{const c=box.querySelector('[aria-current]');if(c&&box.scrollWidth>box.clientWidth)box.scrollLeft=c.offsetLeft-box.clientWidth/2+c.offsetWidth/2;});
   const FILTS={majmin:f=>f.acc===''||f.acc==='m',quatre:f=>!(f.acc===''||f.acc==='m'),
     oct:f=>f.groupe==='Une octave',oct65:f=>f.groupe==='Une octave'&&/corde [65]$/.test(f.n),full:f=>f.groupe==='Position complète',nodiag:f=>!f.diag,
@@ -1706,7 +1711,7 @@ function route(){
   Object.assign(VIEW,{filt:FILTS[it.filt]||null,grps:it.grps||null,grid:it.grid||null,gridIntro:it.intro||'',niv:it.niv||0,gmode:it.gmode||'',gridFilt:{c6:f=>/corde 6/.test(f.groupe),c5:f=>/corde 5/.test(f.groupe),pw:f=>/^Power/.test(f.n),oct:f=>/^Octave/.test(f.n),majmin:f=>f.acc===''||f.acc==='m',mi:f=>/Mi/.test(f.groupe||''),la:f=>/La/.test(f.groupe||'')}[it.gfilt]||(()=>true)});
   const panel=it.view==='schema'?'schemas':it.view==='game'?'jeux':it.view;
   PANELS.forEach(p=>$('p-'+p).classList.toggle('on',p===panel));
-  if(it.view==='schema'){const ci=CHAPITRES.findIndex(c=>c.id===it.chap);if(ci!==SH.ch||SH.item!==it){SH.ch=ci;SH.f=0;}SH.item=it;$('h-sch').textContent=(it.niv?'Niveau '+it.niv+' · ':'')+it.t;
+  if(it.view==='schema'){const ci=CHAPITRES.findIndex(c=>c.id===it.chap);if(ci!==SH.ch||SH.item!==it){SH.ch=ci;SH.f=0;}SH.item=it;$('h-sch').textContent=(it.niv?'Niveau '+it.niv+' · ':'')+(it.g||it.t);
     const C=CHAPITRES[SH.ch];EMB=isScaleChap(C)||C.id.startsWith('arp-');
     if(EMB){$('shPlayBox').appendChild($('gCard'));GI=GAMES.findIndex(g=>g.id==='gamme');}else $('p-jeux').appendChild($('gCard'));
     $('shGame').hidden=EMB||C.id==='slash'||!!it.grid;fillShapes();renderShape();if(EMB)renderGame();}
