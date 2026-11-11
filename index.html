@@ -277,7 +277,7 @@ label.chk input{width:18px;height:18px;accent-color:var(--accent)}
 </section>
 
 </main>
-<footer class="meta" style="max-width:1100px;margin:0 auto;padding:0 20px 30px;text-align:center">Boîte à outils guitare · <span id="appver">version 54</span><br><span style="font-size:12px">Sons : basse <a href="https://www.karoryfer.com/karoryfer-samples" target="_blank" rel="noopener">Karoryfer Samples</a> (CC BY 3.0) · batterie Virtuosity Drums et contrebasse <a href="https://github.com/sgossner/VSCO-2-CE" target="_blank" rel="noopener">VSCO 2</a> (CC0)</span></footer>
+<footer class="meta" style="max-width:1100px;margin:0 auto;padding:0 20px 30px;text-align:center">Boîte à outils guitare · <span id="appver">version 55</span><br><span style="font-size:12px">Sons : basse <a href="https://www.karoryfer.com/karoryfer-samples" target="_blank" rel="noopener">Karoryfer Samples</a> (CC BY 3.0) · batterie Virtuosity Drums et contrebasse <a href="https://github.com/sgossner/VSCO-2-CE" target="_blank" rel="noopener">VSCO 2</a> (CC0)</span></footer>
 <script src="contenu/formes.js"></script>
 <script>
 'use strict';
@@ -847,7 +847,7 @@ function renderGrid(ch,lbl){
   const box=$('shGrid');box.innerHTML='';box.className=VIEW.grid==='transpose'?'':'chordgrid';
   if(VIEW.grid==='transpose'){const key=KEYS[SH.key];
     // les extensions, rangées par jazz shell de départ (une ligne par shell) ; le shell lui-même n'est pas répété
-    const BASE=a=>/^Maj/.test(a)?'Maj7':/^m/.test(a)?'m7':'7',SHI={'7':'1 3 ♭7','Maj7':'1 3 7','m7':'1 ♭3 ♭7'},WHAT={'7':'Accords de dominante','Maj7':'Accord Maj9','m7':'Accord m9'};
+    const BASE=a=>/^Maj/.test(a)?'Maj7':/^m/.test(a)?'m7':'7',SHI={'7':'1 3 ♭7','Maj7':'1 3 7','m7':'1 ♭3 ♭7'},WHAT={'7':'Accords de dominante','Maj7':'Accords Maj7 enrichis','m7':'Accords m7 enrichis'};
     const ext=ch.formes.filter(VIEW.gridFilt).filter(f=>!['7','Maj7','m7'].includes(f.acc));
     [...new Set(ext.map(f=>BASE(f.acc)))].forEach(b=>{
       const h=document.createElement('h3');h.className='gridrow';h.textContent=WHAT[b]+', à partir du jazz shell '+chordName(key,b)+' ('+SHI[b]+') : on ajoute une extension sur la corde 2.';box.appendChild(h);
