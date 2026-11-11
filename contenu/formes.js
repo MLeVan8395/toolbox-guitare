@@ -119,7 +119,13 @@ const CHAPITRES=[
   {"n": "Triade majeure sur la quinte de la basse (V/I), basse corde 6", "notes": [[6, 0, "1"], [4, 1, "7"], [3, -1, "9"], [2, 0, "5"]], "x": [1, 5], "groupe": "Basse sur la corde de Mi", "tri": ["5", ""], "son": "Maj9 sans tierce"},
   {"n": "Triade majeure sur la quinte de la basse (V/I), basse corde 5", "notes": [[5, 0, "1"], [3, 1, "7"], [2, 0, "9"], [1, 0, "5"]], "x": [4, 6], "groupe": "Basse sur la corde de La", "tri": ["5", ""], "son": "Maj9 sans tierce"},
   {"n": "Triade mineure sur la quinte de la basse (Vm/I), basse corde 6", "notes": [[6, 0, "1"], [4, 0, "♭7"], [3, -1, "9"], [2, 0, "5"]], "x": [1, 5], "groupe": "Basse sur la corde de Mi", "tri": ["5", "m"], "son": "9 sans tierce"},
-  {"n": "Triade mineure sur la quinte de la basse (Vm/I), basse corde 5", "notes": [[5, 0, "1"], [3, 0, "♭7"], [2, 0, "9"], [1, 0, "5"]], "x": [4, 6], "groupe": "Basse sur la corde de La", "tri": ["5", "m"], "son": "9 sans tierce"}
+  {"n": "Triade mineure sur la quinte de la basse (Vm/I), basse corde 5", "notes": [[5, 0, "1"], [3, 0, "♭7"], [2, 0, "9"], [1, 0, "5"]], "x": [4, 6], "groupe": "Basse sur la corde de La", "tri": ["5", "m"], "son": "9 sans tierce"},
+  {"n": "Triade majeure un demi-ton au-dessus de la basse (♭II/I), basse corde 6", "notes": [[6, 0, "1"], [4, -2, "♭13"], [3, -2, "♭9"], [2, -2, "11"]], "x": [1, 5], "groupe": "Basse sur la corde de Mi", "tri": ["♭2", ""], "son": "sus4♭9 (phrygien)"},
+  {"n": "Triade majeure un demi-ton au-dessus de la basse (♭II/I), basse corde 5", "notes": [[5, 0, "1"], [3, -2, "♭13"], [2, -1, "♭9"], [1, -2, "11"]], "x": [4, 6], "groupe": "Basse sur la corde de La", "tri": ["♭2", ""], "son": "sus4♭9 (phrygien)"},
+  {"n": "Triade majeure un demi-ton sous la basse (VII/I), basse corde 6", "notes": [[6, 0, "1"], [4, 1, "7"], [3, 0, "♯9"], [2, -1, "♯11"]], "x": [1, 5], "groupe": "Basse sur la corde de Mi", "tri": ["7", ""], "son": "dim(Maj7)"},
+  {"n": "Triade majeure un demi-ton sous la basse (VII/I), basse corde 5", "notes": [[5, 0, "1"], [3, 1, "7"], [2, 1, "♯9"], [1, -1, "♯11"]], "x": [4, 6], "groupe": "Basse sur la corde de La", "tri": ["7", ""], "son": "dim(Maj7)"},
+  {"n": "Triade majeure sur la tierce de la basse (III/I), basse corde 6", "notes": [[6, 0, "1"], [4, 1, "7"], [3, 1, "3"], [2, 1, "♯5"]], "x": [1, 5], "groupe": "Basse sur la corde de Mi", "tri": ["3", ""], "son": "Maj7♯5 (lydien augmenté)"},
+  {"n": "Triade majeure sur la tierce de la basse (III/I), basse corde 5", "notes": [[5, 0, "1"], [3, 1, "7"], [2, 2, "3"], [1, 1, "♯5"]], "x": [4, 6], "groupe": "Basse sur la corde de La", "tri": ["3", ""], "son": "Maj7♯5 (lydien augmenté)"}
 ]},
 {id:"shell",titre:"Accords jazz faciles (shell)",intro:"3 sons : la fondamentale, la tierce et la 7e (ou la 6te). À transposer en suivant le cycle des quartes.",formes:[
   {"n":"7 (fondamentale corde 6)","notes":[[6,0,"1"],[4,0,"♭7"],[3,1,"3"]],"x":[1,2,5],"groupe":"Fondamentale sur la corde de Mi","acc":"7"},
