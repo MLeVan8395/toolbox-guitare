@@ -54,7 +54,7 @@ nav a:hover{color:var(--ink)}
 .staffwrap svg{display:block;width:100%;height:auto}
 .minigrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(230px,1fr));gap:10px;padding:4px 8px}.mini svg{display:block;width:100%;height:auto;min-width:0!important}.mini b{display:block;font-size:13px;color:var(--muted);margin:0 0 2px 4px}
 .chordgrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:14px}
-.chordgrid .card{padding:14px}.chordgrid h3{margin:0 0 6px;font-family:var(--chord);font-size:22px}
+.chordgrid .card{padding:14px}.gridrow{font-size:16px;margin:18px 0 10px;grid-column:1/-1}.chordgrid h3{margin:0 0 6px;font-family:var(--chord);font-size:22px}
 .subnav .brk{flex-basis:100%;height:0}.subnav .nivbtn{font-weight:700;border-width:2px}.subnav .nivbtn[aria-current]{background:var(--accent);color:var(--bg);border-color:var(--accent)}.subnav .niv{font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:var(--muted);align-self:center;margin-right:4px}
 .vxbar{position:relative;height:26px;border-radius:99px;background:var(--paper);border:1px solid var(--line);overflow:hidden;max-width:520px}
 .vxbar::before{content:"";position:absolute;top:0;bottom:0;left:45%;width:10%;background:color-mix(in srgb,var(--green) 30%,transparent)}
@@ -277,7 +277,7 @@ label.chk input{width:18px;height:18px;accent-color:var(--accent)}
 </section>
 
 </main>
-<footer class="meta" style="max-width:1100px;margin:0 auto;padding:0 20px 30px;text-align:center">Boîte à outils guitare · <span id="appver">version 53</span><br><span style="font-size:12px">Sons : basse <a href="https://www.karoryfer.com/karoryfer-samples" target="_blank" rel="noopener">Karoryfer Samples</a> (CC BY 3.0) · batterie Virtuosity Drums et contrebasse <a href="https://github.com/sgossner/VSCO-2-CE" target="_blank" rel="noopener">VSCO 2</a> (CC0)</span></footer>
+<footer class="meta" style="max-width:1100px;margin:0 auto;padding:0 20px 30px;text-align:center">Boîte à outils guitare · <span id="appver">version 54</span><br><span style="font-size:12px">Sons : basse <a href="https://www.karoryfer.com/karoryfer-samples" target="_blank" rel="noopener">Karoryfer Samples</a> (CC BY 3.0) · batterie Virtuosity Drums et contrebasse <a href="https://github.com/sgossner/VSCO-2-CE" target="_blank" rel="noopener">VSCO 2</a> (CC0)</span></footer>
 <script src="contenu/formes.js"></script>
 <script>
 'use strict';
@@ -844,16 +844,22 @@ function renderShape(){
   if(EMB&&!RUN.on)preview();
 }
 function renderGrid(ch,lbl){
-  const box=$('shGrid');box.innerHTML='';
+  const box=$('shGrid');box.innerHTML='';box.className=VIEW.grid==='transpose'?'':'chordgrid';
   if(VIEW.grid==='transpose'){const key=KEYS[SH.key];
-    ch.formes.filter(VIEW.gridFilt).forEach(f=>{const nm=chordName(key,f.acc),notes=shapeNotes(f,ch,key,lbl),frs=notes.map(n=>n.fr);
-      const c=document.createElement('div');c.className='card';
-      c.innerHTML=`<h3>${esc(nm)}</h3><p class="meta" style="margin:0">${esc(f.groupe)}</p><div class="board"></div><div class="staffwrap"></div><div class="row" style="margin-top:8px"><button type="button" class="primary">▶ Écouter</button></div>`;
-      box.appendChild(c);
-      drawBoard(c.querySelector('.board'),{from:Math.max(0,Math.min(...frs)-1),to:Math.max(Math.max(...frs)+1,Math.min(...frs)+4),notes,x:f.x,label:nm});
-      const LS={};f.notes.forEach(n=>LS[n[0]]=n[2]);
-      c.querySelector('.staffwrap').innerHTML=chordStaff([{name:nm,notes:chordWritten(notes.map(n=>({...n,l:LS[n.s]})),key)}],-1);
-      c.querySelector('button').onclick=()=>{const ac=ctx();if(ac)strum(notes.map(n=>n.m),ac.currentTime+.05);};});
+    // les extensions, rangées par jazz shell de départ (une ligne par shell) ; le shell lui-même n'est pas répété
+    const BASE=a=>/^Maj/.test(a)?'Maj7':/^m/.test(a)?'m7':'7',SHI={'7':'1 3 ♭7','Maj7':'1 3 7','m7':'1 ♭3 ♭7'},WHAT={'7':'Accords de dominante','Maj7':'Accord Maj9','m7':'Accord m9'};
+    const ext=ch.formes.filter(VIEW.gridFilt).filter(f=>!['7','Maj7','m7'].includes(f.acc));
+    [...new Set(ext.map(f=>BASE(f.acc)))].forEach(b=>{
+      const h=document.createElement('h3');h.className='gridrow';h.textContent=WHAT[b]+', à partir du jazz shell '+chordName(key,b)+' ('+SHI[b]+') : on ajoute une extension sur la corde 2.';box.appendChild(h);
+      const row=document.createElement('div');row.className='chordgrid';box.appendChild(row);
+      ext.filter(f=>BASE(f.acc)===b).forEach(f=>{const nm=chordName(key,f.acc),notes=shapeNotes(f,ch,key,lbl),frs=notes.map(n=>n.fr);
+        const c=document.createElement('div');c.className='card';
+        c.innerHTML=`<h3>${esc(nm)}</h3><div class="board"></div><div class="staffwrap"></div><div class="row" style="margin-top:8px"><button type="button" class="primary">▶ Écouter</button></div>`;
+        row.appendChild(c);
+        drawBoard(c.querySelector('.board'),{from:Math.max(0,Math.min(...frs)-1),to:Math.max(Math.max(...frs)+1,Math.min(...frs)+4),notes,x:f.x,label:nm});
+        const LS={};f.notes.forEach(n=>LS[n[0]]=n[2]);
+        c.querySelector('.staffwrap').innerHTML=chordStaff([{name:nm,notes:chordWritten(notes.map(n=>({...n,l:LS[n.s]})),key)}],-1);
+        c.querySelector('button').onclick=()=>{const ac=ctx();if(ac)strum(notes.map(n=>n.m),ac.currentTime+.05);};});});
     return;}
   VIEW.grid.forEach(nm=>{const f=ch.formes.find(x=>x.n===nm);if(!f)return;const key=KEYS.find(k=>k[0]===nm[0])||KEYS[0];
     const notes=shapeNotes(f,ch,key,lbl),frs=notes.map(n=>n.fr);
@@ -1646,8 +1652,8 @@ const MENU=[
    {id:'triades-min-2',niv:2,t:'Triades mineures (cordes 3 à 6)',view:'schema',chap:'triades-min',grps:G34},
    {id:'triades-dim',niv:2,t:'Triades diminuées',view:'schema',chap:'triades-dim'},
    {id:'positions-4',niv:2,t:'Positions transposables : accords à 4 sons',view:'schema',chap:'positions',filt:'quatre'},
-   {id:'renversements',niv:2,t:'Renversements (cordes 1 à 4)',view:'schema',chap:'cordes1234'},{id:'enrichis-6',niv:2,t:'Accords enrichis, fondamentale corde 6',view:'schema',chap:'enrichis',grid:'transpose',gfilt:'c6',intro:'Accords enrichis, fondamentale sur la corde de Mi grave, tous sur la même page : l\'accord de base et ses extensions. Choisis la tonalité.'},
-   {id:'enrichis-5',niv:2,t:'Accords enrichis, fondamentale corde 5',view:'schema',chap:'enrichis',grid:'transpose',gfilt:'c5',intro:'Accords enrichis, fondamentale sur la corde de La, tous sur la même page : l\'accord de base et ses extensions. Choisis la tonalité.'},
+   {id:'renversements',niv:2,t:'Renversements (cordes 1 à 4)',view:'schema',chap:'cordes1234'},{id:'enrichis-6',niv:2,t:'Accords enrichis, fondamentale corde 6',view:'schema',chap:'enrichis',grid:'transpose',gfilt:'c6',intro:'Accords enrichis, fondamentale sur la corde de Mi grave, tous sur la même page : rangés par jazz shell de départ. Choisis la tonalité.'},
+   {id:'enrichis-5',niv:2,t:'Accords enrichis, fondamentale corde 5',view:'schema',chap:'enrichis',grid:'transpose',gfilt:'c5',intro:'Accords enrichis, fondamentale sur la corde de La, tous sur la même page : rangés par jazz shell de départ. Choisis la tonalité.'},
    {id:'enchainements-2',niv:2,t:'Enchaînements',view:'game',game:'accords'},{id:'generateur-2',niv:2,t:'Générateur',view:'game',game:'generateur'},
    // niveau 3
    {id:'triades-ouv',niv:3,t:'Triades ouvertes majeures',view:'schema',chap:'triades-ouv'},{id:'triades-ouv-min',niv:3,t:'Triades ouvertes mineures',view:'schema',chap:'triades-ouv-min'},{id:'triades-ouv-dim',niv:3,t:'Triades ouvertes diminuées',view:'schema',chap:'triades-ouv-dim'},
