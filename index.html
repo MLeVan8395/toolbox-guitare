@@ -277,7 +277,7 @@ label.chk input{width:18px;height:18px;accent-color:var(--accent)}
 </section>
 
 </main>
-<footer class="meta" style="max-width:1100px;margin:0 auto;padding:0 20px 30px;text-align:center">Boîte à outils guitare · <span id="appver">version 50</span><br><span style="font-size:12px">Sons : basse <a href="https://www.karoryfer.com/karoryfer-samples" target="_blank" rel="noopener">Karoryfer Samples</a> (CC BY 3.0) · batterie Virtuosity Drums et contrebasse <a href="https://github.com/sgossner/VSCO-2-CE" target="_blank" rel="noopener">VSCO 2</a> (CC0)</span></footer>
+<footer class="meta" style="max-width:1100px;margin:0 auto;padding:0 20px 30px;text-align:center">Boîte à outils guitare · <span id="appver">version 51</span><br><span style="font-size:12px">Sons : basse <a href="https://www.karoryfer.com/karoryfer-samples" target="_blank" rel="noopener">Karoryfer Samples</a> (CC BY 3.0) · batterie Virtuosity Drums et contrebasse <a href="https://github.com/sgossner/VSCO-2-CE" target="_blank" rel="noopener">VSCO 2</a> (CC0)</span></footer>
 <script src="contenu/formes.js"></script>
 <script>
 'use strict';
@@ -1033,16 +1033,18 @@ const GAMES=[
   make:()=>{const ord=val('gOrd')==='down'?[1,2,3,4,5,6]:[6,5,4,3,2,1];
     return noteGame({items:i=>{const n=QUARTES_B[Math.floor(i/6)%12];return {s:ord[i%6],name:n,pc:pcOfName(n)};}});}},
  {id:'gamme',titre:'Jouer au métronome',
-  desc:'Le schéma affiché, monté puis descendu au métronome : la note à jouer s\'allume sur le manche. Avec le cycle des quartes, la tonalité change à chaque tour.',
+  desc:'Le schéma affiché, monté puis descendu au métronome : la note à jouer s\'allume sur le manche. Après chaque tour, on peut rester dans la tonalité ou en changer : cycle des quartes, un demi-ton plus haut, ou au hasard.',
   // ce jeu s'affiche directement sous le schéma de la gamme ou de l'arpège (forme et tonalité choisies au-dessus)
-  opts:()=>opt('gSub','Valeurs',[[1,'Noires'],[2,'Croches'],[3,'Triolets'],[4,'Doubles croches']],1)+((CHAPITRES[SH.ch]||{}).id?(String(CHAPITRES[SH.ch].id).startsWith('arp')?opt('gMot','Motif',ARPMOT,'lin'):opt('gMot','Motif',MOTIFS,'lin')):'')+opt('gNxt','Après chaque tour',[['same','Même tonalité'],['q','Cycle des quartes']],'same')
+  opts:()=>opt('gSub','Valeurs',[[1,'Noires'],[2,'Croches'],[3,'Triolets'],[4,'Doubles croches']],1)+((CHAPITRES[SH.ch]||{}).id?(String(CHAPITRES[SH.ch].id).startsWith('arp')?opt('gMot','Motif',ARPMOT,'lin'):opt('gMot','Motif',MOTIFS,'lin')):'')+opt('gNxt','Après chaque tour',[['same','Même tonalité'],['q','Cycle des quartes'],['c','Un demi-ton plus haut'],['r','Tonalité au hasard']],'same')
       +opt('gAcc','Accompagnement',ACCOPTS,'none')
       +'<label class="chk" style="align-self:end;padding-bottom:8px"><input type="checkbox" id="gSnd" checked> Entendre les notes</label>',
   make:()=>{
-    const ch=CHAPITRES[SH.ch],f0=ch.formes[SH.f],f=shapeForPlay(f0,ch),sub=+val('gSub')||1,k0=SH.key,cyc=val('gNxt')==='q';
+    const ch=CHAPITRES[SH.ch],f0=ch.formes[SH.f],f=shapeForPlay(f0,ch),sub=+val('gSub')||1,k0=SH.key,nxt=val('gNxt')||'same',cyc=nxt!=='same';
     const startQ=KEYQ.findIndex(k=>k===KEYS[k0]);
     let pos=null;const tours=[];
-    const tour=n=>{while(tours.length<=n){const key=cyc?KEYQ[(startQ+tours.length)%12]:KEYS[k0];
+    const tour=n=>{while(tours.length<=n){const tn=tours.length,prevK=tn?tours[tn-1].key:null;
+        // tonalité du tour : même tonalité, cycle des quartes, un demi-ton plus haut, ou au hasard (jamais deux fois la même de suite)
+        const key=nxt==='q'?KEYQ[(startQ+tn)%12]:nxt==='c'?KEYS[(k0+tn)%12]:nxt==='r'?(tn===0?KEYS[k0]:(()=>{let k;do{k=KEYS[Math.floor(Math.random()*12)];}while(k===prevK);return k;})()):KEYS[k0];
         const pl=place(f,key,pos===null?(f.diag?{floor:0}:{}):{near:pos,floor:f.diag?0:1});pos=pl.reduce((a,b)=>a+b.fr,0)/pl.length;
         const M=motifSeq(ascOf(pl),val('gMot')),seq=M.seq,SK=staffKeyOf(f0,key),bar=(cyc&&SK.sig?16:4)*sub,pad=mod(-seq.length,bar); // cycle avec armure : un tour = des lignes entières
         const prev=tours[tours.length-1],b0=prev?prev.b0+(prev.seq.length+prev.pad)/(4*sub):0,i0=prev?prev.i0+prev.R.items.length:0;
