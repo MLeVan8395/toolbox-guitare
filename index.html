@@ -277,7 +277,7 @@ label.chk input{width:18px;height:18px;accent-color:var(--accent)}
 </section>
 
 </main>
-<footer class="meta" style="max-width:1100px;margin:0 auto;padding:0 20px 30px;text-align:center">Boîte à outils guitare · <span id="appver">version 56</span><br><span style="font-size:12px">Sons : basse <a href="https://www.karoryfer.com/karoryfer-samples" target="_blank" rel="noopener">Karoryfer Samples</a> (CC BY 3.0) · batterie Virtuosity Drums et contrebasse <a href="https://github.com/sgossner/VSCO-2-CE" target="_blank" rel="noopener">VSCO 2</a> (CC0)</span></footer>
+<footer class="meta" style="max-width:1100px;margin:0 auto;padding:0 20px 30px;text-align:center">Boîte à outils guitare · <span id="appver">version 57</span><br><span style="font-size:12px">Sons : basse <a href="https://www.karoryfer.com/karoryfer-samples" target="_blank" rel="noopener">Karoryfer Samples</a> (CC BY 3.0) · batterie Virtuosity Drums et contrebasse <a href="https://github.com/sgossner/VSCO-2-CE" target="_blank" rel="noopener">VSCO 2</a> (CC0)</span></footer>
 <script src="contenu/formes.js"></script>
 <script>
 'use strict';
@@ -845,6 +845,18 @@ function renderShape(){
 }
 function renderGrid(ch,lbl){
   const box=$('shGrid');box.innerHTML='';box.className=VIEW.grid==='transpose'?'':'chordgrid';
+  if(VIEW.grid==='transpose'&&VIEW.gmode!=='ext'){const key=KEYS[SH.key];
+    // tous les accords de la page côte à côte, dans la tonalité choisie
+    const row=document.createElement('div');row.className='chordgrid';box.appendChild(row);
+    ch.formes.filter(VIEW.gridFilt).forEach(f=>{const nm=f.acc!==undefined?chordName(key,f.acc):/^Power/.test(f.n)?chordName(key,'5'):keyName(key)+' à l\'octave',notes=shapeNotes(f,ch,key,lbl),frs=notes.map(n=>n.fr);
+      const c=document.createElement('div');c.className='card';
+      c.innerHTML=`<h3>${esc(nm)}</h3><p class="meta" style="margin:0">${esc(/^(mi|la)$/.test(CUR.gfilt)?'':/^Power chord, /.test(f.n)?f.n.slice(13):/^Octave/.test(f.n)?f.n:((f.n.match(/\(([^)]*)\)\s*$/)||[,''])[1]))}</p><div class="board"></div><div class="staffwrap"></div><div class="row" style="margin-top:8px"><button type="button" class="primary">▶ Écouter</button></div>`;
+      row.appendChild(c);
+      drawBoard(c.querySelector('.board'),{from:Math.max(0,Math.min(...frs)-1),to:Math.max(Math.max(...frs)+1,Math.min(...frs)+4),notes,x:f.x,label:nm});
+      const LS={};f.notes.forEach(n=>LS[n[0]]=n[2]);
+      c.querySelector('.staffwrap').innerHTML=chordStaff([{name:nm,notes:chordWritten(notes.map(n=>({...n,l:LS[n.s]||'1'})),key)}],-1);
+      c.querySelector('button').onclick=()=>{const ac=ctx();if(ac)strum(notes.map(n=>n.m),ac.currentTime+.05);};});
+    return;}
   if(VIEW.grid==='transpose'){const key=KEYS[SH.key];
     // les extensions, rangées par jazz shell de départ (une ligne par shell) ; le shell lui-même n'est pas répété
     const BASE=a=>/^Maj/.test(a)?'Maj7':/^m/.test(a)?'m7':'7',SHI={'7':'1 3 ♭7','Maj7':'1 3 7','m7':'1 ♭3 ♭7'},WHAT={'7':'Accords de dominante','Maj7':'Accords Maj7 enrichis','m7':'Accords m7 enrichis'};
@@ -1641,9 +1653,11 @@ const MENU=[
    {id:'ouverts-maj',niv:1,t:'Accords ouverts majeurs',view:'schema',chap:'ouverts',grid:['C','D','E','G','A'],intro:'Les accords ouverts majeurs, tous sur la même page. Les cordes à vide sonnent : x = corde non jouée.'},
    {id:'ouverts-min',niv:1,t:'Accords ouverts mineurs',view:'schema',chap:'ouverts',grid:['Am','Dm','Em'],intro:'Les accords ouverts mineurs, tous sur la même page. x = corde non jouée.'},
    {id:'ouverts-7',niv:1,t:'Accords ouverts 7',view:'schema',chap:'ouverts',grid:['C7','D7','E7','G7','A7','B7'],intro:'Les accords ouverts de 7 (septième de dominante), tous sur la même page. x = corde non jouée.'},
-   {id:'power',niv:1,t:'Power chords et octaves',view:'schema',chap:'power'},
-   {id:'positions',niv:1,t:'Positions transposables : majeurs et mineurs',view:'schema',chap:'positions',filt:'majmin'},
-   {id:'shell',niv:1,t:'Jazz shells',view:'schema',chap:'shell'},
+   {id:'power',niv:1,t:'Power chords',view:'schema',chap:'power',grid:'transpose',gfilt:'pw',intro:'Les power chords (fondamentale et quinte), tous sur la même page. Choisis la tonalité.'},
+   {id:'octaves',niv:1,t:'Octaves',view:'schema',chap:'power',grid:'transpose',gfilt:'oct',intro:'Les octaves depuis chaque corde, toutes sur la même page. Choisis la tonalité.'},
+   {id:'positions',niv:1,t:'Positions transposables : majeurs et mineurs',view:'schema',chap:'positions',grid:'transpose',gfilt:'majmin',intro:'Les accords majeurs et mineurs transposables (barrés), fondamentale sur la corde 6 ou 5, tous sur la même page. Choisis la tonalité.'},
+   {id:'shell-6',niv:1,t:'Jazz shells, fondamentale corde 6',view:'schema',chap:'shell',grid:'transpose',gfilt:'mi',intro:'Les jazz shells (fondamentale, tierce, septième ou sixte), fondamentale sur la corde de Mi grave, tous sur la même page. Choisis la tonalité.'},
+   {id:'shell-5',niv:1,t:'Jazz shells, fondamentale corde 5',view:'schema',chap:'shell',grid:'transpose',gfilt:'la',intro:'Les jazz shells (fondamentale, tierce, septième ou sixte), fondamentale sur la corde de La, tous sur la même page. Choisis la tonalité.'},
    {id:'triades',niv:1,t:'Triades majeures (cordes 1 à 4)',view:'schema',chap:'triades',grps:G12},
    {id:'triades-min',niv:1,t:'Triades mineures (cordes 1 à 4)',view:'schema',chap:'triades-min',grps:G12},
    {id:'enchainements',niv:1,t:'Enchaînements',view:'game',game:'accords'},{id:'generateur',niv:1,t:'Générateur',view:'game',game:'generateur'},
@@ -1652,8 +1666,8 @@ const MENU=[
    {id:'triades-min-2',niv:2,t:'Triades mineures (cordes 3 à 6)',view:'schema',chap:'triades-min',grps:G34},
    {id:'triades-dim',niv:2,t:'Triades diminuées',view:'schema',chap:'triades-dim'},
    {id:'positions-4',niv:2,t:'Positions transposables : accords à 4 sons',view:'schema',chap:'positions',filt:'quatre'},
-   {id:'renversements',niv:2,t:'Renversements (cordes 1 à 4)',view:'schema',chap:'cordes1234'},{id:'enrichis-6',niv:2,t:'Accords enrichis, fondamentale corde 6',view:'schema',chap:'enrichis',grid:'transpose',gfilt:'c6',intro:'Accords enrichis, fondamentale sur la corde de Mi grave, tous sur la même page : rangés par jazz shell de départ. Choisis la tonalité.'},
-   {id:'enrichis-5',niv:2,t:'Accords enrichis, fondamentale corde 5',view:'schema',chap:'enrichis',grid:'transpose',gfilt:'c5',intro:'Accords enrichis, fondamentale sur la corde de La, tous sur la même page : rangés par jazz shell de départ. Choisis la tonalité.'},
+   {id:'renversements',niv:2,t:'Renversements (cordes 1 à 4)',view:'schema',chap:'cordes1234'},{id:'enrichis-6',niv:2,t:'Accords enrichis, fondamentale corde 6',view:'schema',chap:'enrichis',grid:'transpose',gmode:'ext',gfilt:'c6',intro:'Accords enrichis, fondamentale sur la corde de Mi grave, tous sur la même page : rangés par jazz shell de départ. Choisis la tonalité.'},
+   {id:'enrichis-5',niv:2,t:'Accords enrichis, fondamentale corde 5',view:'schema',chap:'enrichis',grid:'transpose',gmode:'ext',gfilt:'c5',intro:'Accords enrichis, fondamentale sur la corde de La, tous sur la même page : rangés par jazz shell de départ. Choisis la tonalité.'},
    {id:'enchainements-2',niv:2,t:'Enchaînements',view:'game',game:'accords'},{id:'generateur-2',niv:2,t:'Générateur',view:'game',game:'generateur'},
    // niveau 3
    {id:'triades-ouv',niv:3,t:'Triades ouvertes majeures',view:'schema',chap:'triades-ouv'},{id:'triades-ouv-min',niv:3,t:'Triades ouvertes mineures',view:'schema',chap:'triades-ouv-min'},{id:'triades-ouv-dim',niv:3,t:'Triades ouvertes diminuées',view:'schema',chap:'triades-ouv-dim'},
@@ -1689,7 +1703,7 @@ function route(){
   const FILTS={majmin:f=>f.acc===''||f.acc==='m',quatre:f=>!(f.acc===''||f.acc==='m'),
     oct:f=>f.groupe==='Une octave',oct65:f=>f.groupe==='Une octave'&&/corde [65]$/.test(f.n),full:f=>f.groupe==='Position complète',nodiag:f=>!f.diag,
     gmaj:f=>f.groupe==='Modes de la gamme majeure',gmm:f=>f.groupe==='Modes du mineur mélodique',gmh:f=>f.groupe==='Modes du mineur harmonique',gsym:f=>f.groupe==='Gammes symétriques'};
-  Object.assign(VIEW,{filt:FILTS[it.filt]||null,grps:it.grps||null,grid:it.grid||null,gridIntro:it.intro||'',niv:it.niv||0,gridFilt:{c6:f=>/corde 6/.test(f.groupe),c5:f=>/corde 5/.test(f.groupe)}[it.gfilt]||(()=>true)});
+  Object.assign(VIEW,{filt:FILTS[it.filt]||null,grps:it.grps||null,grid:it.grid||null,gridIntro:it.intro||'',niv:it.niv||0,gmode:it.gmode||'',gridFilt:{c6:f=>/corde 6/.test(f.groupe),c5:f=>/corde 5/.test(f.groupe),pw:f=>/^Power/.test(f.n),oct:f=>/^Octave/.test(f.n),majmin:f=>f.acc===''||f.acc==='m',mi:f=>/Mi/.test(f.groupe||''),la:f=>/La/.test(f.groupe||'')}[it.gfilt]||(()=>true)});
   const panel=it.view==='schema'?'schemas':it.view==='game'?'jeux':it.view;
   PANELS.forEach(p=>$('p-'+p).classList.toggle('on',p===panel));
   if(it.view==='schema'){const ci=CHAPITRES.findIndex(c=>c.id===it.chap);if(ci!==SH.ch||SH.item!==it){SH.ch=ci;SH.f=0;}SH.item=it;$('h-sch').textContent=(it.niv?'Niveau '+it.niv+' · ':'')+it.t;
