@@ -278,7 +278,7 @@ label.chk input{width:18px;height:18px;accent-color:var(--accent)}
 </section>
 
 </main>
-<footer class="meta" style="max-width:1100px;margin:0 auto;padding:0 20px 30px;text-align:center">Boîte à outils guitare · <span id="appver">version 61</span><br><span style="font-size:12px">Sons : basse <a href="https://www.karoryfer.com/karoryfer-samples" target="_blank" rel="noopener">Karoryfer Samples</a> (CC BY 3.0) · batterie Virtuosity Drums et contrebasse <a href="https://github.com/sgossner/VSCO-2-CE" target="_blank" rel="noopener">VSCO 2</a> (CC0)</span></footer>
+<footer class="meta" style="max-width:1100px;margin:0 auto;padding:0 20px 30px;text-align:center">Boîte à outils guitare · <span id="appver">version 62</span><br><span style="font-size:12px">Sons : basse <a href="https://www.karoryfer.com/karoryfer-samples" target="_blank" rel="noopener">Karoryfer Samples</a> (CC BY 3.0) · batterie Virtuosity Drums et contrebasse <a href="https://github.com/sgossner/VSCO-2-CE" target="_blank" rel="noopener">VSCO 2</a> (CC0)</span></footer>
 <script src="contenu/formes.js"></script>
 <script>
 'use strict';
@@ -615,7 +615,7 @@ const sigAltOf=(n,L)=>{if(n>0)return [3,0,4,1,5,2,6].slice(0,n).includes(L)?1:0;
 function writtenOf(m,L){let a=mod(mod(m,12)-NAT[L],12);if(a>6)a-=12;const o=Math.round((m+12-a-NAT[L])/12)-1;return {p:o*7+L,a,name:LET[L]+accTxt(a)};}
 // armure : seulement pour la gamme majeure et la mineure naturelle ; ailleurs, altérations écrites devant chaque note
 function staffKeyOf(f0,key){const minor=!!f0&&f0.n==='Gamme mineure naturelle',major=!!f0&&f0.n==='Gamme majeure';return {K:minor?MINK[key[1]]:key,sig:major?MAJSIG[key[1]]:minor?MINK[key[1]][3]:0};}
-function spellSeq(seq,K){return seq.map(n=>{const L=(K[2]+degOf(n.l)-1)%7;return {...writtenOf(n.m,L),lab:n.l,root:n.l==='1'};});}
+function spellSeq(seq,K){return seq.map(n=>{const L=(K[2]+degOf(n.l)-1)%7;return {...writtenOf(n.m,L),lab:n.l,root:n.l==='1',enc:!!n.enc};});}
 function seqStaff(items,o){
   o=Object.assign({sig:0,cur:-1,group:0,perLine:16,labels:true,names:true,aria:'Partition'},o);
   if(!items.length)return '';
@@ -632,7 +632,7 @@ function seqStaff(items,o){
     if(li===nl-1)out.push(`<line x1="${W-10}" y1="${top}" x2="${W-10}" y2="${top+40}" stroke="currentColor"/><line x1="${W-6}" y1="${top}" x2="${W-6}" y2="${top+40}" stroke="currentColor" stroke-width="3"/>`);
     let x=left0+14;
     ln.forEach((n,j)=>{const i=li*o.perLine+j;if(o.group&&j>0&&i%o.group===0)x+=GAP;
-      const y=yP(n.p),L=mod(n.p,7),cur=i===o.cur,col=cur?'var(--accent)':n.root?'var(--root)':'currentColor';
+      const y=yP(n.p),L=mod(n.p,7),cur=i===o.cur,col=cur?'var(--accent)':n.root?'var(--root)':n.enc?'var(--muted)':'currentColor';
       for(let q=BOT-2;q>=n.p;q-=2)out.push(`<line x1="${x-11}" y1="${yP(q)}" x2="${x+11}" y2="${yP(q)}" stroke="currentColor"/>`);
       for(let q=BOT+10;q<=n.p;q+=2)out.push(`<line x1="${x-11}" y1="${yP(q)}" x2="${x+11}" y2="${yP(q)}" stroke="currentColor"/>`);
       if(cur)out.push(`<rect x="${x-13}" y="${top-above+2}" width="26" height="${LH-6}" rx="6" fill="var(--accent-soft)"/>`);
@@ -649,7 +649,7 @@ function seqStaff(items,o){
 function rhythmItems(wr,sub,padSlots,kt,sig,b0,i0){
   const items=[],map=[],d=1/sub,d12=12/sub,bl=4*sub;
   wr.forEach((n,q)=>{const L=mod(n.p,7);map.push(i0+items.length);
-    items.push({i:i0+items.length,p:n.p,a:n.a,name:n.name,lab:n.lab,showAcc:sig?n.a!==sigAltOf(sig,L):n.a!==0,d,d12,bar:b0+Math.floor(q/bl),beat:(q%bl)/sub,key:kt});});
+    items.push({i:i0+items.length,p:n.p,a:n.a,name:n.name,lab:n.lab,enc:n.enc,showAcc:sig?n.a!==sigAltOf(sig,L):n.a!==0,d,d12,bar:b0+Math.floor(q/bl),beat:(q%bl)/sub,key:kt});});
   let q=wr.length;const end=wr.length+padSlots;
   while(q<end){const bar=b0+Math.floor(q/bl),bs=q%bl,beat=bs/sub,rest=(dd,slots)=>{for(let k=0;k<slots;k++)map.push(i0+items.length);items.push({i:i0+items.length,rest:true,p:34,d:dd,d12:Math.round(dd*12),bar,beat,name:'silence',key:kt});q+=slots;};
     if(bs%sub){rest(d,1);continue;}                       // jusqu'au temps suivant
@@ -714,7 +714,30 @@ function extendScale(asc,count,dir){
 // les notes au-dessus) ; la descente repart un degré sous la note la plus haute atteinte, pour rester conjoint
 // (… Do Ré Mi, Ré Do Si… ; … Do Mi, Ré Si…), et s'arrête quand on atteint le degré sous la note de départ,
 // pour que le tour suivant reparte lui aussi par degré conjoint. « Alterné » : un groupe sur deux à l'envers
-function motifSeq(asc,mot){const sp=motifSpec(mot);
+// ---- Enclosures (niveau 4 des arpèges) : chaque note de l'arpège est encerclée, la note cible tombe sur le temps ----
+const ENCMOT=[['enc1','Diatonique au-dessus, chromatique en dessous'],['enc2','Chromatique au-dessus et en dessous'],['enc3','Double chromatique en dessous (bebop)']];
+const MAJDEG={1:0,2:2,3:4,4:5,5:7,6:9,7:11};
+function labOf(semi,deg){let a=mod(semi-MAJDEG[deg],12);if(a>6)a-=12;return (a<0?'♭'.repeat(-a):'♯'.repeat(a)).replace('♭♭','𝄫')+deg;}
+function encSeq(asc,mot){
+  const r=asc.find(n=>n.l==='1')||asc[0],rpc=mod(r.m-SEMI[r.l]||0,12),labs=asc.map(n=>n.l),has=l=>labs.includes(l);
+  const loc=has('♭5')&&(has('♭7')||has('𝄫7')),sc=[...new Set(labs.concat([loc&&!has('𝄫7')?'♭2':'2','4',loc?'♭6':'6']).concat(has('𝄫7')?['7']:[]))];
+  const frs=asc.map(n=>n.fr),lo=Math.min(...frs),hi=Math.max(...frs),ext={};
+  const at=(m,t,deg)=>{let c=[1,2,3,4,5,6].map(s=>({s,fr:m-TUN[s]})).filter(c=>c.fr>=0&&c.fr<=22);
+    const w0=c.filter(c=>c.fr>=lo&&c.fr<=hi),w=c.filter(c=>c.fr>=lo-1&&c.fr<=hi+1);if(w0.length)c=w0;else if(w.length)c=w;
+    const pk=c.reduce((a,b)=>{const da=Math.abs(a.s-t.s)*3+Math.abs(a.fr-t.fr),db=Math.abs(b.s-t.s)*3+Math.abs(b.fr-t.fr);return db<da?b:a;});
+    const sm=mod(m-rpc,12),ds=Array.isArray(deg)?deg:[deg],acc=d=>{let a=mod(sm-MAJDEG[d],12);if(a>6)a-=12;return Math.abs(a);},
+      d=ds.reduce((a,b)=>acc(b)<acc(a)?b:a);
+    const n={s:pk.s,fr:pk.fr,m,l:labOf(sm,d),ext:true,enc:true};if(!asc.some(x=>x.s===n.s&&x.fr===n.fr))ext[n.s+':'+n.fr]=n;return n;};
+  const up=t=>{let m=t.m+1;while(!sc.some(l=>mod(rpc+SEMI[l],12)===mod(m,12)))m++;return m;},
+    upDeg=(t,m)=>degOf(sc.find(l=>mod(rpc+SEMI[l],12)===mod(m,12)));
+  const dUp=t=>mod(degOf(t.l),7)+1,dDn=t=>mod(degOf(t.l)-2,7)+1;
+  const enc=t=>{const d0=degOf(t.l);
+    const d2=mod(d0-3,7)+1;
+    return mot==='enc1'?[at(up(t),t,upDeg(t,up(t))),at(t.m-1,t,[dDn(t),d0])]:mot==='enc2'?[at(t.m+1,t,[dUp(t),d0]),at(t.m-1,t,[dDn(t),d0])]:[at(t.m-2,t,[dDn(t),d2,d0]),at(t.m-1,t,[dDn(t),d0])];};
+  const T=asc.concat(asc.slice(0,-1).reverse()),seq=[T[0]];
+  for(let k=1;k<T.length;k++)seq.push(...enc(T[k]),T[k]);
+  return {seq,ext:Object.values(ext),group:0};}
+function motifSeq(asc,mot){if(/^enc/.test(mot||''))return encSeq(asc,mot);const sp=motifSpec(mot);
   if(!sp||asc.length<2)return {seq:asc.concat(asc.slice(0,-1).reverse()),ext:[],group:0};
   const need=sp.kk*(sp.nn-1),eu=extendScale(asc,need,1),ed=extendScale(asc,1,-1);
   const Lad=[...ed].reverse().concat(asc,eu),o0=ed.length,tI=o0+asc.length-1,seq=[];let hi=0,j=0;
@@ -1069,13 +1092,15 @@ const GAMES=[
  {id:'gamme',titre:'Jouer au métronome',
   desc:'Le schéma affiché, monté puis descendu au métronome : la note à jouer s\'allume sur le manche. Après chaque tour, on peut rester dans la tonalité ou en changer : cycle des quartes, un demi-ton plus haut, ou au hasard.',
   // ce jeu s'affiche directement sous le schéma de la gamme ou de l'arpège (forme et tonalité choisies au-dessus)
-  opts:()=>{const cid=String((CHAPITRES[SH.ch]||{}).id||''),arp=cid.startsWith('arp'),lv=cid&&CUR.view==='schema'&&CUR.niv?CUR.niv:3;
+  opts:()=>{const NXT=()=>opt('gNxt','Après chaque tour',[['same','Même tonalité'],['q','Cycle des quartes'],['c','Un demi-ton plus haut'],['r','Tonalité au hasard']],'same')
+      +opt('gAcc','Accompagnement',ACCOPTS,'none')
+      +'<label class="chk" style="align-self:end;padding-bottom:8px"><input type="checkbox" id="gSnd" checked> Entendre les notes</label>';
+    const cid=String((CHAPITRES[SH.ch]||{}).id||''),arp=cid.startsWith('arp'),lv=cid&&CUR.view==='schema'&&CUR.niv?CUR.niv:3;
     // gammes : niveau 1 noires/croches et gamme simple ; niveau 2 + triolets, doubles croches, tierces, brisées par 3 et 4 ; niveau 3 tout
+    if(CUR.enc)return opt('gSub','Valeurs',[[3,'Triolets']],3)+opt('gMot','Enclosure',ENCMOT,'enc1')+NXT();
     const VAL=[[1,'Noires'],[2,'Croches'],[3,'Triolets'],[4,'Doubles croches']].slice(0,lv===1?2:4),MOT=lv===1?MOTIFS.slice(0,1):lv===2?MOTIFS.filter(m=>['lin','3','b3','b4'].includes(m[0])):MOTIFS,
       AMOT=lv===1?ARPMOT.slice(0,1):lv===2?ARPMOT.filter(m=>['lin','b3'].includes(m[0])):ARPMOT; // arpèges : simple, puis brisé par 3, puis tout
-    return opt('gSub','Valeurs',VAL,1)+(cid?(arp?opt('gMot','Motif',AMOT,'lin'):opt('gMot','Motif',MOT,'lin')):'')+opt('gNxt','Après chaque tour',[['same','Même tonalité'],['q','Cycle des quartes'],['c','Un demi-ton plus haut'],['r','Tonalité au hasard']],'same')
-      +opt('gAcc','Accompagnement',ACCOPTS,'none')
-      +'<label class="chk" style="align-self:end;padding-bottom:8px"><input type="checkbox" id="gSnd" checked> Entendre les notes</label>';},
+    return opt('gSub','Valeurs',VAL,1)+(cid?(arp?opt('gMot','Motif',AMOT,'lin'):opt('gMot','Motif',MOT,'lin')):'')+NXT();},
   make:()=>{
     const ch=CHAPITRES[SH.ch],f0=ch.formes[SH.f],f=shapeForPlay(f0,ch),sub=+val('gSub')||1,k0=SH.key,nxt=val('gNxt')||'same',cyc=nxt!=='same';
     const startQ=KEYQ.findIndex(k=>k===KEYS[k0]);
@@ -1696,7 +1721,11 @@ const MENU=[
    {id:'maj7',niv:2,t:'Maj7',view:'schema',chap:'arp-maj7',filt:'nodiag'},{id:'7',niv:2,t:'7',view:'schema',chap:'arp-7',filt:'nodiag'},{id:'m7',niv:2,t:'m7',view:'schema',chap:'arp-m7',filt:'nodiag'},
    {id:'m7b5',niv:2,t:'m7♭5',view:'schema',chap:'arp-m7b5',filt:'nodiag'},{id:'dim7',niv:2,t:'dim7',view:'schema',chap:'arp-dim7',filt:'nodiag'},
    {id:'diagonales',niv:3,t:'Sur 3 octaves en diagonale',view:'schema',chap:'arp-diag'},
-   {id:'mmaj7',niv:3,t:'m(Maj7)',view:'schema',chap:'arp-mmaj7'},{id:'maj7s5',niv:3,t:'Maj7♯5',view:'schema',chap:'arp-maj7s5'},{id:'7s5',niv:3,t:'7♯5',view:'schema',chap:'arp-7s5'}]},
+   {id:'mmaj7',niv:3,t:'m(Maj7)',view:'schema',chap:'arp-mmaj7'},{id:'maj7s5',niv:3,t:'Maj7♯5',view:'schema',chap:'arp-maj7s5'},{id:'7s5',niv:3,t:'7♯5',view:'schema',chap:'arp-7s5'},
+   // niveau 4 : enclosures
+   {id:'enc-maj7',g:'Arpèges avec enclosures',st:'Maj7',niv:4,enc:true,t:'Maj7 avec enclosures',view:'schema',chap:'arp-maj7',filt:'nodiag'},{id:'enc-7',g:'Arpèges avec enclosures',st:'7',niv:4,enc:true,t:'7 avec enclosures',view:'schema',chap:'arp-7',filt:'nodiag'},
+   {id:'enc-m7',g:'Arpèges avec enclosures',st:'m7',niv:4,enc:true,t:'m7 avec enclosures',view:'schema',chap:'arp-m7',filt:'nodiag'},{id:'enc-m7b5',g:'Arpèges avec enclosures',st:'m7♭5',niv:4,enc:true,t:'m7♭5 avec enclosures',view:'schema',chap:'arp-m7b5',filt:'nodiag'},
+   {id:'enc-dim7',g:'Arpèges avec enclosures',st:'dim7',niv:4,enc:true,t:'dim7 avec enclosures',view:'schema',chap:'arp-dim7',filt:'nodiag'}]},
  {id:'accordeur',t:'Accordeur',items:[{id:'guitare',t:'Accordeur',view:'accordeur'}]}
 ];
 let CUR={},EMB=false; // EMB : le jeu au métronome est affiché sous le schéma (gammes, modes, arpèges)
