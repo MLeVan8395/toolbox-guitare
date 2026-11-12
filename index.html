@@ -699,13 +699,16 @@ function motifSpec(mot){if(!mot||mot==='lin')return null;const alt=/a$/.test(mot
   const k=parseInt(mot,10);return k?{kk:k-1,nn:2,alt}:null;}
 // notes de la gamme au-delà du schéma (au-dessus ou au-dessous), placées au plus près de la position
 function extendScale(asc,count,dir){
-  const lab={};asc.forEach(n=>lab[mod(n.m,12)]=n.l);const frs=asc.map(n=>n.fr),lo=Math.min(...frs),hi=Math.max(...frs),out=[];
+  const lab={};asc.forEach(n=>lab[mod(n.m,12)]=n.l);const frs=asc.map(n=>n.fr),lo=Math.min(...frs),hi=Math.max(...frs),out=[],perS={};asc.forEach(n=>perS[n.s]=(perS[n.s]||0)+1);const maxS=Math.max(...Object.values(perS));
   let m=dir>0?asc[asc.length-1].m:asc[0].m;
   while(out.length<count){m+=dir;if(m<40||m>86)break;if(lab[mod(m,12)]===undefined)continue;
     const cands=[1,2,3,4,5,6].map(s=>({s,fr:m-TUN[s]})).filter(c=>c.fr>=0&&c.fr<=22);if(!cands.length)break;
-    const inW=cands.filter(c=>dir>0?(c.fr>=lo-1&&c.fr<=hi+4):(c.fr>=lo-4&&c.fr<=hi+1)),ref=dir>0?hi:lo;
+    // en position (schéma de 6 cases au plus) : on reste dans la position, une case d'extension au plus ;
+    // s'il n'y a plus de note jouable, le motif s'arrête là (pas de glissé de 4 notes sur la corde aiguë)
+    const free=hi-lo>=7,inW=cands.filter(c=>free?(dir>0?(c.fr>=lo-1&&c.fr<=hi+4):(c.fr>=lo-4&&c.fr<=hi+1)):(c.fr>=lo-1&&c.fr<=hi+1&&(perS[c.s]||0)<Math.max(3,maxS))),ref=dir>0?hi:lo;
+    if(!free&&!inW.length)break;
     const pk=inW.length?inW.reduce((a,b)=>(dir>0?b.s<a.s:b.s>a.s)?b:a):cands.reduce((a,b)=>Math.abs(b.fr-ref)<Math.abs(a.fr-ref)?b:a);
-    out.push({s:pk.s,fr:pk.fr,m,l:lab[mod(m,12)],ext:true});}
+    perS[pk.s]=(perS[pk.s]||0)+1;out.push({s:pk.s,fr:pk.fr,m,l:lab[mod(m,12)],ext:true});}
   return out;}
 // motif : en montant, chaque groupe part d'une note de la gamme jusqu'à la note la plus haute du schéma (en allant chercher
 // les notes au-dessus) ; la descente repart un degré sous la note la plus haute atteinte, pour rester conjoint
