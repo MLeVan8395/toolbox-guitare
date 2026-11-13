@@ -278,7 +278,7 @@ label.chk input{width:18px;height:18px;accent-color:var(--accent)}
 </section>
 
 </main>
-<footer class="meta" style="max-width:1100px;margin:0 auto;padding:0 20px 30px;text-align:center">Boîte à outils guitare · <span id="appver">version 62</span><br><span style="font-size:12px">Sons : basse <a href="https://www.karoryfer.com/karoryfer-samples" target="_blank" rel="noopener">Karoryfer Samples</a> (CC BY 3.0) · batterie Virtuosity Drums et contrebasse <a href="https://github.com/sgossner/VSCO-2-CE" target="_blank" rel="noopener">VSCO 2</a> (CC0)</span></footer>
+<footer class="meta" style="max-width:1100px;margin:0 auto;padding:0 20px 30px;text-align:center">Boîte à outils guitare · <span id="appver">version 63</span><br><span style="font-size:12px">Sons : basse <a href="https://www.karoryfer.com/karoryfer-samples" target="_blank" rel="noopener">Karoryfer Samples</a> (CC BY 3.0) · batterie Virtuosity Drums et contrebasse <a href="https://github.com/sgossner/VSCO-2-CE" target="_blank" rel="noopener">VSCO 2</a> (CC0)</span></footer>
 <script src="contenu/formes.js"></script>
 <script>
 'use strict';
@@ -1119,7 +1119,12 @@ const GAMES=[
     const lbl=it=>f0.arp?chordName(it.T.key,f0.acc):shapeName(f0,ch,it.T.key);
     const drawT=(T,cur)=>{const A=T.pl.concat(T.ext||[]);drawBoard($('gBoard'),{from:Math.max(0,Math.min(...A.map(n=>n.fr))-1),to:Math.max(Math.max(...A.map(n=>n.fr))+1,Math.min(...A.map(n=>n.fr))+4),
        notes:T.pl.concat(T.ext||[]).map(n=>({s:n.s,fr:n.fr,m:n.m,root:n.l==='1',txt:n.l,hollow:!!n.ext,ring:cur&&n.s===cur.s&&n.fr===cur.fr,dim:cur&&!(n.s===cur.s&&n.fr===cur.fr)})),label:'Schéma'});};
-    const staffT=(T,p)=>{$('gStaff').hidden=false;$('gStaff').innerHTML=drawStaff(getS,T.R.map[p],T.R.items[0].key,false,SWING&&sub===2,false,{labels:!!f0.arp,lines:(T.seq.length+T.pad)/(4*sub)<=4?1:2});}; // une seule ligne quand le tour tient en 4 mesures
+    // même tonalité et même doigté à chaque tour : on écrit le tour une seule fois, avec une barre de reprise
+    const sameT=()=>!cyc&&tour(1).pl.map(n=>n.s+':'+n.fr).join()===tour(0).pl.map(n=>n.s+':'+n.fr).join();
+    const staffT=(T,p)=>{$('gStaff').hidden=false;
+      if(sameT()){const T0=tour(0),L=T0.R.items,get=i=>L[i]||{bar:1e9,p:34,rest:true,d:1,d12:12,beat:0};
+        $('gStaff').innerHTML=drawStaff(get,T.R.map[p]-T.i0,L[0].key,false,SWING&&sub===2,false,{labels:!!f0.arp,lastBar:L[L.length-1].bar,repeat:true});return;}
+      $('gStaff').innerHTML=drawStaff(getS,T.R.map[p],T.R.items[0].key,false,SWING&&sub===2,false,{labels:!!f0.arp,lines:(T.seq.length+T.pad)/(4*sub)<=4?1:2});}; // une seule ligne quand le tour tient en 4 mesures
     // accord d'accompagnement : celui de l'arpège, ou l'accord de 4 sons contenu dans la gamme
     const ivs=f0.notes.map(n=>n[2]),has=l=>ivs.includes(l);
     const third=has('♭3')&&!has('3')?'♭3':'3',fifth=has('5')?'5':has('♭5')?'♭5':has('♯5')?'♯5':'5',sev=has('7')?'7':has('♭7')?'♭7':has('𝄫7')?'𝄫7':has('6')?'6':'♭7';
@@ -1430,7 +1435,7 @@ function drawStaff(get,curIdx,key,chrom,swing,showPick,O){
     const top=T0+line*LH,yP=p=>top+4*SPc-(p-BOT)*SPc/2;
     const nbL=O.lastBar!==undefined?Math.max(1,Math.min(4,O.lastBar-b0-4*line+1)):4,xe=nbL===4?W-6:left+nbL*BW,fin=O.lastBar!==undefined&&O.lastBar<=b0+4*line+3;
     for(let l=0;l<5;l++)o.push(`<line x1="8" y1="${top+l*SPc}" x2="${xe}" y2="${top+l*SPc}" stroke="currentColor" stroke-width="1"/>`);
-    if(fin)o.push(`<line x1="${xe-5}" y1="${top}" x2="${xe-5}" y2="${top+40}" stroke="currentColor" stroke-width="1"/><line x1="${xe-1}" y1="${top}" x2="${xe-1}" y2="${top+40}" stroke="currentColor" stroke-width="3"/>`);
+    if(fin)o.push(`<line x1="${xe-5}" y1="${top}" x2="${xe-5}" y2="${top+40}" stroke="currentColor" stroke-width="1"/><line x1="${xe-1}" y1="${top}" x2="${xe-1}" y2="${top+40}" stroke="currentColor" stroke-width="3"/>`+(O.repeat?`<circle cx="${xe-11}" cy="${top+15}" r="2.4" fill="currentColor"/><circle cx="${xe-11}" cy="${top+25}" r="2.4" fill="currentColor"/>`:''));
     o.push(glyph('treble',12,top+31,40));
     o.push(`<text x="22" y="${top+54}" font-size="9" font-family="Georgia,serif" fill="currentColor">8</text>`);
     {const sig=LK[line][3],pk=line===0?prevKey:(()=>{let j=firstIdx,k=null;while(true){const n=get(j);if(n.bar>=b0+4*line)break;k=n.key||key;j++;}return k;})(); /* armure à la fin de la ligne précédente */for(let k=0;k<Math.abs(sig);k++)o.push(glyph(sig>0?'sharp':'flat',48+k*10,yP(sig>0?SIG_S[k]:SIG_F[k])+(sig>0?5:3),15));
