@@ -278,7 +278,7 @@ label.chk input{width:18px;height:18px;accent-color:var(--accent)}
 </section>
 
 </main>
-<footer class="meta" style="max-width:1100px;margin:0 auto;padding:0 20px 30px;text-align:center">Boîte à outils guitare · <span id="appver">version 63</span><br><span style="font-size:12px">Sons : basse <a href="https://www.karoryfer.com/karoryfer-samples" target="_blank" rel="noopener">Karoryfer Samples</a> (CC BY 3.0) · batterie Virtuosity Drums et contrebasse <a href="https://github.com/sgossner/VSCO-2-CE" target="_blank" rel="noopener">VSCO 2</a> (CC0)</span></footer>
+<footer class="meta" style="max-width:1100px;margin:0 auto;padding:0 20px 30px;text-align:center">Boîte à outils guitare · <span id="appver">version 64</span><br><span style="font-size:12px">Sons : basse <a href="https://www.karoryfer.com/karoryfer-samples" target="_blank" rel="noopener">Karoryfer Samples</a> (CC BY 3.0) · batterie Virtuosity Drums et contrebasse <a href="https://github.com/sgossner/VSCO-2-CE" target="_blank" rel="noopener">VSCO 2</a> (CC0)</span></footer>
 <script src="contenu/formes.js"></script>
 <script>
 'use strict';
@@ -648,8 +648,11 @@ function seqStaff(items,o){
 // wr : notes écrites (spellSeq) ; sub : notes par temps ; padSlots : places vides en fin de tour ; kt : [nom, hauteur, lettre, armure] ; b0 : première mesure
 function rhythmItems(wr,sub,padSlots,kt,sig,b0,i0){
   const items=[],map=[],d=1/sub,d12=12/sub,bl=4*sub;
-  wr.forEach((n,q)=>{const L=mod(n.p,7);map.push(i0+items.length);
-    items.push({i:i0+items.length,p:n.p,a:n.a,name:n.name,lab:n.lab,enc:n.enc,showAcc:sig?n.a!==sigAltOf(sig,L):n.a!==0,d,d12,bar:b0+Math.floor(q/bl),beat:(q%bl)/sub,key:kt});});
+  // altérations accidentelles : valables jusqu'à la fin de la mesure (on écrit le bécarre quand la note redevient naturelle)
+  let st={},stBar=-1;
+  wr.forEach((n,q)=>{const L=mod(n.p,7),bar=b0+Math.floor(q/bl);map.push(i0+items.length);if(bar!==stBar){st={};stBar=bar;}
+    const cur=st[n.p]!==undefined?st[n.p]:(sig?sigAltOf(sig,L):0),showAcc=n.a!==cur;st[n.p]=n.a;
+    items.push({i:i0+items.length,p:n.p,a:n.a,name:n.name,lab:n.lab,enc:n.enc,showAcc,d,d12,bar,beat:(q%bl)/sub,key:kt});});
   let q=wr.length;const end=wr.length+padSlots;
   while(q<end){const bar=b0+Math.floor(q/bl),bs=q%bl,beat=bs/sub,rest=(dd,slots)=>{for(let k=0;k<slots;k++)map.push(i0+items.length);items.push({i:i0+items.length,rest:true,p:34,d:dd,d12:Math.round(dd*12),bar,beat,name:'silence',key:kt});q+=slots;};
     if(bs%sub){rest(d,1);continue;}                       // jusqu'au temps suivant
@@ -1471,7 +1474,7 @@ function drawStaff(get,curIdx,key,chrom,swing,showPick,O){
     if(n.chordName)o.push(`<text x="${x-7}" y="${top-32}" font-size="16" font-weight="700" font-family="var(--chord)" fill="${now||n.chordNow?'var(--root)':'currentColor'}">${esc(n.chordName)}</text>`);
     if(n.slash)o.push(open?`<polygon points="${x-7},${y+5} ${x-3},${y+8} ${x+7},${y-5} ${x+3},${y-8}" fill="none" stroke="${col}" stroke-width="2"/>`:`<line x1="${x-6}" y1="${y+6}" x2="${x+6}" y2="${y-6}" stroke="${col}" stroke-width="5"/>`);
     else o.push(`<ellipse cx="${x}" cy="${y}" rx="6.6" ry="4.6" transform="rotate(-18 ${x} ${y})" ${open?`fill="none" stroke="${col}" stroke-width="2.4"`:`fill="${col}"`}/>`);
-    if(n.showAcc)o.push(`<g style="color:${col}">`+glyph(n.a>0?'sharp':'flat',x-(n.a>0?30:27),y+(n.a>0?10:6),30)+'</g>');
+    if(n.showAcc)o.push(`<g style="color:${col}">`+(n.a===0?glyph('natural',x-26,y+8,30):glyph(n.a>0?'sharp':'flat',x-(n.a>0?30:27),y+(n.a>0?10:6),30)+(Math.abs(n.a)>1?glyph(n.a>0?'sharp':'flat',x-(n.a>0?42:37),y+(n.a>0?10:6),30):''))+'</g>');
     if(n.d12===9||n.d12===18||n.d12===36)o.push(`<circle cx="${x+11}" cy="${Math.round(n.p)%2?y:y-5}" r="2.2" fill="${col}"/>`); // valeurs pointées
     if(n.d<4){const g=Math.floor(n.beat+1e-6),key2=n.bar+':'+g;let G=groups.find(z=>z.k===key2);if(!G&&n.d12<12){G={k:key2,ns:[],top,trip:false};groups.push(G);}
       if(G&&(n.d12===4||n.d12===8))G.trip=true;
