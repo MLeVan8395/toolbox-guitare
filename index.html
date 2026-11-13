@@ -278,7 +278,7 @@ label.chk input{width:18px;height:18px;accent-color:var(--accent)}
 </section>
 
 </main>
-<footer class="meta" style="max-width:1100px;margin:0 auto;padding:0 20px 30px;text-align:center">Boîte à outils guitare · <span id="appver">version 64</span><br><span style="font-size:12px">Sons : basse <a href="https://www.karoryfer.com/karoryfer-samples" target="_blank" rel="noopener">Karoryfer Samples</a> (CC BY 3.0) · batterie Virtuosity Drums et contrebasse <a href="https://github.com/sgossner/VSCO-2-CE" target="_blank" rel="noopener">VSCO 2</a> (CC0)</span></footer>
+<footer class="meta" style="max-width:1100px;margin:0 auto;padding:0 20px 30px;text-align:center">Boîte à outils guitare · <span id="appver">version 65</span><br><span style="font-size:12px">Sons : basse <a href="https://www.karoryfer.com/karoryfer-samples" target="_blank" rel="noopener">Karoryfer Samples</a> (CC BY 3.0) · batterie Virtuosity Drums et contrebasse <a href="https://github.com/sgossner/VSCO-2-CE" target="_blank" rel="noopener">VSCO 2</a> (CC0)</span></footer>
 <script src="contenu/formes.js"></script>
 <script>
 'use strict';
@@ -1163,7 +1163,7 @@ const GAMES=[
     const tri=/^(triades|drop)/.test(F.cid);
     if(tri){const inv=[...new Set(F.fs.map(f=>restName(f.n)))];o+=opt('gInv','Renversements',[['monter','Monter les renversements jusqu\'à l\'octave (1 mesure chacun)'],['*','Le plus proche']].concat(inv.map(n=>[n,n])),'monter');}
     else if(grps.length<2||gv!=='*'){const inv=inG.map(f=>restName(f.n)).filter(Boolean);if(inG.length>1&&inv.length===inG.length)o+=opt('gInv','Renversement',[['*','Le plus proche']].concat(inv.map(n=>[n,n])),'*');}
-    return o+opt('gOrd','Ordre',[['q','Cycle des quartes'],['r','Au hasard']],'q')+opt('gLen','Durée',LENS,4)+opt('gKey','Départ (cycle)',KEYS.map((k,i)=>[i,k[0]]),0)
+    return o+opt('gOrd','Ordre',[['same','Rester dans la même tonalité'],['c','Monter d\'un demi-ton à chaque accord'],['q','Cycle des quartes'],['r','Au hasard']],'q')+opt('gLen','Durée',LENS,4)+opt('gKey','Tonalité de départ',KEYS.map((k,i)=>[i,k[0]]),0)
       +opt('gAcc','Accompagnement',ACCOPTS,['shell','enrichis','cordes1234'].includes(F.cid)?'swing2':'none')
       +opt('gInst','Les accords joués par',[['orgue','L\'orgue (son tenu)'],['guitare','La guitare (1er temps de chaque mesure)'],['none','Personne : je les joue seul']],['shell','enrichis','cordes1234'].includes(F.cid)?'orgue':'guitare');},
   make:()=>{
@@ -1260,6 +1260,8 @@ function nearest(fs,key,pos){let best=null;
   fs.forEach(f=>{const pl=place(f,key,pos===null?{}:{near:pos});const c=pl.reduce((a,b)=>a+b.fr,0)/pl.length,d=Math.abs(c-(pos===null?5:pos));if(!best||d<best.d)best={d,pl,f,c};});
   return best;}
 function keySeq(ord,k0){
+  if(ord==='same')return ()=>KEYS[k0];
+  if(ord==='c')return i=>KEYS[(k0+i)%12];
   if(ord==='r'){const seq=[];return i=>{while(seq.length<=i){let k;do{k=KEYS[Math.floor(Math.random()*12)];}while(seq.length&&k===seq[seq.length-1]);seq.push(k);}return seq[i];};}
   const s0=KEYQ.findIndex(k=>k===KEYS[k0]);return i=>KEYQ[(s0+i)%12];
 }
