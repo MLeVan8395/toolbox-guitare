@@ -279,7 +279,7 @@ label.chk input{width:18px;height:18px;accent-color:var(--accent)}
 </section>
 
 </main>
-<footer class="meta" style="max-width:1100px;margin:0 auto;padding:0 20px 30px;text-align:center">Boîte à outils guitare · <span id="appver">version 68</span><br><span style="font-size:12px">Sons : basse <a href="https://www.karoryfer.com/karoryfer-samples" target="_blank" rel="noopener">Karoryfer Samples</a> (CC BY 3.0) · batterie Virtuosity Drums et contrebasse <a href="https://github.com/sgossner/VSCO-2-CE" target="_blank" rel="noopener">VSCO 2</a> (CC0)</span></footer>
+<footer class="meta" style="max-width:1100px;margin:0 auto;padding:0 20px 30px;text-align:center">Boîte à outils guitare · <span id="appver">version 69</span><br><span style="font-size:12px">Sons : basse <a href="https://www.karoryfer.com/karoryfer-samples" target="_blank" rel="noopener">Karoryfer Samples</a> (CC BY 3.0) · batterie Virtuosity Drums et contrebasse <a href="https://github.com/sgossner/VSCO-2-CE" target="_blank" rel="noopener">VSCO 2</a> (CC0)</span></footer>
 <script src="contenu/formes.js"></script>
 <script>
 'use strict';
@@ -1473,8 +1473,16 @@ function drawStaff(get,curIdx,key,chrom,swing,showPick,O){
       for(let q=0;q<Math.abs(C.b);q++){o.push(glyph(C.b>0?'sharp':'flat',xx,yP(C.b>0?SIG_S[q]:SIG_F[q])+(C.b>0?5:3),15));xx+=10;}}
   }
   // notes
+  // 8va : au-dessus du Do de la 2e ligne supplémentaire, on écrit une octave plus bas avec « 8va »
+  // (le passage aigu entier, tant qu'il reste au-dessus du Mi de la 4e interligne, sans traverser la fin de ligne)
+  const OTT={},OTTN=[];{const L=[];let j=firstIdx;while(true){const n=get(j);if(n.bar>b0+NB-1)break;L.push([j,n]);j++;}
+    const hiN=n=>!n.rest&&n.p>42,okN=n=>!n.rest&&n.p>=37,lineOf=n=>(n.bar-b0)>>2;
+    L.forEach(([j,n],q)=>{if(!hiN(n)||OTT[j])return;OTT[j]=1;
+      for(let r=q-1;r>=0&&okN(L[r][1])&&lineOf(L[r][1])===lineOf(n);r--)OTT[L[r][0]]=1;
+      for(let r=q+1;r<L.length&&okN(L[r][1])&&lineOf(L[r][1])===lineOf(n);r++)OTT[L[r][0]]=1;});}
+  const getO=i=>{const n=get(i);return OTT[i]?{...n,p:n.p-7,ott:1}:n;};
   let i=firstIdx;const groups=[],ARTS=[],XSP={},PICKS=[];
-  while(true){const n=get(i);if(n.bar>b0+NB-1)break;
+  while(true){const n=getO(i);if(n.bar>b0+NB-1)break;
     const bi=n.bar-b0,line=bi>>2,top=T0+line*LH,yP=p=>top+4*SPc-(p-BOT)*SPc/2,bx=left+(bi%4)*BW;
     const x=bx+XS[i],y=yP(n.p),past=!O.still&&i<curIdx,now=!O.still&&i===curIdx;
     const col=now?'var(--root)':past?'var(--muted)':'currentColor';
@@ -1488,7 +1496,7 @@ function drawStaff(get,curIdx,key,chrom,swing,showPick,O){
     for(let q=BOT-2;q>=n.p;q-=2)o.push(`<line x1="${x-11}" y1="${yP(q)}" x2="${x+11}" y2="${yP(q)}" stroke="${col}" stroke-width="1.2"/>`);
     for(let q=BOT+10;q<=n.p;q+=2)o.push(`<line x1="${x-11}" y1="${yP(q)}" x2="${x+11}" y2="${yP(q)}" stroke="${col}" stroke-width="1.2"/>`);
     if(n.tied){const pv=get(i-1);const px=XSP[i-1];if(px!==undefined){const up=n.p<34,yy=up?y+7:y-7,cy=up?yy+9:yy-9;o.push(`<path d="M${px+5} ${yy} Q ${(px+x)/2} ${cy} ${x-5} ${yy}" fill="none" stroke="${col}" stroke-width="1.6"/>`);}}
-    XSP[i]=x;if(O.labels&&n.lab)LABS.push({x,y,top,lab:n.lab,col:now?'var(--root)':n.lab==='1'?'var(--root)':'var(--muted)',k:n.bar+':'+Math.floor(n.beat+1e-6),d:n.d,p:n.p});
+    if(n.ott)OTTN.push({i,x,y,top,line});XSP[i]=x;if(O.labels&&n.lab)LABS.push({x,y,top,lab:n.lab,col:now?'var(--root)':n.lab==='1'?'var(--root)':'var(--muted)',k:n.bar+':'+Math.floor(n.beat+1e-6),d:n.d,p:n.p});
     if(showPick&&n.pick)PICKS.push({x,y,p:n.p,pick:n.pick,col,k:n.bar+':'+Math.floor(n.beat+1e-6),top,d:n.d});
     if(n.art)ARTS.push({x,y,p:n.p,art:n.art,col,k:n.bar+':'+Math.floor(n.beat+1e-6),top,d:n.d});
     const open=n.d>=2;
@@ -1539,6 +1547,11 @@ function drawStaff(get,curIdx,key,chrom,swing,showPick,O){
   PICKS.forEach(Q=>{const S=stemOf(Q);const yb=Math.max(S.bot+16,Q.top+56);
     o.push(Q.pick==='down'?`<path d="M${Q.x-5} ${yb} V${yb-8} H${Q.x+5} V${yb}" fill="none" stroke="${Q.col}" stroke-width="1.6"/><line x1="${Q.x-5}" y1="${yb-8}" x2="${Q.x+5}" y2="${yb-8}" stroke="${Q.col}" stroke-width="3.2"/>`:`<path d="M${Q.x-5} ${yb-9} L${Q.x} ${yb} L${Q.x+5} ${yb-9}" fill="none" stroke="${Q.col}" stroke-width="1.6"/>`);
   });
+  // crochets 8va (un par passage et par ligne)
+  {const runs=[];OTTN.forEach(Q=>{const R=runs[runs.length-1];if(R&&R.line===Q.line&&Q.i===R.last+1){R.ns.push(Q);R.last=Q.i;}else runs.push({line:Q.line,last:Q.i,ns:[Q]});});
+   runs.forEach(R=>{const top=R.ns[0].top,yy=Math.min(top-14,Math.min(...R.ns.map(q=>q.y))-(O.labels?40:22)),x1=R.ns[0].x-10,x2=R.ns[R.ns.length-1].x+12;
+     o.push(`<text x="${x1}" y="${yy+4}" font-size="13" font-style="italic" font-weight="700" font-family="Georgia,serif" fill="currentColor">8va</text>`
+       +(x2-x1>34?`<path d="M${x1+28} ${yy} H${x2} V${yy+8}" fill="none" stroke="currentColor" stroke-width="1" stroke-dasharray="4 3"/>`:''));});}
   return `<svg viewBox="0 0 ${W} ${T0+NL*LH-8}" role="img" aria-label="Partition : ${NB} mesures à lire">${o.join('')}</svg>`;
 }
 GAMES.push({id:'lecture',titre:'Lecture de notes',
