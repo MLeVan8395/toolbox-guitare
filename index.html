@@ -279,7 +279,7 @@ label.chk input{width:18px;height:18px;accent-color:var(--accent)}
 </section>
 
 </main>
-<footer class="meta" style="max-width:1100px;margin:0 auto;padding:0 20px 30px;text-align:center">Boîte à outils guitare · <span id="appver">version 67</span><br><span style="font-size:12px">Sons : basse <a href="https://www.karoryfer.com/karoryfer-samples" target="_blank" rel="noopener">Karoryfer Samples</a> (CC BY 3.0) · batterie Virtuosity Drums et contrebasse <a href="https://github.com/sgossner/VSCO-2-CE" target="_blank" rel="noopener">VSCO 2</a> (CC0)</span></footer>
+<footer class="meta" style="max-width:1100px;margin:0 auto;padding:0 20px 30px;text-align:center">Boîte à outils guitare · <span id="appver">version 68</span><br><span style="font-size:12px">Sons : basse <a href="https://www.karoryfer.com/karoryfer-samples" target="_blank" rel="noopener">Karoryfer Samples</a> (CC BY 3.0) · batterie Virtuosity Drums et contrebasse <a href="https://github.com/sgossner/VSCO-2-CE" target="_blank" rel="noopener">VSCO 2</a> (CC0)</span></footer>
 <script src="contenu/formes.js"></script>
 <script>
 'use strict';
@@ -758,7 +758,8 @@ function motifSeq(asc,mot){if(/^enc/.test(mot||''))return encSeq(asc,mot);if(mot
   const need=sp.kk*(sp.nn-1),eu=extendScale(asc,need,1),ed=extendScale(asc,1,-1);
   const Lad=[...ed].reverse().concat(asc,eu),o0=ed.length,tI=o0+asc.length-1,seq=[];let hi=0,j=0;
   for(let q=o0;q<=tI&&q+need<Lad.length;q++,j++){const g=[];for(let r=0;r<sp.nn;r++)g.push(q+sp.kk*r);hi=Math.max(hi,...g);seq.push(...(sp.alt&&j%2?g.reverse():g).map(k=>Lad[k]));}
-  j=0;for(let q=hi-1;q-need>=Math.max(0,o0-1);q--,j++){const g=[];for(let r=0;r<sp.nn;r++)g.push(q-sp.kk*r);seq.push(...(sp.alt&&j%2?g.reverse():g).map(k=>Lad[k]));}
+  // arpège ou gamme brisés : la descente repart de la note du haut (Do Sol Mi, Sol Mi Do…), toujours par groupes entiers
+  j=0;for(let q=/^b\d$/.test(mot)?hi:hi-1;q-need>=Math.max(0,o0-1);q--,j++){const g=[];for(let r=0;r<sp.nn;r++)g.push(q-sp.kk*r);seq.push(...(sp.alt&&j%2?g.reverse():g).map(k=>Lad[k]));}
   return {seq,ext:eu.concat(ed),group:sp.nn};}
 const ascOf=pl=>[...pl].sort((a,b)=>a.m-b.m).filter((n,i,A)=>i===0||n.m!==A[i-1].m);
 // ---- Triades : les quatre états sur un même schéma ----
