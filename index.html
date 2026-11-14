@@ -146,6 +146,7 @@ label.chk input{width:18px;height:18px;accent-color:var(--accent)}
     <p class="meta" id="chapIntro" style="margin:0 0 12px"></p>
     <div class="opts">
       <label class="f">Schéma <select id="shSel"></select></label>
+      <label class="f" id="natWrap" hidden>Nature d'accord <select id="natSel"></select></label>
       <label class="f" id="keyWrap">Tonalité <select id="keySel"></select></label>
       <label class="f">Pastilles <select id="lblSel"><option value="int">Intervalles (1, ♭3, 5…)</option><option value="note">Noms des notes</option></select></label>
       <label class="f" id="viewWrap">Affichage <select id="viewSel"><option value="pos">En position</option><option value="corde">Sur une corde</option></select></label>
@@ -278,7 +279,7 @@ label.chk input{width:18px;height:18px;accent-color:var(--accent)}
 </section>
 
 </main>
-<footer class="meta" style="max-width:1100px;margin:0 auto;padding:0 20px 30px;text-align:center">Boîte à outils guitare · <span id="appver">version 66</span><br><span style="font-size:12px">Sons : basse <a href="https://www.karoryfer.com/karoryfer-samples" target="_blank" rel="noopener">Karoryfer Samples</a> (CC BY 3.0) · batterie Virtuosity Drums et contrebasse <a href="https://github.com/sgossner/VSCO-2-CE" target="_blank" rel="noopener">VSCO 2</a> (CC0)</span></footer>
+<footer class="meta" style="max-width:1100px;margin:0 auto;padding:0 20px 30px;text-align:center">Boîte à outils guitare · <span id="appver">version 67</span><br><span style="font-size:12px">Sons : basse <a href="https://www.karoryfer.com/karoryfer-samples" target="_blank" rel="noopener">Karoryfer Samples</a> (CC BY 3.0) · batterie Virtuosity Drums et contrebasse <a href="https://github.com/sgossner/VSCO-2-CE" target="_blank" rel="noopener">VSCO 2</a> (CC0)</span></footer>
 <script src="contenu/formes.js"></script>
 <script>
 'use strict';
@@ -786,7 +787,7 @@ function triadClimb(fs,grp,key){
 const isTriadChap=ch=>TSUF[ch.id]!==undefined||isDrop(ch);
 const triadGroups=ch=>[...new Set(chapForms(ch).map(f=>f.groupe))].filter(g=>!VIEW.grps||VIEW.grps.includes(g));
 // ===================== Onglet Schémas =====================
-const SH={ch:0,f:0,key:+store.get('key',0),qual:store.get('qual','Maj7'),item:null};
+const SH={ch:0,f:0,key:+store.get('key',0),qual:store.get('qual','Maj7'),nat:store.get('nat','Maj7'),item:null};
 function fillShapes(){
   const c=CHAPITRES[SH.ch],sel=$('shSel');sel.innerHTML='';
   $('chapIntro').textContent=c.intro;
@@ -818,6 +819,11 @@ function renderShape(){
   const gt=grid&&VIEW.grid==='transpose'; // grille d'accords transposables : on garde la tonalité et les pastilles
   [...card.children].forEach(e=>{if(e.id!=='chapIntro')e.style.display=grid&&!(gt&&e.classList.contains('opts'))?'none':'';});
   $('shSel').closest('label').style.display=gt?'none':'';['viewWrap','etWrap','cordeWrap','qualWrap','bassWrap'].forEach(id=>{if(gt)$(id).hidden=true;});$('viewWrap').style.display=gt?'none':'';
+  // une nature d'accord par page : fondamentale corde 6 et corde 5 côte à côte
+  const nat=gt&&VIEW.gmode==='nat';$('natWrap').hidden=!nat;
+  if(nat){const accs=[...new Set(ch.formes.filter(VIEW.gridFilt).map(f=>f.acc))];if(!accs.includes(SH.nat))SH.nat=accs[0];
+    $('natSel').innerHTML=accs.map(a=>`<option value="${esc(a)}"${a===SH.nat?' selected':''}>${esc(a||'Majeur')}</option>`).join('');
+    $('natSel').onchange=e=>{SH.nat=e.target.value;store.set('nat',SH.nat);renderShape();};}
   if(grid){$('chapIntro').textContent=VIEW.gridIntro;renderGrid(ch,lbl);return;}
   if(isTriadChap(ch)){renderTriads(ch,key,lbl);return;}
   const f0=ch.formes[SH.f];
@@ -890,7 +896,7 @@ function renderGrid(ch,lbl){
   if(VIEW.grid==='transpose'&&VIEW.gmode!=='ext'){const key=KEYS[SH.key];
     // tous les accords de la page côte à côte, dans la tonalité choisie
     const row=document.createElement('div');row.className='chordgrid';box.appendChild(row);
-    ch.formes.filter(VIEW.gridFilt).forEach(f=>{const nm=f.acc!==undefined?chordName(key,f.acc):/^Power/.test(f.n)?chordName(key,'5'):keyName(key)+' à l\'octave',notes=shapeNotes(f,ch,key,lbl),frs=notes.map(n=>n.fr);
+    ch.formes.filter(VIEW.gridFilt).filter(f=>VIEW.gmode!=='nat'||f.acc===SH.nat).forEach(f=>{const nm=f.acc!==undefined?chordName(key,f.acc):/^Power/.test(f.n)?chordName(key,'5'):keyName(key)+' à l\'octave',notes=shapeNotes(f,ch,key,lbl),frs=notes.map(n=>n.fr);
       const c=document.createElement('div');c.className='card';
       c.innerHTML=`<h3>${esc(nm)}</h3><p class="meta" style="margin:0">${esc(/^(mi|la)$/.test(CUR.gfilt)?'':/^Power chord, /.test(f.n)?f.n.slice(13):/^Octave/.test(f.n)?f.n:((f.n.match(/\(([^)]*)\)\s*$/)||[,''])[1]))}</p><div class="board"></div><div class="staffwrap"></div><div class="row" style="margin-top:8px"><button type="button" class="primary">▶ Écouter</button></div>`;
       row.appendChild(c);
@@ -1728,7 +1734,7 @@ const MENU=[
    {id:'triades-2',g:'Triades (cordes 3 à 6)',st:'Majeures',niv:2,t:'Triades majeures (cordes 3 à 6)',view:'schema',chap:'triades',grps:G34},
    {id:'triades-min-2',g:'Triades (cordes 3 à 6)',st:'Mineures',niv:2,t:'Triades mineures (cordes 3 à 6)',view:'schema',chap:'triades-min',grps:G34},
    {id:'triades-dim',g:'Triades (cordes 3 à 6)',st:'Diminuées',niv:2,t:'Triades diminuées',view:'schema',chap:'triades-dim'},
-   {id:'positions-4',niv:2,t:'Positions transposables : accords à 4 sons',view:'schema',chap:'positions',filt:'quatre'},
+   {id:'positions-4',niv:2,t:'Positions transposables : accords à 4 sons',view:'schema',chap:'positions',grid:'transpose',gmode:'nat',gfilt:'quatre',intro:'Choisis la nature d\'accord : la position avec la fondamentale sur la corde 6 et celle avec la fondamentale sur la corde 5 s\'affichent côte à côte.'},
    {id:'renversements',niv:2,t:'Renversements (cordes 1 à 4)',view:'schema',chap:'cordes1234'},{id:'enrichis-6',g:'Accords enrichis',st:'Fondamentale corde 6',niv:2,t:'Accords enrichis, fondamentale corde 6',view:'schema',chap:'enrichis',grid:'transpose',gmode:'ext',gfilt:'c6',intro:'Accords enrichis, fondamentale sur la corde de Mi grave, tous sur la même page : rangés par jazz shell de départ. Choisis la tonalité.'},
    {id:'enrichis-5',g:'Accords enrichis',st:'Fondamentale corde 5',niv:2,t:'Accords enrichis, fondamentale corde 5',view:'schema',chap:'enrichis',grid:'transpose',gmode:'ext',gfilt:'c5',intro:'Accords enrichis, fondamentale sur la corde de La, tous sur la même page : rangés par jazz shell de départ. Choisis la tonalité.'},
    {id:'enchainements-2',niv:2,t:'Enchaînements',view:'game',game:'accords'},{id:'generateur-2',niv:2,t:'Générateur',view:'game',game:'generateur'},
@@ -1774,7 +1780,7 @@ function route(){
   const FILTS={majmin:f=>f.acc===''||f.acc==='m',quatre:f=>!(f.acc===''||f.acc==='m'),
     oct:f=>f.groupe==='Une octave',oct65:f=>f.groupe==='Une octave'&&/corde [65]$/.test(f.n),full:f=>f.groupe==='Position complète',nodiag:f=>!f.diag,
     gmaj:f=>f.groupe==='Modes de la gamme majeure',gmm:f=>f.groupe==='Modes du mineur mélodique',gmh:f=>f.groupe==='Modes du mineur harmonique',gsym:f=>f.groupe==='Gammes symétriques'};
-  Object.assign(VIEW,{filt:FILTS[it.filt]||null,grps:it.grps||null,grid:it.grid||null,gridIntro:it.intro||'',niv:it.niv||0,gmode:it.gmode||'',gridFilt:{c6:f=>/corde 6/.test(f.groupe),c5:f=>/corde 5/.test(f.groupe),pw:f=>/^Power/.test(f.n),oct:f=>/^Octave/.test(f.n),majmin:f=>f.acc===''||f.acc==='m',mi:f=>/Mi/.test(f.groupe||''),la:f=>/La/.test(f.groupe||'')}[it.gfilt]||(()=>true)});
+  Object.assign(VIEW,{filt:FILTS[it.filt]||null,grps:it.grps||null,grid:it.grid||null,gridIntro:it.intro||'',niv:it.niv||0,gmode:it.gmode||'',gridFilt:{c6:f=>/corde 6/.test(f.groupe),c5:f=>/corde 5/.test(f.groupe),pw:f=>/^Power/.test(f.n),oct:f=>/^Octave/.test(f.n),majmin:f=>f.acc===''||f.acc==='m',quatre:f=>!(f.acc===''||f.acc==='m'),mi:f=>/Mi/.test(f.groupe||''),la:f=>/La/.test(f.groupe||'')}[it.gfilt]||(()=>true)});
   const panel=it.view==='schema'?'schemas':it.view==='game'?'jeux':it.view;
   PANELS.forEach(p=>$('p-'+p).classList.toggle('on',p===panel));
   if(it.view==='schema'){const ci=CHAPITRES.findIndex(c=>c.id===it.chap);if(ci!==SH.ch||SH.item!==it){SH.ch=ci;SH.f=0;}SH.item=it;$('h-sch').textContent=(it.niv?'Niveau '+it.niv+' · ':'')+(it.g||it.t);
