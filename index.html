@@ -214,7 +214,7 @@ label.chk input{width:18px;height:18px;accent-color:var(--accent)}
   <p class="lead">Les notes du manche, de la corde à vide à la 12e case (l'octave). Touche une note pour l'entendre.</p>
   <div class="card">
     <div class="row">
-      <label class="chk"><input type="checkbox" id="ntNat"> Notes naturelles seulement</label>
+      <label class="chk"><input type="checkbox" id="ntNat"> Notes naturelles seulement (sans altération : ni ♯ ni ♭)</label>
       <label class="chk"><input type="checkbox" id="ntHide"> Cacher les noms (touche pour révéler)</label>
     </div>
     <div class="board" id="ntBoard"></div>
@@ -222,7 +222,7 @@ label.chk input{width:18px;height:18px;accent-color:var(--accent)}
   </div>
   <div class="card" style="margin-top:16px">
     <h3 style="margin-top:0">Comment les notes se placent</h3>
-    <p style="margin:0 0 6px">Entre deux notes naturelles qui se suivent, il y a <b>un ton = 2 cases</b>.</p>
+    <p style="margin:0 0 6px">Entre deux notes naturelles (sans altération : ni ♯ ni ♭) qui se suivent, il y a <b>un ton = 2 cases</b>.</p>
     <p style="margin:0 0 6px">Sauf entre <b>Mi et Fa</b> et entre <b>Si et Do</b> : <b>un demi-ton = 1 case</b>.</p>
     <p class="meta" style="margin:0 0 10px">Exemple sur la corde de La : La (à vide), Si (case 2), Do (case 3), Ré (case 5), Mi (case 7), Fa (case 8), Sol (case 10), La (case 12). Les cases entre deux portent un dièse ou un bémol (La♯ = Si♭).</p>
     <div class="board" id="ntTons"></div>
@@ -279,7 +279,7 @@ label.chk input{width:18px;height:18px;accent-color:var(--accent)}
 </section>
 
 </main>
-<footer class="meta" style="max-width:1100px;margin:0 auto;padding:0 20px 30px;text-align:center">Boîte à outils guitare · <span id="appver">version 73</span><br><span style="font-size:12px">Sons : basse <a href="https://www.karoryfer.com/karoryfer-samples" target="_blank" rel="noopener">Karoryfer Samples</a> (CC BY 3.0) · batterie Virtuosity Drums et contrebasse <a href="https://github.com/sgossner/VSCO-2-CE" target="_blank" rel="noopener">VSCO 2</a> (CC0)</span></footer>
+<footer class="meta" style="max-width:1100px;margin:0 auto;padding:0 20px 30px;text-align:center">Boîte à outils guitare · <span id="appver">version 74</span><br><span style="font-size:12px">Sons : basse <a href="https://www.karoryfer.com/karoryfer-samples" target="_blank" rel="noopener">Karoryfer Samples</a> (CC BY 3.0) · batterie Virtuosity Drums et contrebasse <a href="https://github.com/sgossner/VSCO-2-CE" target="_blank" rel="noopener">VSCO 2</a> (CC0)</span></footer>
 <script src="contenu/formes.js"></script>
 <script>
 'use strict';
@@ -299,6 +299,37 @@ const PCB=['Do','Ré♭','Ré','Mi♭','Mi','Fa','Sol♭','Sol','La♭','La','Si
 const PCS=['Do','Do♯','Ré','Ré♯','Mi','Fa','Fa♯','Sol','Sol♯','La','La♯','Si'];
 const mod=(a,n)=>((a%n)+n)%n;
 function degOf(l){const n=parseInt(l.replace(/[^0-9]/g,''),10);return mod(n-1,7)+1;}
+// ---- Arpèges générés : diagonales sur 3 octaves (majeur, mineur, mineur mélodique) et arpège 7♯11 ----
+(function(){
+  const C=id=>CHAPITRES.find(c=>c.id===id),OFF={6:0,5:5,4:10,3:15,2:19,1:24};
+  // diagonale : depuis la fondamentale sur la corde 6, 2 ou 3 notes par corde (écart de 4 à 5 cases au plus), en montant d'une corde à l'autre
+  // diagonale : de la fondamentale (corde 6) à la fondamentale 3 octaves plus haut ; chaque note est posée sur la même corde
+  // ou la suivante (3 notes par corde au plus, écart limité), en cherchant le moins de déplacement de la main
+  function diag(T,span){const tones=Object.keys(T).map(Number).sort((a,b)=>a-b),P=[];for(let o=0;o<3;o++)tones.forEach(t=>P.push(t+12*o));P.push(36);
+    const n=P.length,K=(s,j)=>s+':'+j;let cur={[K(6,0)]:{c:0,prev:null,s:6,j:0}};const hist=[cur];
+    for(let i=1;i<n;i++){const nx={};
+      Object.values(cur).forEach(st=>{const pf=P[i-1]-OFF[st.s];
+        [[st.s,st.j],[st.s-1,i]].forEach(([s,j])=>{if(s<1)return;const fr=P[i]-OFF[s];if(fr<-3)return;
+          if(s===st.s&&(i-st.j>=3||fr-(P[st.j]-OFF[s])>span))return;
+          const c=st.c+Math.abs(fr-pf)+(s===st.s?0:.3),k=K(s,j);if(!nx[k]||nx[k].c>c)nx[k]={c,prev:st,s,j};});});
+      cur=nx;hist.push(cur);}
+    if(!Object.keys(cur).length)return span<7?diag(T,span+1):[];
+    let best=Object.values(cur).reduce((a,b)=>b.c<a.c?b:a);const out=[];
+    for(let i=n-1;i>=0;i--){out.unshift([best.s,P[i]-OFF[best.s],T[mod(P[i],12)]]);best=best.prev;}
+    return out;}
+  const add=(id,nom,acc,T,span)=>{const c=C(id);if(!c||c.formes.some(f=>f.diag))return;
+    c.formes.push({n:nom+', 3 octaves en diagonale',notes:diag(T,span),groupe:'Deux et trois octaves',acc,arp:true,diag:true});};
+  add('arp-tri','Majeur','',{0:'1',4:'3',7:'5'},5);
+  {const c=C('arp-tri');if(c&&!c.formes.some(f=>f.n==='Mineur, 3 octaves en diagonale'))c.formes.push({n:'Mineur, 3 octaves en diagonale',notes:diag({0:'1',3:'♭3',7:'5'},5),groupe:'Deux et trois octaves',acc:'m',arp:true,diag:true});}
+  add('arp-mmaj7','m(Maj7)','m(Maj7)',{0:'1',3:'♭3',7:'5',11:'7'},4);
+  add('arp-maj7s5','Maj7♯5','Maj7♯5',{0:'1',4:'3',8:'♯5',11:'7'},4);
+  add('arp-7s5','7♯5','7♯5',{0:'1',4:'3',8:'♯5',10:'♭7'},4);
+  // 7♯11 (4e degré du mineur mélodique, lydien dominant) : les formes de l'arpège 7, avec la ♯11 un demi-ton sous chaque quinte
+  if(!C('arp-7s11')&&C('arp-7')){const src=C('arp-7').formes.filter(f=>!f.diag);
+    CHAPITRES.push({id:'arp-7s11',titre:'Arpèges 7♯11',intro:'Arpège 7♯11 : 1 3 ♯11 5 ♭7, l\'accord du 4e degré du mineur mélodique (lydien dominant). La ♯11 se joue un demi-ton sous la quinte.',
+      formes:src.map(f=>({...f,n:f.n.replace(/^7/,'7♯11'),acc:'7♯11',notes:f.notes.concat(f.notes.filter(n=>n[2]==='5').map(n=>[n[0],n[1]-1,'♯11'])).sort((a,b)=>(TUN[a[0]]+a[1])-(TUN[b[0]]+b[1]))}))
+        .concat([{n:'7♯11, 3 octaves en diagonale',notes:diag({0:'1',4:'3',6:'♯11',7:'5',10:'♭7'},4),groupe:'Deux et trois octaves',acc:'7♯11',arp:true,diag:true}])});}
+})();
 function accTxt(a){return a===0?'':a===1?'♯':a===-1?'♭':a===2?'𝄪':a===-2?'𝄫':'';}
 function spell(key,l){const d=degOf(l),L=(key[2]+d-1)%7;let a=mod(key[1]+SEMI[l]-NAT[L],12);if(a>6)a-=12;return LET[L]+accTxt(a);}
 const keyName=k=>spell(k,'1');
@@ -859,8 +890,11 @@ function renderShape(){
   const f0=ch.formes[SH.f];
   const scale=!isChord(f0,ch)&&!f0.arp&&ch.id!=='power';
   $('keyWrap').hidden=!!f0.fixe;$('viewWrap').hidden=!scale;
-  const corde=scale&&$('viewSel').value==='corde';
-  $('cordeWrap').hidden=!corde;$('etWrap').hidden=!(scale&&!corde&&isScaleChap(ch)&&!f0.diag&&!/positions 5/.test(f0.n));
+  {const vs=$('viewSel'),has=!!vs.querySelector('option[value="manche"]'),want=ch.id==='penta';
+   if(want&&!has)vs.insertAdjacentHTML('beforeend','<option value="manche">Tout le manche (les 5 positions)</option>');
+   if(!want&&has){if(vs.value==='manche')vs.value='pos';vs.querySelector('option[value="manche"]').remove();}}
+  const corde=scale&&$('viewSel').value==='corde',manche=scale&&ch.id==='penta'&&$('viewSel').value==='manche';
+  $('cordeWrap').hidden=!corde;$('etWrap').hidden=!(scale&&!corde&&!manche&&isScaleChap(ch)&&!f0.diag&&!/positions 5/.test(f0.n));
   const f=corde?f0:(scale?shapeForPlay(f0,ch):f0);
   $('shTitle').textContent=shapeName(f0,ch,key)+(f.oct?' — une octave, fondamentale sur corde '+f.oct:'');
   const ints=f.fixe?[]:intervalsOf(f);
@@ -876,6 +910,16 @@ function renderShape(){
     from=Math.max(0,base-1);to=base+13;
     const steps=[];for(let i=1;i<notes.length;i++){const d=notes[i].fr-notes[i-1].fr;steps.push(d===1?'½':d===2?'T':d===3?'T½':d+' cases');}
     info=cap(CORDE_DE[s])+'. Écarts entre les notes : '+steps.join(' – ')+' (T = ton, ½ = demi-ton).';
+  }else if(manche){ // les 5 positions enchaînées sur le manche, comme les renversements des triades
+    const typ=/majeure/.test(f0.n)?'majeure':'mineure',P=ch.formes.filter(x=>x.n.startsWith('Pentatonique '+typ+', position ')&&/^Pentatonique \S+, position \d( |$)/.test(x.n));
+    const low=P.map(x=>Math.min(...place(x,key,{floor:0}).map(n=>n.fr))),st=low.indexOf(Math.min(...low)),seen={},labels=[];notes=[];let fl=0;
+    for(let j=0;j<6;j++){const x=P[(st+j)%P.length],pl=place(x,key,{floor:fl}),fr=pl.map(n=>n.fr);if(Math.max(...fr)>17)break;fl=Math.min(...fr)+1;
+      labels.push({a:Math.min(...fr),b:Math.max(...fr),t:'Position '+x.n.match(/position (\d)/)[1]+(j===5?' à l\'octave':'')});
+      pl.forEach(n=>{const k=n.s+':'+n.fr;if(seen[k])return;seen[k]=1;notes.push({s:n.s,fr:n.fr,m:n.m,root:n.l==='1',txt:lbl==='note'?spell(key,n.l):n.l});});}
+    from=0;to=Math.max(12,...notes.map(n=>n.fr))+1;
+    $('shTitle').textContent='Pentatonique '+typ+' de '+keyName(key)+' — les 5 positions sur tout le manche';
+    info='Les 5 positions s\'enchaînent : la fin de l\'une est le début de la suivante. Les fondamentales sont en couleur.';
+    drawBoard($('shBoard'),{from,to,notes,labels,label:$('shTitle').textContent,focus:8});
   }else{
     notes=f.oct||f.diag?place(f,key,{floor:f.diag?0:1}).map(n=>({s:n.s,fr:n.fr,m:n.m,root:n.l==='1',txt:lbl==='note'?spell(key,n.l):n.l})):shapeNotes(f,ch,key,lbl);
     const frs=notes.map(n=>n.fr);let mn=Math.min(...frs),mx=Math.max(...frs);
@@ -887,7 +931,7 @@ function renderShape(){
       info=`Tonique : ${keyName(key)}, case ${rn.fr} ${CORDE_DE[rs]}.`+(ch.id.startsWith('arp')&&(to-from)>5&&!/2 octaves/.test(f.n)?' Cette position demande un léger étirement.':'');}
     else info='Accord en position ouverte : il ne se transpose pas.';
   }
-  drawBoard($('shBoard'),{from,to,notes,x:corde?null:f.x,fingers,label:$('shTitle').textContent,focus:Math.round((from+to)/2)});
+  if(!manche)drawBoard($('shBoard'),{from,to,notes,x:corde?null:f.x,fingers,label:$('shTitle').textContent,focus:Math.round((from+to)/2)});
   if(f.diag&&Math.max(...notes.map(n=>n.fr))>20)info+=' Dans cette tonalité, la diagonale monte jusqu\'à la '+Math.max(...notes.map(n=>n.fr))+'e case.';
   $('shInfo').textContent=info;
   // partition de ce qui sera joué (gamme montée et descendue, ou motif choisi ; arpège), intervalles au-dessus des notes
@@ -914,7 +958,7 @@ function renderShape(){
       '<b>Emploi :</b> '+esc((f0.emploi||'').replace('{IV}',slashName({tri:['4','']},key).split('/')[0]))].join('<br>');}
   if(ch.id==='slash'&&!corde){const LS={};f.notes.forEach(n=>LS[n[0]]=n[2]);const pl=notes.map(n=>({s:n.s,fr:n.fr,m:n.m,l:LS[n.s]}));
     $('shStaff').hidden=false;$('shStaff').innerHTML=chordStaff([{name:slashName(f0,key),notes:chordWritten(pl,key),lab:'= '+chordName(key,'')+f0.son}],-1);}
-  if((isScaleChap(ch)&&scale)||f0.arp){const pl=corde?notes:place(f,key,f.diag?{floor:0}:{}),M=motifSeq(ascOf(pl),curMot()),SK=staffKeyOf(f0,key);
+  if(((isScaleChap(ch)&&scale)||f0.arp)&&!manche){const pl=corde?notes:place(f,key,f.diag?{floor:0}:{}),M=motifSeq(ascOf(pl),curMot()),SK=staffKeyOf(f0,key);
     const sub=+(val('gSub')||1),R=rhythmItems(spellSeq(M.seq,SK.K),sub,mod(-M.seq.length,4*sub),(SK.sig?[SK.nm||SK.K[0],SK.K[1],SK.K[2],SK.sig]:['',0,0,0]),SK.sig,0,0);
     $('shStaff').hidden=false;$('shStaff').innerHTML=rhythmPages(R.items,R.items[0].key,!!f0.arp);}
   SH.cur={f,ch,key,notes,corde};
@@ -1846,10 +1890,10 @@ const MENU=[
  {id:'arpeges',t:'Arpèges',items:[
    {id:'maj-min',niv:1,t:'Majeur et mineur (une octave)',view:'schema',chap:'arp-tri',filt:'oct'},{id:'7-octave',niv:1,t:'7 (une octave)',view:'schema',chap:'arp-7',filt:'oct65'},
    {id:'maj-min-complet',niv:2,t:'Majeur et mineur (position complète)',view:'schema',chap:'arp-tri',filt:'full'},
-   {id:'maj7',niv:2,t:'Maj7',view:'schema',chap:'arp-maj7',filt:'nodiag'},{id:'7',niv:2,t:'7',view:'schema',chap:'arp-7',filt:'nodiag'},{id:'m7',niv:2,t:'m7',view:'schema',chap:'arp-m7',filt:'nodiag'},
-   {id:'m7b5',niv:2,t:'m7♭5',view:'schema',chap:'arp-m7b5',filt:'nodiag'},{id:'dim7',niv:2,t:'dim7',view:'schema',chap:'arp-dim7',filt:'nodiag'},
-   {id:'diagonales',niv:3,t:'Sur 3 octaves en diagonale',view:'schema',chap:'arp-diag'},
-   {id:'mmaj7',niv:3,t:'m(Maj7)',view:'schema',chap:'arp-mmaj7'},{id:'maj7s5',niv:3,t:'Maj7♯5',view:'schema',chap:'arp-maj7s5'},{id:'7s5',niv:3,t:'7♯5',view:'schema',chap:'arp-7s5'},
+   {id:'maj7',g:'Accords à 4 sons',st:'Maj7',niv:2,t:'Maj7',view:'schema',chap:'arp-maj7'},{id:'7',g:'Accords à 4 sons',st:'7',niv:2,t:'7',view:'schema',chap:'arp-7'},{id:'m7',g:'Accords à 4 sons',st:'m7',niv:2,t:'m7',view:'schema',chap:'arp-m7'},
+   {id:'m7b5',g:'Accords à 4 sons',st:'m7♭5',niv:2,t:'m7♭5',view:'schema',chap:'arp-m7b5'},{id:'dim7',g:'Accords à 4 sons',st:'dim7',niv:2,t:'dim7',view:'schema',chap:'arp-dim7'},
+   {id:'mmaj7',g:'Arpèges issus du mineur mélodique',st:'m(Maj7)',niv:3,t:'m(Maj7)',view:'schema',chap:'arp-mmaj7'},{id:'maj7s5',g:'Arpèges issus du mineur mélodique',st:'Maj7♯5',niv:3,t:'Maj7♯5',view:'schema',chap:'arp-maj7s5'},
+   {id:'7s11',g:'Arpèges issus du mineur mélodique',st:'7♯11',niv:3,t:'7♯11',view:'schema',chap:'arp-7s11'},{id:'7s5',g:'Arpèges issus du mineur mélodique',st:'7♯5',niv:3,t:'7♯5',view:'schema',chap:'arp-7s5'},
    // niveau 4 : enclosures
    {id:'enc-maj7',g:'Arpèges avec enclosures',st:'Maj7',niv:4,enc:true,t:'Maj7 avec enclosures',view:'schema',chap:'arp-maj7',filt:'nodiag'},{id:'enc-7',g:'Arpèges avec enclosures',st:'7',niv:4,enc:true,t:'7 avec enclosures',view:'schema',chap:'arp-7',filt:'nodiag'},
    {id:'enc-m7',g:'Arpèges avec enclosures',st:'m7',niv:4,enc:true,t:'m7 avec enclosures',view:'schema',chap:'arp-m7',filt:'nodiag'},{id:'enc-m7b5',g:'Arpèges avec enclosures',st:'m7♭5',niv:4,enc:true,t:'m7♭5 avec enclosures',view:'schema',chap:'arp-m7b5',filt:'nodiag'},
@@ -1886,7 +1930,7 @@ function route(){
    $('grpWrap').hidden=sib.length<2;$('grpSel').innerHTML=sib.map(y=>`<option value="${tab.id}-${y.id}"${y===it?' selected':''}>${esc(y.st)}</option>`).join('');}
   [$('subnav'),$('tabs')].forEach(box=>{const c=box.querySelector('[aria-current]');if(c&&box.scrollWidth>box.clientWidth)box.scrollLeft=c.offsetLeft-box.clientWidth/2+c.offsetWidth/2;});
   const FILTS={majmin:f=>f.acc===''||f.acc==='m',quatre:f=>!(f.acc===''||f.acc==='m'),
-    oct:f=>f.groupe==='Une octave',oct65:f=>f.groupe==='Une octave'&&/corde [65]$/.test(f.n),full:f=>f.groupe==='Position complète',nodiag:f=>!f.diag,
+    oct:f=>f.groupe==='Une octave',oct65:f=>f.groupe==='Une octave'&&/corde [65]$/.test(f.n),full:f=>f.groupe==='Position complète'||!!f.diag,nodiag:f=>!f.diag,
     gmaj:f=>f.groupe==='Modes de la gamme majeure',gmm:f=>f.groupe==='Modes du mineur mélodique',gmh:f=>f.groupe==='Modes du mineur harmonique',gsym:f=>f.groupe==='Gammes symétriques'};
   Object.assign(VIEW,{filt:FILTS[it.filt]||null,grps:it.grps||null,grid:it.grid||null,gridIntro:it.intro||'',niv:it.niv||0,gmode:it.gmode||'',gridFilt:{c6:f=>/corde 6/.test(f.groupe),c5:f=>/corde 5/.test(f.groupe),pw:f=>/^Power/.test(f.n),oct:f=>/^Octave/.test(f.n),majmin:f=>f.acc===''||f.acc==='m',quatre:f=>!(f.acc===''||f.acc==='m'),mi:f=>/Mi/.test(f.groupe||''),la:f=>/La/.test(f.groupe||'')}[it.gfilt]||(()=>true)});
   const panel=it.view==='schema'?'schemas':it.view==='game'?'jeux':it.view;
