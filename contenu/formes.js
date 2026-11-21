@@ -460,9 +460,9 @@ const CHAPITRES=[
   {"n": "Mineur, fondamentale sur corde 6", "notes": [[6, 0, "1"], [6, 3, "♭3"], [5, 2, "5"], [4, 2, "1"]], "groupe": "Une octave", "acc": "m", "arp": true, "x": [1, 2, 3]},
   {"n": "Mineur, fondamentale sur corde 5", "notes": [[5, 0, "1"], [5, 3, "♭3"], [4, 2, "5"], [3, 2, "1"]], "groupe": "Une octave", "acc": "m", "arp": true, "x": [1, 2, 6]},
   {"n": "Majeur, position complète (fondamentale corde 6)", "notes": [[6, 0, "1"], [5, -1, "3"], [5, 2, "5"], [4, 2, "1"], [3, 1, "3"], [2, 0, "5"], [1, 0, "1"]], "groupe": "Position complète", "acc": "", "arp": true},
-  {"n": "Majeur, position complète (fondamentale corde 5)", "notes": [[6, 0, "5"], [5, 0, "1"], [4, -1, "3"], [4, 2, "5"], [3, 2, "1"], [2, 2, "3"], [1, 0, "5"]], "groupe": "Position complète", "acc": "", "arp": true},
+  {"n": "Majeur, position complète (fondamentale corde 5)", "notes": [[5,0,"1"],[4,-1,"3"],[3,-3,"5"],[2,-2,"1"],[1,-3,"3"]], "groupe": "Position complète", "acc": "", "arp": true, "ouvert": true},
   {"n": "Mineur, position complète (fondamentale corde 6)", "notes": [[6, 0, "1"], [6, 3, "♭3"], [5, 2, "5"], [4, 2, "1"], [3, 0, "♭3"], [2, 0, "5"], [1, 0, "1"], [1, 3, "♭3"]], "groupe": "Position complète", "acc": "m", "arp": true},
-  {"n": "Mineur, position complète (fondamentale corde 5)", "notes": [[6, 0, "5"], [5, 0, "1"], [5, 3, "♭3"], [4, 2, "5"], [3, 2, "1"], [2, 1, "♭3"], [1, 0, "5"]], "groupe": "Position complète", "acc": "m", "arp": true}
+  {"n": "Mineur, position complète (fondamentale corde 5)", "notes": [[5,0,"1"],[4,-2,"♭3"],[3,-3,"5"],[2,-2,"1"],[1,-4,"♭3"]], "groupe": "Position complète", "acc": "m", "arp": true, "ouvert": true}
 ]},
 {id:"arp-maj7",titre:"Arpèges Maj7",intro:"Arpège Maj7 : 1  3  5  7. Sur une octave (fondamentale sur corde 6, 5, 4 ou 3), puis sur deux octaves en position ou en enchaînant deux positions, et sur trois octaves en diagonale.",formes:[
   {"n": "Maj7, fondamentale sur corde 6", "notes": [[6, 0, "1"], [5, -1, "3"], [5, 2, "5"], [4, 1, "7"]], "x": [1, 2, 3], "groupe": "Une octave", "acc": "Maj7", "arp": true},

@@ -281,7 +281,7 @@ label.chk input{width:18px;height:18px;accent-color:var(--accent)}
 </section>
 
 </main>
-<footer class="meta" style="max-width:1100px;margin:0 auto;padding:0 20px 30px;text-align:center">Boîte à outils guitare · <span id="appver">version 77</span><br><span style="font-size:12px">Sons : basse <a href="https://www.karoryfer.com/karoryfer-samples" target="_blank" rel="noopener">Karoryfer Samples</a> (CC BY 3.0) · batterie Virtuosity Drums et contrebasse <a href="https://github.com/sgossner/VSCO-2-CE" target="_blank" rel="noopener">VSCO 2</a> (CC0)</span></footer>
+<footer class="meta" style="max-width:1100px;margin:0 auto;padding:0 20px 30px;text-align:center">Boîte à outils guitare · <span id="appver">version 78</span><br><span style="font-size:12px">Sons : basse <a href="https://www.karoryfer.com/karoryfer-samples" target="_blank" rel="noopener">Karoryfer Samples</a> (CC BY 3.0) · batterie Virtuosity Drums et contrebasse <a href="https://github.com/sgossner/VSCO-2-CE" target="_blank" rel="noopener">VSCO 2</a> (CC0)</span></footer>
 <script src="contenu/formes.js"></script>
 <script>
 'use strict';
@@ -574,7 +574,7 @@ function drawBoard(el,o){
 function rootString(f){let s=0;for(const [c,r,l] of f.notes)if(l==='1'&&r===0&&c>s)s=c;return s||f.notes[0][0];}
 function place(f,key,opts){
   if(f.fixe)return f.notes.map(([s,fr,l])=>({s,fr,l,m:TUN[s]+fr}));
-  const rs=rootString(f),mn=Math.min(...f.notes.map(n=>n[1])),floor=(opts&&opts.floor!==undefined)?opts.floor:1;
+  const rs=rootString(f),mn=Math.min(...f.notes.map(n=>n[1])),floor=(opts&&opts.floor!==undefined)?opts.floor:(f.ouvert?0:1); // ouvert : la forme peut utiliser les cordes à vide (forme de Do)
   let base=mod(key[1]-TUN[rs],12);while(base+mn<floor)base+=12;
   if(opts&&opts.near!==undefined){ // le plus proche d'une case donnée
     const mid=base+(mn+Math.max(...f.notes.map(n=>n[1])))/2;
@@ -874,7 +874,7 @@ function fillShapes(){
 }
 function shapeNotes(f,ch,key,lbl){
   if(f.fixe)key=KEYS.find(k=>k[0]===f.n[0]);
-  return place(f,key,{floor:ch.id==='power'?0:1}).map(n=>({s:n.s,fr:n.fr,m:n.m,root:n.l==='1',txt:lbl==='note'?spell(key,n.l):n.l}));
+  return place(f,key,{floor:ch.id==='power'||f.ouvert?0:1}).map(n=>({s:n.s,fr:n.fr,m:n.m,root:n.l==='1',txt:lbl==='note'?spell(key,n.l):n.l}));
 }
 function renderShape(){
   if(RUN.on&&EMB)stopGame();
@@ -1213,7 +1213,7 @@ const GAMES=[
     const tour=n=>{while(tours.length<=n){const tn=tours.length,prevK=tn?tours[tn-1].key:null;
         // tonalité du tour : même tonalité, cycle des quartes, un demi-ton plus haut, ou au hasard (jamais deux fois la même de suite)
         const key=nxt==='q'?KEYQ[(startQ+tn)%12]:nxt==='c'?KEYS[(k0+tn)%12]:nxt==='r'?(tn===0?KEYS[k0]:(()=>{let k;do{k=KEYS[Math.floor(Math.random()*12)];}while(k===prevK);return k;})()):KEYS[k0];
-        const pl=place(f,key,pos===null?(f.diag?{floor:0}:{}):{near:pos,floor:f.diag?0:1});pos=pl.reduce((a,b)=>a+b.fr,0)/pl.length;
+        const pl=place(f,key,pos===null?(f.diag?{floor:0}:{}):{near:pos,floor:f.diag||f.ouvert?0:1});pos=pl.reduce((a,b)=>a+b.fr,0)/pl.length;
         const M=motifSeq(ascOf(pl),curMot()),seq=M.seq,SK=staffKeyOf(f0,key),bar=4*sub,pad=mod(-seq.length,bar); // un tour se termine à la fin de sa mesure : pas de mesures de silence en plus
         const prev=tours[tours.length-1],b0=prev?prev.b0+(prev.seq.length+prev.pad)/(4*sub):0,i0=prev?prev.i0+prev.R.items.length:0;
         const R=rhythmItems(spellSeq(seq,SK.K),sub,pad,(SK.sig?[SK.nm||SK.K[0],SK.K[1],SK.K[2],SK.sig]:['',0,0,0]),SK.sig,b0,i0);
