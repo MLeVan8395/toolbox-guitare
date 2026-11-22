@@ -281,7 +281,7 @@ label.chk input{width:18px;height:18px;accent-color:var(--accent)}
 </section>
 
 </main>
-<footer class="meta" style="max-width:1100px;margin:0 auto;padding:0 20px 30px;text-align:center">Boîte à outils guitare · <span id="appver">version 84</span><br><span style="font-size:12px">Sons : basse <a href="https://www.karoryfer.com/karoryfer-samples" target="_blank" rel="noopener">Karoryfer Samples</a> (CC BY 3.0) · batterie Virtuosity Drums et contrebasse <a href="https://github.com/sgossner/VSCO-2-CE" target="_blank" rel="noopener">VSCO 2</a> (CC0)</span></footer>
+<footer class="meta" style="max-width:1100px;margin:0 auto;padding:0 20px 30px;text-align:center">Boîte à outils guitare · <span id="appver">version 85</span><br><span style="font-size:12px">Sons : basse <a href="https://www.karoryfer.com/karoryfer-samples" target="_blank" rel="noopener">Karoryfer Samples</a> (CC BY 3.0) · batterie Virtuosity Drums et contrebasse <a href="https://github.com/sgossner/VSCO-2-CE" target="_blank" rel="noopener">VSCO 2</a> (CC0)</span></footer>
 <script src="contenu/formes.js"></script>
 <script>
 'use strict';
@@ -1343,6 +1343,8 @@ const GAMES=[
           line=ms.map((m,k)=>{const semi=m-R0,step=mat==='arp'?ST[T.indexOf(semi)]:MD.indexOf(semi);
             return {...byM[m],m,l:mat==='arp'?HLAB[mod(semi,12)]:labOf(mod(semi,12),mod(step,7)+1),L:(L0+step)%7};});notes=pl.map(p=>{const q=line.find(x=>x.m===p.m);return {...p,l:q.l};});}
         return {...D,b,r,notes,line,key};});
+      // chaque tour finit sur une barre de mesure : silences ajoutés après le dernier degré, la tonalité suivante part sur le temps 1
+      if(mat!=='acc'){const tot=degs.reduce((a,D)=>a+D.line.length,0);degs[degs.length-1].pad=mod(-tot,4*sub);}
       return tours[n]={key,H,degs,sk:staffKeyOf({n:HSC[sc].f},key)};};
     const drawStaffT=(T,cur)=>{if(mat==='acc'){$('gStaff').hidden=false;$('gStaff').innerHTML=chordStaff(T.degs.map(D=>({name:D.rom,notes:chordWritten(D.notes,D.root)})),cur);return;}
       const wr=[].concat(...T.degs.map(D=>D.line.map(n=>({...writtenOf(n.m,n.L),lab:n.l,root:n.l==='1'})))),SK=T.sk,kt=SK.sig?[SK.nm||SK.K[0],SK.K[1],SK.K[2],SK.sig]:['',0,0,0];
@@ -1350,13 +1352,13 @@ const GAMES=[
     let shownTour=-1,gstep=0;const accSt=val('gAcc')||'none';
     // l'accord du degré pour l'accompagnement (pad, basse, batterie)
     const chordAcc=D=>{const b0=55+mod(D.root[1]-7,12);return {key:D.root,name:D.name,tri:!four,pl:D.ints.map(x=>({m:b0+x,l:HLAB[mod(x,12)]}))};};
-    return {sub,noClick:accSt!=='none',items:i=>{const n=Math.floor(i/8),T=tourOf(n),D=T.degs[i%8];return {i,n,T,D};},len:x=>x&&x.D&&x.D.line&&mat!=='acc'?x.D.line.length:LEN,label:x=>x.D.rom+' · '+x.D.name,
+    return {sub,noClick:accSt!=='none',items:i=>{const n=Math.floor(i/8),T=tourOf(n),D=T.degs[i%8];return {i,n,T,D};},len:x=>x&&x.D&&x.D.line&&mat!=='acc'?x.D.line.length+(x.D.pad||0):LEN,label:x=>x.D.rom+' · '+x.D.name,
       show:x=>{const D=x.D;showNow(mat==='gam'?'De '+spell(D.root,'1')+' à '+spell(D.root,'1'):D.rom+'  ·  '+D.name,HSC[sc].n+' de '+(sc==='maj'?x.T.H.T[0]:x.T.H.T[0]+'m'));
         const frs=D.notes.map(q=>q.fr);drawBoard($('gBoard'),{from:Math.max(0,Math.min(...frs)-1),to:Math.max(Math.min(...frs)+5,Math.max(...frs)+1),notes:D.notes.map(q=>({s:q.s,fr:q.fr,m:q.m,root:q.l==='1',txt:q.l})),label:D.name});
         if(mat==='acc'||shownTour!==x.n){shownTour=x.n;drawStaffT(x.T,mat==='acc'?D.d:-1);}},
       step:(x,k,t,dur)=>{const D=x.D;
         if(accSt!=='none'){const C=chordAcc(D),T=x.T,N=chordAcc(T.degs[(x.i+1)%8]||D),L=mat==='acc'?LEN:D.line.length;
-          if(k===0){const pd=ACCPAD[accSt];if(pd)(pd==='orgue'?organChord:padChord)(C.pl.map(q=>q.m),t,L*dur);}
+          if(k===0){const pd=ACCPAD[accSt];if(pd)(pd==='orgue'?organChord:padChord)(C.pl.map(q=>q.m),t,(L+(D.pad||0))*dur);}
           if(gstep%sub===0)accomp(accSt,C,N,Math.floor(gstep/sub),t,dur*sub,Math.max(1,Math.round(L/sub)));}
         gstep++;
         if(mat==='acc'){if(k===0)strum(D.notes.map(q=>q.m),t,.02,false,.45);else if(k===2)strum(D.notes.map(q=>q.m),t,.012,false,.28);}
