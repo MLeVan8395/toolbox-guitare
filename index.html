@@ -281,7 +281,7 @@ label.chk input{width:18px;height:18px;accent-color:var(--accent)}
 </section>
 
 </main>
-<footer class="meta" style="max-width:1100px;margin:0 auto;padding:0 20px 30px;text-align:center">Boîte à outils guitare · <span id="appver">version 83</span><br><span style="font-size:12px">Sons : basse <a href="https://www.karoryfer.com/karoryfer-samples" target="_blank" rel="noopener">Karoryfer Samples</a> (CC BY 3.0) · batterie Virtuosity Drums et contrebasse <a href="https://github.com/sgossner/VSCO-2-CE" target="_blank" rel="noopener">VSCO 2</a> (CC0)</span></footer>
+<footer class="meta" style="max-width:1100px;margin:0 auto;padding:0 20px 30px;text-align:center">Boîte à outils guitare · <span id="appver">version 84</span><br><span style="font-size:12px">Sons : basse <a href="https://www.karoryfer.com/karoryfer-samples" target="_blank" rel="noopener">Karoryfer Samples</a> (CC BY 3.0) · batterie Virtuosity Drums et contrebasse <a href="https://github.com/sgossner/VSCO-2-CE" target="_blank" rel="noopener">VSCO 2</a> (CC0)</span></footer>
 <script src="contenu/formes.js"></script>
 <script>
 'use strict';
@@ -451,7 +451,7 @@ function swingDrums(k,t,dur){
 // Qualité de l'accord à partir de ses intervalles
 function quality(it){const L=it.pl.map(n=>n.l);
   return {third:L.includes('♭3')?3:L.includes('3')?4:7,fifth:L.includes('♭5')||/dim|♭5/.test(it.name)?6:L.includes('♯5')?8:7,
-    sev:L.includes('7')?11:L.includes('𝄫7')||/dim/.test(it.name)?9:L.includes('♭7')?10:L.includes('6')?9:10};}
+    sev:it.tri?12:L.includes('7')?11:L.includes('𝄫7')||/dim/.test(it.name)?9:L.includes('♭7')?10:L.includes('6')?9:10};}
 const bassRoot=pc=>{const r=36+mod(pc-36,12);return r>43?r-12:r;};
 // Walking bass : fondamentale, tierce, quinte, septième (en montant, puis en redescendant) ; dernier temps : note chromatique vers l'accord suivant
 function walkBeat(it,nx,k,t,dur,len){
@@ -1324,7 +1324,8 @@ const GAMES=[
     +(CUR.hmat==='arp'?opt('gHMot','Motif',[['up','Arpège montant (jusqu\'à la 7e), puis degré suivant'],['alt','Alterné : un degré en montant, le suivant en descendant'],['ar','Aller-retour sur chaque degré'],['b3','Arpège brisé par 3'],['b4','Arpège brisé par 4']],'up'):'')
     +(CUR.hmat&&CUR.hmat!=='acc'?opt('gHSub','Valeurs',[[1,'Noires'],[2,'Croches'],[3,'Triolets'],[4,'Doubles croches']],2):'')
     +opt('gKey','Tonalité de départ',KEYS.map((k,i)=>[i,k[0]]),0)
-    +opt('gOrd','Après chaque tour',[['same','Même tonalité'],['q','Cycle des quartes'],['c','Un demi-ton plus haut'],['r','Tonalité au hasard']],'same'),
+    +opt('gOrd','Après chaque tour',[['same','Même tonalité'],['q','Cycle des quartes'],['c','Un demi-ton plus haut'],['r','Tonalité au hasard']],'same')
+    +opt('gAcc','Accompagnement',ACCOPTS,'none'),
   make:()=>{const sc=val('gHSc')||'maj',four=val('gHTy')==='q',mat=CUR.hmat||val('gHMat')||'acc',keys=keySeq(val('gOrd')||'same',+val('gKey')||0);
     // valeurs : chaque degré tombe toujours sur un temps (le motif s'adapte : en triolets, arpège ou gamme aller-retour)
     const sub=mat==='acc'?1:(+val('gHSub')||2),tours={};
@@ -1346,12 +1347,18 @@ const GAMES=[
     const drawStaffT=(T,cur)=>{if(mat==='acc'){$('gStaff').hidden=false;$('gStaff').innerHTML=chordStaff(T.degs.map(D=>({name:D.rom,notes:chordWritten(D.notes,D.root)})),cur);return;}
       const wr=[].concat(...T.degs.map(D=>D.line.map(n=>({...writtenOf(n.m,n.L),lab:n.l,root:n.l==='1'})))),SK=T.sk,kt=SK.sig?[SK.nm||SK.K[0],SK.K[1],SK.K[2],SK.sig]:['',0,0,0];
       const R=rhythmItems(wr,sub,mod(-wr.length,4*sub),kt,SK.sig,0,0);$('gStaff').hidden=false;$('gStaff').innerHTML=rhythmPages(R.items,kt,false);};
-    let shownTour=-1;
-    return {sub,items:i=>{const n=Math.floor(i/8),T=tourOf(n),D=T.degs[i%8];return {i,n,T,D};},len:x=>x&&x.D&&x.D.line&&mat!=='acc'?x.D.line.length:LEN,label:x=>x.D.rom+' · '+x.D.name,
+    let shownTour=-1,gstep=0;const accSt=val('gAcc')||'none';
+    // l'accord du degré pour l'accompagnement (pad, basse, batterie)
+    const chordAcc=D=>{const b0=55+mod(D.root[1]-7,12);return {key:D.root,name:D.name,tri:!four,pl:D.ints.map(x=>({m:b0+x,l:HLAB[mod(x,12)]}))};};
+    return {sub,noClick:accSt!=='none',items:i=>{const n=Math.floor(i/8),T=tourOf(n),D=T.degs[i%8];return {i,n,T,D};},len:x=>x&&x.D&&x.D.line&&mat!=='acc'?x.D.line.length:LEN,label:x=>x.D.rom+' · '+x.D.name,
       show:x=>{const D=x.D;showNow(mat==='gam'?'De '+spell(D.root,'1')+' à '+spell(D.root,'1'):D.rom+'  ·  '+D.name,HSC[sc].n+' de '+(sc==='maj'?x.T.H.T[0]:x.T.H.T[0]+'m'));
         const frs=D.notes.map(q=>q.fr);drawBoard($('gBoard'),{from:Math.max(0,Math.min(...frs)-1),to:Math.max(Math.min(...frs)+5,Math.max(...frs)+1),notes:D.notes.map(q=>({s:q.s,fr:q.fr,m:q.m,root:q.l==='1',txt:q.l})),label:D.name});
         if(mat==='acc'||shownTour!==x.n){shownTour=x.n;drawStaffT(x.T,mat==='acc'?D.d:-1);}},
       step:(x,k,t,dur)=>{const D=x.D;
+        if(accSt!=='none'){const C=chordAcc(D),T=x.T,N=chordAcc(T.degs[(x.i+1)%8]||D),L=mat==='acc'?LEN:D.line.length;
+          if(k===0){const pd=ACCPAD[accSt];if(pd)(pd==='orgue'?organChord:padChord)(C.pl.map(q=>q.m),t,L*dur);}
+          if(gstep%sub===0)accomp(accSt,C,N,Math.floor(gstep/sub),t,dur*sub,Math.max(1,Math.round(L/sub)));}
+        gstep++;
         if(mat==='acc'){if(k===0)strum(D.notes.map(q=>q.m),t,.02,false,.45);else if(k===2)strum(D.notes.map(q=>q.m),t,.012,false,.28);}
         else{const q=D.line[k];if(q)pluck(q.m,t,.5);}}};}},
  {id:'patterns',titre:'Générateur de patterns',
