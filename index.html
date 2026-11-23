@@ -281,7 +281,7 @@ label.chk input{width:18px;height:18px;accent-color:var(--accent)}
 </section>
 
 </main>
-<footer class="meta" style="max-width:1100px;margin:0 auto;padding:0 20px 30px;text-align:center">Boîte à outils guitare · <span id="appver">version 88</span><br><span style="font-size:12px">Sons : basse <a href="https://www.karoryfer.com/karoryfer-samples" target="_blank" rel="noopener">Karoryfer Samples</a> (CC BY 3.0) · batterie Virtuosity Drums et contrebasse <a href="https://github.com/sgossner/VSCO-2-CE" target="_blank" rel="noopener">VSCO 2</a> (CC0)</span></footer>
+<footer class="meta" style="max-width:1100px;margin:0 auto;padding:0 20px 30px;text-align:center">Boîte à outils guitare · <span id="appver">version 89</span><br><span style="font-size:12px">Sons : guitare et basse <a href="https://www.karoryfer.com/karoryfer-samples" target="_blank" rel="noopener">Karoryfer Samples</a> (CC BY 3.0) · batterie Virtuosity Drums et contrebasse <a href="https://github.com/sgossner/VSCO-2-CE" target="_blank" rel="noopener">VSCO 2</a> (CC0)</span></footer>
 <script src="contenu/formes.js"></script>
 <script>
 'use strict';
@@ -356,7 +356,18 @@ function loadGuitar(){
   DR_FILES.forEach(n=>loadBuf('sons/batterie/'+n+'.mp3',b=>DR[n]=b));
   CB_FILES.forEach(m=>loadBuf('sons/contrebasse/'+m+'.mp3',b=>CB[m]=b));
   EB_FILES.forEach(m=>loadBuf('sons/basse/'+m+'.mp3',b=>EB[m]=b));
+  GT_FILES.forEach(n=>loadBuf('sons/guitare/'+n+'.mp3',b=>GTS[noteMidi(n)]=b));
 }
+// Guitare électrique en son clair (Karoryfer, CC BY 3.0, via tonejs-instruments) pour les accords ; les gammes et arpèges gardent le synthé doux
+const GT_FILES=['E2','Fs2','A2','C3','Ds3','Fs3','A3','C4','Ds4','Fs4','A4','C5','Ds5','Fs5','A5','C6'],GTS={};
+function noteMidi(n){const L={C:0,D:2,E:4,F:5,G:7,A:9,B:11}[n[0]],sh=n[1]==='s'?1:0;return 12*(+n.slice(1+sh)+1)+L+sh;}
+function gtPluck(m,t,vel,dur){const ac=ctx();if(!ac)return;t=t||ac.currentTime;vel=vel||.5;dur=dur||2;
+  let best=null;for(const k in GTS){const d=Math.abs(k-m);if(d<=3&&(best===null||d<Math.abs(best-m)))best=+k;}
+  if(best===null)return pluck(m,t,vel,dur,true);
+  const s=ac.createBufferSource();s.buffer=GTS[best];s.playbackRate.value=Math.pow(2,(m-best)/12);
+  const lp=ac.createBiquadFilter();lp.type='lowpass';lp.frequency.value=4200;lp.Q.value=.5;
+  const g=ac.createGain(),pk=vel*1.5*(Math.abs(t-ACC_T)<4?1.5:1);g.gain.setValueAtTime(pk,t);g.gain.setTargetAtTime(0,t+dur,.08);
+  s.connect(lp);lp.connect(g);g.connect(MASTER);s.start(t,.02);s.stop(t+dur+.6);VOICES.push({g,start:t,end:t+dur+.6});}
 // Notes détachées : chaque nouvelle note (ou nouvel accord) coupe le son de la précédente, avec un relâchement court.
 let VOICES=[];
 function cutAt(t){VOICES=VOICES.filter(v=>v.end>t);VOICES.forEach(v=>{if(v.start>=t)return;try{v.g.gain.cancelScheduledValues(t);v.g.gain.setTargetAtTime(0,t,.012);}catch(e){}});VOICES=[];}
@@ -376,7 +387,7 @@ function pluck(m,t,vel,dur,keep){
   o1.start(t);o2.start(t);o1.stop(t+dur+.7);o2.stop(t+dur+.7);
   VOICES.push({g,start:t,end:t+dur+.7});
 }
-function strum(midis,t,gap,up,vel,len){const ac=ctx();if(!ac)return;t=t||ac.currentTime+.02;gap=gap===undefined?.035:gap;cutAt(t);const o=[...midis].sort((a,b)=>a-b),v=(vel||.42)*(o.length>3?Math.sqrt(3/o.length):1);if(up)o.reverse();o.forEach((m,i)=>pluck(m,t+i*gap,v,len||2,true));}
+function strum(midis,t,gap,up,vel,len){const ac=ctx();if(!ac)return;t=t||ac.currentTime+.02;gap=gap===undefined?.035:gap;cutAt(t);const o=[...midis].sort((a,b)=>a-b),v=(vel||.42)*(o.length>3?Math.sqrt(3/o.length):1);if(up)o.reverse();o.forEach((m,i)=>gtPluck(m,t+i*gap,v,len||2));}
 // ===== Accompagnement : pad, basse, batterie (sons de synthèse) =====
 let ACCV=[];
 function track(g,end){ACCV=ACCV.filter(v=>v.end>AC.currentTime);ACCV.push({g,end});}
@@ -1394,7 +1405,7 @@ const GAMES=[
       step:(x,k,t,dur)=>{const Q=patGet(),c=Q.slots[k%Q.n];at(t,()=>document.querySelectorAll('.patslot').forEach((b,j)=>b.classList.toggle('on',j===k%Q.n)));
         const ms=pl.map(q=>q.m);
         if(Q.type==='strum'){if(c==='↓')strum(ms,t,.012,false,.42);else if(c==='↑')strum([...ms].sort((a,b)=>b-a).slice(0,Math.min(4,ms.length)),t,.01,true,.32);else if(c==='x')strum(ms,t,.004,false,.2,.05);}
-        else{const q=c==='B'?bass:c==='A'?alt:/^[1-6]$/.test(c)?bySt[+c]:null;if(q)pluck(q.m,t,.5);}}};
+        else{const q=c==='B'?bass:c==='A'?alt:/^[1-6]$/.test(c)?bySt[+c]:null;if(q)gtPluck(q.m,t,.5,1.8);}}};
   }}
 ];
 // ---- Exercice au hasard : on tire un exercice du niveau (révisions comprises), puis on l'ouvre et on le lance ----
