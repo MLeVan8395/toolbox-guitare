@@ -281,7 +281,7 @@ label.chk input{width:18px;height:18px;accent-color:var(--accent)}
 </section>
 
 </main>
-<footer class="meta" style="max-width:1100px;margin:0 auto;padding:0 20px 30px;text-align:center">Boîte à outils guitare · <span id="appver">version 86</span><br><span style="font-size:12px">Sons : basse <a href="https://www.karoryfer.com/karoryfer-samples" target="_blank" rel="noopener">Karoryfer Samples</a> (CC BY 3.0) · batterie Virtuosity Drums et contrebasse <a href="https://github.com/sgossner/VSCO-2-CE" target="_blank" rel="noopener">VSCO 2</a> (CC0)</span></footer>
+<footer class="meta" style="max-width:1100px;margin:0 auto;padding:0 20px 30px;text-align:center">Boîte à outils guitare · <span id="appver">version 87</span><br><span style="font-size:12px">Sons : basse <a href="https://www.karoryfer.com/karoryfer-samples" target="_blank" rel="noopener">Karoryfer Samples</a> (CC BY 3.0) · batterie Virtuosity Drums et contrebasse <a href="https://github.com/sgossner/VSCO-2-CE" target="_blank" rel="noopener">VSCO 2</a> (CC0)</span></footer>
 <script src="contenu/formes.js"></script>
 <script>
 'use strict';
@@ -895,10 +895,10 @@ function renderShape(){
   const f0=ch.formes[SH.f];
   const scale=!isChord(f0,ch)&&!f0.arp&&ch.id!=='power';
   $('keyWrap').hidden=!!f0.fixe;$('viewWrap').hidden=!scale;
-  {const vs=$('viewSel'),has=!!vs.querySelector('option[value="manche"]'),want=ch.id==='penta';
-   if(want&&!has)vs.insertAdjacentHTML('beforeend','<option value="manche">Tout le manche (les 5 positions)</option>');
-   if(!want&&has){if(vs.value==='manche')vs.value='pos';vs.querySelector('option[value="manche"]').remove();}}
-  const corde=scale&&$('viewSel').value==='corde',manche=scale&&ch.id==='penta'&&$('viewSel').value==='manche';
+  {const vs=$('viewSel'),W={manche:ch.id==='penta'?'Tout le manche (les 5 positions)':'','manche-maj':ch.id==='modes'?'La gamme majeure sur tout le manche (7 positions)':'','manche-min':ch.id==='modes'?'La gamme mineure naturelle sur tout le manche (7 positions)':''};
+   Object.entries(W).forEach(([v,t])=>{const o=vs.querySelector(`option[value="${v}"]`);if(t&&!o)vs.insertAdjacentHTML('beforeend',`<option value="${v}">${t}</option>`);if(!t&&o){if(vs.value===v)vs.value='pos';o.remove();}});
+   if(vs.dataset.done!==CUR.id){if(CUR.vsel)vs.value=CUR.vsel;else if(/^manche-/.test(vs.value))vs.value='pos';vs.dataset.done=CUR.id;}}
+  const VS=$('viewSel').value,corde=scale&&VS==='corde',manche=scale&&((ch.id==='penta'&&VS==='manche')||(ch.id==='modes'&&/^manche-/.test(VS)));
   $('cordeWrap').hidden=!corde;$('etWrap').hidden=!(scale&&!corde&&!manche&&isScaleChap(ch)&&!f0.diag&&!/positions 5/.test(f0.n));
   const f=corde?f0:(scale?shapeForPlay(f0,ch):f0);
   $('shTitle').textContent=shapeName(f0,ch,key)+(f.oct?' — une octave, fondamentale sur corde '+f.oct:'');
@@ -915,6 +915,18 @@ function renderShape(){
     from=Math.max(0,base-1);to=base+13;
     const steps=[];for(let i=1;i<notes.length;i++){const d=notes[i].fr-notes[i-1].fr;steps.push(d===1?'½':d===2?'T':d===3?'T½':d+' cases');}
     info=cap(CORDE_DE[s])+'. Écarts entre les notes : '+steps.join(' – ')+' (T = ton, ½ = demi-ton).';
+  }else if(manche&&ch.id==='modes'){ // la gamme majeure (ou mineure naturelle) sur tout le manche : 7 positions, une sur chaque degré
+    const mn=VS==='manche-min',T=mn?MINK[key[1]]:key,P0=mn?mkKey((T[2]+2)%7,mod(T[1]+3,12)):T,MS=[0,2,4,5,7,9,11];
+    const LB=mn?{0:'1',2:'2',3:'♭3',5:'4',7:'5',8:'♭6',10:'♭7'}:{0:'1',2:'2',4:'3',5:'4',7:'5',9:'6',11:'7'};
+    const P=[0,1,2,3,4,5,6].map(d=>({x:ch.formes[d],k:mkKey((P0[2]+d)%7,mod(P0[1]+MS[d],12))}));
+    const low=P.map(q=>Math.min(...place(q.x,q.k,{floor:0}).map(n=>n.fr))),st=low.indexOf(Math.min(...low)),seen={},labels=[];notes=[];let fl=0;
+    for(let j=0;j<8;j++){const q=P[(st+j)%7],pl=place(q.x,q.k,{floor:fl}),fr=pl.map(n=>n.fr);if(Math.max(...fr)>17)break;fl=Math.min(...fr)+1;
+      labels.push({a:Math.min(...fr),b:Math.max(...fr),t:spell(q.k,'1')});
+      pl.forEach(n=>{const k=n.s+':'+n.fr;if(seen[k])return;seen[k]=1;const l=LB[mod(n.m-T[1],12)]||'?';notes.push({s:n.s,fr:n.fr,m:n.m,root:l==='1',txt:lbl==='note'?spell(T,l):l});});}
+    from=0;to=Math.max(12,...notes.map(n=>n.fr))+1;
+    $('shTitle').textContent=(mn?'Gamme mineure naturelle de '+keyName(T):'Gamme majeure de '+keyName(T))+' — sur tout le manche';
+    info='Les 7 positions de la gamme s\'enchaînent : sous le manche, la note de départ de chaque position (jouée avec le majeur sur la corde 6). Les fondamentales sont en couleur.';
+    drawBoard($('shBoard'),{from,to,notes,labels,label:$('shTitle').textContent,focus:8});
   }else if(manche){ // les 5 positions enchaînées sur le manche, comme les renversements des triades
     const typ=/majeure/.test(f0.n)?'majeure':'mineure',P=ch.formes.filter(x=>x.n.startsWith('Pentatonique '+typ+', position ')&&/^Pentatonique \S+, position \d( |$)/.test(x.n));
     const low=P.map(x=>Math.min(...place(x,key,{floor:0}).map(n=>n.fr))),st=low.indexOf(Math.min(...low)),seen={},labels=[];notes=[];let fl=0;
@@ -2026,8 +2038,8 @@ const LEVELS=[null,
   A:['positions','triades','triades-min'],G:[['penta']],R:['maj-min-complet']},
  {t:'Les accords à 4 sons',d:'Positions transposables à 4 sons, renversements ; les modes de la gamme majeure ; arpèges Maj7, 7, m7, m7♭5, dim7 en position. Motifs : tierces alternées, arpège brisé par 3.',
   A:['positions-4','renversements'],G:[['modes']],R:[['maj7','nodiag'],['7','nodiag'],['m7','nodiag'],['m7b5','nodiag'],['dim7','nodiag']]},
- {t:'Tout le manche',d:'Triades sur les cordes 3 à 6, accords enrichis ; arpèges sur 3 octaves en diagonale. Motifs : quartes, arpège brisé par 4.',
-  A:['triades-2','triades-min-2','triades-dim','enrichis-6','enrichis-5'],G:[],R:[['maj-min-complet','diag','Majeur et mineur en diagonale'],['maj7','diag','Maj7 en diagonale'],['7','diag','7 en diagonale'],['m7','diag','m7 en diagonale'],['m7b5','diag','m7♭5 en diagonale'],['dim7','diag','dim7 en diagonale']]},
+ {t:'Tout le manche',d:'Triades sur les cordes 3 à 6, accords enrichis ; la gamme majeure et la mineure naturelle sur tout le manche (7 positions) ; arpèges sur 3 octaves en diagonale. Motifs : quartes, arpège brisé par 4.',
+  A:['triades-2','triades-min-2','triades-dim','enrichis-6','enrichis-5'],G:[['modes','gmaj','La gamme majeure sur tout le manche','manche-maj'],['modes','gmaj','La gamme mineure naturelle sur tout le manche','manche-min']],R:[['maj-min-complet','diag','Majeur et mineur en diagonale'],['maj7','diag','Maj7 en diagonale'],['7','diag','7 en diagonale'],['m7','diag','m7 en diagonale'],['m7b5','diag','m7♭5 en diagonale'],['dim7','diag','dim7 en diagonale']]},
  {t:'Le mineur mélodique',d:'Triades ouvertes, drop 2 ; les modes du mineur mélodique et du mineur harmonique ; les arpèges issus du mineur mélodique. Motifs : quintes, sixtes, arpèges avec sauts.',
   A:['triades-ouv','triades-ouv-min','triades-ouv-dim','drop2'],G:[['melodique'],['harmonique']],R:['mmaj7','maj7s5','7s11','7s5']},
  {t:'Jazz avancé',d:'Drop 3, drop 2+4, triades avec basse étrangère ; gammes symétriques ; arpèges avec enclosures. Tous les motifs, dont les septièmes et les broderies chromatiques.',
@@ -2035,8 +2047,8 @@ const LEVELS=[null,
  {t:'Harmonisation des gammes',d:'On monte la gamme degré par degré avec ses accords, ses arpèges ou ses modes : gamme majeure, mineur mélodique, mineur harmonique, en triades puis en accords à 4 sons. Tout le matériau des niveaux précédents reste en révision.',
   A:[],G:[],R:[]}];
 {const T=id=>MENU.find(t=>t.id===id),SRC={A:T('accords'),G:T('gammes'),R:T('arpeges')},CAT={A:'Accords',G:'Gammes',R:'Arpèges'},items=[],mat={};
-  const clone=(k,spec,n)=>{const [id,filt,lab]=Array.isArray(spec)?spec:[spec];const o=SRC[k].items.find(x=>x.id===id);if(!o)return null;
-    const c={...o};delete c.g;delete c.st;delete c.niv;c.t=lab||o.t;if(filt)c.filt=filt;c.cat=k;c.src=id+(filt?'-'+filt:'');return c;};
+  const clone=(k,spec,n)=>{const [id,filt,lab,vsel]=Array.isArray(spec)?spec:[spec];const o=SRC[k].items.find(x=>x.id===id);if(!o)return null;
+    const c={...o};delete c.g;delete c.st;delete c.niv;c.t=lab||o.t;if(filt)c.filt=filt;if(vsel)c.vsel=vsel;c.cat=k;c.src=id+(filt?'-'+filt:'')+(vsel?'-'+vsel:'');return c;};
   for(let n=1;n<LEVELS.length;n++){const L=LEVELS[n];mat[n]=[];
     ['A','G','R'].forEach(k=>L[k].forEach(sp=>{const c=clone(k,sp,n);if(!c)return;mat[n].push(c);items.push({...c,id:'n'+n+'-'+k.toLowerCase()+'-'+c.src,g:CAT[k],st:c.t,niv:n});}));
     for(let m=1;m<n;m++)mat[m].forEach(c=>items.push({...c,id:'n'+n+'-rev-'+c.cat.toLowerCase()+'-'+c.src,g:'Révisions',st:CAT[c.cat]+' · '+c.t,og:'Niveau '+m,niv:n,rev:m}));
