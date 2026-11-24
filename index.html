@@ -281,7 +281,7 @@ label.chk input{width:18px;height:18px;accent-color:var(--accent)}
 </section>
 
 </main>
-<footer class="meta" style="max-width:1100px;margin:0 auto;padding:0 20px 30px;text-align:center">Boîte à outils guitare · <span id="appver">version 89</span><br><span style="font-size:12px">Sons : guitare et basse <a href="https://www.karoryfer.com/karoryfer-samples" target="_blank" rel="noopener">Karoryfer Samples</a> (CC BY 3.0) · batterie Virtuosity Drums et contrebasse <a href="https://github.com/sgossner/VSCO-2-CE" target="_blank" rel="noopener">VSCO 2</a> (CC0)</span></footer>
+<footer class="meta" style="max-width:1100px;margin:0 auto;padding:0 20px 30px;text-align:center">Boîte à outils guitare · <span id="appver">version 90</span><br><span style="font-size:12px">Sons : guitare et basse <a href="https://www.karoryfer.com/karoryfer-samples" target="_blank" rel="noopener">Karoryfer Samples</a> (CC BY 3.0) · batterie Virtuosity Drums et contrebasse <a href="https://github.com/sgossner/VSCO-2-CE" target="_blank" rel="noopener">VSCO 2</a> (CC0)</span></footer>
 <script src="contenu/formes.js"></script>
 <script>
 'use strict';
@@ -570,6 +570,10 @@ function drawBoard(el,o){
     const fill=n.root?'var(--root)':'var(--dot)';
     svg+=`<g class="dot" data-i="${i}" opacity="${n.dim?0.28:1}">`;
     if(n.ring)svg+=`<circle cx="${cx}" cy="${cy}" r="${r+5}" fill="none" stroke="var(--accent)" stroke-width="3"/>`;
+    if(n.txt2){ // deux noms (Fa♯ / Sol♭) : pastille allongée sur deux lignes
+      svg+=`<rect x="${cx-23}" y="${cy-14}" width="46" height="28" rx="12" fill="${n.hollow?'var(--wood)':fill}" stroke="${fill}" stroke-width="2.2"/>`
+        +`<text x="${cx}" y="${cy-2}" text-anchor="middle" font-size="10" font-weight="700" fill="${n.hollow?'var(--ink)':'var(--dot-ink)'}" font-family="var(--chord)" pointer-events="none">${esc(txt)}</text>`
+        +`<text x="${cx}" y="${cy+10}" text-anchor="middle" font-size="10" font-weight="700" fill="${n.hollow?'var(--ink)':'var(--dot-ink)'}" font-family="var(--chord)" pointer-events="none">${esc(n.txt2)}</text></g>`;return;}
     if(n.hollow)svg+=`<circle cx="${cx}" cy="${cy}" r="${r}" fill="var(--wood)" stroke="${fill}" stroke-width="2.2"/>`;
     else svg+=`<circle cx="${cx}" cy="${cy}" r="${r}" fill="${fill}"/>`;
     if(txt)svg+=`<text x="${cx}" y="${cy+fs*0.36}" text-anchor="middle" font-size="${fs}" font-weight="700" fill="${n.hollow?'var(--ink)':'var(--dot-ink)'}" font-family="var(--chord)" pointer-events="none">${esc(txt)}</text>`;
@@ -1079,7 +1083,7 @@ function renderNotes(){renderTons();
   const nat=$('ntNat').checked,hide=$('ntHide').checked,notes=[];
   for(let s=1;s<=6;s++)for(let fr=0;fr<=12;fr++){const pc=mod(TUN[s]+fr,12);if(nat&&!NAT.includes(pc))continue;
     const two=PC2[pc].split(' / ');
-    notes.push({s,fr,m:TUN[s]+fr,root:false,txt:hide?'':(two.length>1?two[0]:two[0]),full:PC2[pc],hollow:!NAT.includes(pc)});}
+    notes.push({s,fr,m:TUN[s]+fr,root:false,txt:hide?'':two[0],txt2:hide||two.length<2?'':two[1],full:PC2[pc],hollow:!NAT.includes(pc)});}
   drawBoard($('ntBoard'),{from:0,to:12,notes,fw:58,sg:30,label:'Toutes les notes du manche',
     onTap:n=>{pluck(n.m);showTip(n.full+' — case '+n.fr+' '+CORDE_DE[n.s]);}});
 }
