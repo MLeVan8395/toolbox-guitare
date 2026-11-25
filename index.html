@@ -55,7 +55,7 @@ nav a:hover{color:var(--ink)}
 .minigrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(230px,1fr));gap:10px;padding:4px 8px}.mini svg{display:block;width:100%;height:auto;min-width:0!important}.mini b{display:block;font-size:13px;color:var(--muted);margin:0 0 2px 4px}
 .chordgrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:14px}
 .chordgrid .card{padding:14px}.gridrow{font-size:16px;margin:18px 0 10px;grid-column:1/-1}.chordgrid h3{margin:0 0 6px;font-family:var(--chord);font-size:22px}
-.subnav .brk{flex-basis:100%;height:0}.nivsel select{font-size:17px;font-weight:800;padding:8px 14px;border-radius:999px;background:var(--accent);color:#111;border:0}.nivtxt{align-self:center;font-weight:700;color:var(--muted);margin-left:4px}#gCard.hz .stage,#gCard.hz #gGo,#gCard.hz div:has(> #gGo),#gCard.hz #gBoard,#gCard.hz #gStaff,#gCard.hz #gInfo{display:none!important}.hzcard{border:1px solid var(--line);border-radius:14px;padding:14px 16px;margin-top:10px}.hzcard h4{margin:0 0 6px;font-size:20px}.hzcard ul{margin:6px 0 10px;padding-left:20px}.chordgrid.four{grid-template-columns:repeat(2,minmax(0,1fr))}@media(min-width:820px){.chordgrid.four{grid-template-columns:repeat(4,minmax(0,1fr))}}.patrow{display:grid;grid-template-columns:repeat(var(--n),minmax(0,1fr));gap:4px;margin-top:4px}.patcell{display:flex;flex-direction:column;align-items:center;gap:2px}.patslot{width:100%;min-width:0;padding:10px 0;font-size:20px;font-weight:800}.patslot.beat{border-color:var(--accent)}.patslot.on{background:var(--root);color:#fff}.grpwrap{display:flex;align-items:center;gap:10px;font-weight:700;margin:-4px 0 12px}.grpwrap[hidden]{display:none}.grpwrap select{font-size:17px;font-weight:700;padding:8px 12px;flex:1;max-width:340px}.subnav .nivbtn{font-weight:700;border-width:2px}.subnav .nivbtn[aria-current]{background:var(--accent);color:var(--bg);border-color:var(--accent)}.subnav .niv{font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:var(--muted);align-self:center;margin-right:4px}
+.subnav .brk{flex-basis:100%;height:0}.mtbig{display:flex;align-items:center;justify-content:center;gap:24px}.mtbig button{font-size:34px;width:64px;height:64px;border-radius:50%;padding:0}.mtbpm{font-size:72px;font-weight:800;line-height:1;text-align:center;font-variant-numeric:tabular-nums}.mtdots{display:flex;gap:10px;justify-content:center;margin:18px 0 8px;flex-wrap:wrap}.mtdots i{width:30px;height:30px;border-radius:50%;background:var(--line);transition:background .05s}.mtdots i.acc{width:38px;height:38px}.mtdots i.on{background:var(--accent)}.mtdots i.acc.on{background:var(--root)}.nivsel select{font-size:17px;font-weight:800;padding:8px 14px;border-radius:999px;background:var(--accent);color:#111;border:0}.nivtxt{align-self:center;font-weight:700;color:var(--muted);margin-left:4px}#gCard.hz .stage,#gCard.hz #gGo,#gCard.hz div:has(> #gGo),#gCard.hz #gBoard,#gCard.hz #gStaff,#gCard.hz #gInfo{display:none!important}.hzcard{border:1px solid var(--line);border-radius:14px;padding:14px 16px;margin-top:10px}.hzcard h4{margin:0 0 6px;font-size:20px}.hzcard ul{margin:6px 0 10px;padding-left:20px}.chordgrid.four{grid-template-columns:repeat(2,minmax(0,1fr))}@media(min-width:820px){.chordgrid.four{grid-template-columns:repeat(4,minmax(0,1fr))}}.patrow{display:grid;grid-template-columns:repeat(var(--n),minmax(0,1fr));gap:4px;margin-top:4px}.patcell{display:flex;flex-direction:column;align-items:center;gap:2px}.patslot{width:100%;min-width:0;padding:10px 0;font-size:20px;font-weight:800}.patslot.beat{border-color:var(--accent)}.patslot.on{background:var(--root);color:#fff}.grpwrap{display:flex;align-items:center;gap:10px;font-weight:700;margin:-4px 0 12px}.grpwrap[hidden]{display:none}.grpwrap select{font-size:17px;font-weight:700;padding:8px 12px;flex:1;max-width:340px}.subnav .nivbtn{font-weight:700;border-width:2px}.subnav .nivbtn[aria-current]{background:var(--accent);color:var(--bg);border-color:var(--accent)}.subnav .niv{font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:var(--muted);align-self:center;margin-right:4px}
 .vxbar{position:relative;height:26px;border-radius:99px;background:var(--paper);border:1px solid var(--line);overflow:hidden;max-width:520px}
 .vxbar::before{content:"";position:absolute;top:0;bottom:0;left:45%;width:10%;background:color-mix(in srgb,var(--green) 30%,transparent)}
 .vxbar::after{content:"";position:absolute;top:0;bottom:0;left:50%;width:2px;background:var(--muted)}
@@ -226,6 +226,22 @@ label.chk input{width:18px;height:18px;accent-color:var(--accent)}
     <p style="margin:0 0 6px">Sauf entre <b>Mi et Fa</b> et entre <b>Si et Do</b> : <b>un demi-ton = 1 case</b>.</p>
     <p class="meta" style="margin:0 0 10px">Exemple sur la corde de La : La (à vide), Si (case 2), Do (case 3), Ré (case 5), Mi (case 7), Fa (case 8), Sol (case 10), La (case 12). Les cases entre deux portent un dièse ou un bémol (La♯ = Si♭).</p>
     <div class="board" id="ntTons"></div>
+  </div>
+</section>
+
+<section class="panel" id="p-metronome" aria-labelledby="h-met">
+  <h2 id="h-met">Métronome</h2>
+  <p class="lead">Règle le tempo, la mesure et la subdivision. Le premier temps de chaque mesure est accentué.</p>
+  <div class="card">
+    <div class="mtbig"><button type="button" id="mtMinus" aria-label="Moins vite">−</button><div><div class="mtbpm" id="mtBpm">80</div><div class="meta" style="text-align:center"><span id="mtUnit">à la noire</span> · <span id="mtName"></span></div></div><button type="button" id="mtPlus" aria-label="Plus vite">+</button></div>
+    <input type="range" id="mtRange" min="30" max="240" value="80" aria-label="Tempo" style="width:100%;margin:10px 0 14px">
+    <div class="row" style="flex-wrap:wrap;gap:12px">
+      <label class="f">Mesure <select id="mtSig"><option value="2">2/4</option><option value="3">3/4</option><option value="4" selected>4/4</option><option value="5">5/4</option><option value="6">6/8</option><option value="7">7/8</option><option value="12">12/8</option></select></label>
+      <label class="f">Subdivision <select id="mtSub"><option value="1">Noires</option><option value="2">Croches</option><option value="3">Triolets</option><option value="4">Doubles croches</option></select></label>
+      <label class="f">Swing <select id="mtSwing"><option value="0">Non</option><option value="1">Oui (croches ternaires)</option></select></label>
+    </div>
+    <div class="mtdots" id="mtDots"></div>
+    <div class="row" style="gap:10px;margin-top:6px"><button type="button" class="primary" id="mtGo">▶ Démarrer</button><button type="button" id="mtTap">👆 Taper le tempo</button></div>
   </div>
 </section>
 
@@ -526,6 +542,34 @@ function click(t,accent){
   const hp=ac.createBiquadFilter();hp.type='highpass';hp.frequency.value=600;
   o.connect(hp);hp.connect(g);g.connect(MASTER);o.start(t);o.stop(t+.06);
 }
+
+// ===================== Métronome =====================
+const MT={on:false,bpm:+store.get('mt-bpm',80),next:0,beat:0,sub:0,timer:null,taps:[]};
+const TEMPI=[[40,'Grave'],[60,'Largo'],[66,'Larghetto'],[76,'Adagio'],[108,'Andante'],[120,'Moderato'],[156,'Allegro'],[176,'Vivace'],[200,'Presto'],[999,'Prestissimo']];
+function mtShow(){MT.bpm=Math.max(30,Math.min(240,Math.round(MT.bpm)));$('mtBpm').textContent=MT.bpm;$('mtRange').value=MT.bpm;store.set('mt-bpm',MT.bpm);
+  $('mtName').textContent=(TEMPI.find(t=>MT.bpm<t[0])||TEMPI[TEMPI.length-1])[1];}
+function mtBeats(){const v=+$('mtSig').value;return v===6?2:v===12?4:v===7?7:v;} // 6/8 et 12/8 : battue à la noire pointée ; 7/8 : chaque croche
+function mtDots(){const sg=+$('mtSig').value,cp=sg===6||sg===12;$('mtUnit').textContent=cp?'à la noire pointée':'à la noire';$('mtSub').disabled=$('mtSwing').disabled=sg===6||sg===12||sg===7;const n=+$('mtSig').value===7?7:+$('mtSig').value===6?6:+$('mtSig').value===12?12:mtBeats();$('mtDots').innerHTML=[...Array(n)].map((_,i)=>`<i class="${i===0?'acc':''}"></i>`).join('');}
+function mtInit(){if($('mtGo').dataset.ok){mtShow();return;}$('mtGo').dataset.ok=1;
+  $('mtSig').value=store.get('mt-sig','4');$('mtSub').value=store.get('mt-sub','1');$('mtSwing').value=store.get('mt-swing','0');
+  $('mtMinus').onclick=()=>{MT.bpm--;mtShow();};$('mtPlus').onclick=()=>{MT.bpm++;mtShow();};$('mtRange').oninput=e=>{MT.bpm=+e.target.value;mtShow();};
+  ['mtSig','mtSub','mtSwing'].forEach(id=>$(id).onchange=()=>{store.set(id.replace('mt','mt-').toLowerCase(),$(id).value);mtDots();});
+  $('mtGo').onclick=()=>MT.on?mtStop():mtStart();
+  $('mtTap').onclick=()=>{const t=performance.now();MT.taps=MT.taps.filter(x=>t-x<2500);MT.taps.push(t);if(MT.taps.length>=2){const d=(MT.taps[MT.taps.length-1]-MT.taps[0])/(MT.taps.length-1);MT.bpm=60000/d;mtShow();}};
+  mtShow();mtDots();}
+function mtStart(){const ac=ctx();if(!ac)return;MT.on=true;MT.next=ac.currentTime+.08;MT.beat=0;MT.sub=0;$('mtGo').textContent='■ Arrêter';mtTick();}
+function mtStop(){MT.on=false;clearTimeout(MT.timer);if($('mtGo'))$('mtGo').textContent='▶ Démarrer';document.querySelectorAll('#mtDots i').forEach(x=>x.classList.remove('on'));}
+function mtTick(){if(!MT.on)return;const ac=ctx(),sig=+$('mtSig').value,eighth=sig===6||sig===7||sig===12;
+  while(MT.next<ac.currentTime+.12){
+    // pulsation : noire (ou croche pour 6/8, 7/8, 12/8, avec accent sur chaque groupe de 3)
+    const pulses=eighth?sig:mtBeats(),dur=eighth?60/MT.bpm/(sig===7?2:3)*(sig===7?1:1):60/MT.bpm;
+    const subN=eighth?1:+$('mtSub').value,sw=!eighth&&$('mtSwing').value==='1'&&subN===2;
+    const subLen=sw?(MT.sub===0?dur*2/3:dur/3):dur/subN,b=MT.beat,t=MT.next;
+    if(MT.sub===0){const acc=b===0,mid=eighth&&sig!==7&&b%3===0;click(t,acc||mid);
+      const i=b;setTimeout(()=>{if(!MT.on)return;document.querySelectorAll('#mtDots i').forEach((x,j)=>x.classList.toggle('on',j===i));},Math.max(0,(t-ac.currentTime)*1000));}
+    else{const o=ac.createOscillator(),g=ac.createGain();o.type='square';o.frequency.value=900;g.gain.setValueAtTime(0,t);g.gain.linearRampToValueAtTime(.08,t+.002);g.gain.exponentialRampToValueAtTime(.0008,t+.03);o.connect(g);g.connect(MASTER);o.start(t);o.stop(t+.05);}
+    MT.next+=subLen;MT.sub++;if(MT.sub>=(sw?2:subN)){MT.sub=0;MT.beat=(MT.beat+1)%pulses;}}
+  MT.timer=setTimeout(mtTick,25);}
 
 // ===================== Manche (SVG) =====================
 let LEFTY=store.get('main','D')==='G';
@@ -2042,7 +2086,8 @@ const MENU=[
    {id:'enc-maj7',g:'Arpèges avec enclosures',st:'Maj7',niv:4,enc:true,t:'Maj7 avec enclosures',view:'schema',chap:'arp-maj7',filt:'nodiag'},{id:'enc-7',g:'Arpèges avec enclosures',st:'7',niv:4,enc:true,t:'7 avec enclosures',view:'schema',chap:'arp-7',filt:'nodiag'},
    {id:'enc-m7',g:'Arpèges avec enclosures',st:'m7',niv:4,enc:true,t:'m7 avec enclosures',view:'schema',chap:'arp-m7',filt:'nodiag'},{id:'enc-m7b5',g:'Arpèges avec enclosures',st:'m7♭5',niv:4,enc:true,t:'m7♭5 avec enclosures',view:'schema',chap:'arp-m7b5',filt:'nodiag'},
    {id:'enc-dim7',g:'Arpèges avec enclosures',st:'dim7',niv:4,enc:true,t:'dim7 avec enclosures',view:'schema',chap:'arp-dim7',filt:'nodiag'}]},
- {id:'accordeur',t:'Accordeur',items:[{id:'guitare',t:'Accordeur',view:'accordeur'}]}
+ {id:'accordeur',t:'Accordeur',items:[{id:'guitare',t:'Accordeur',view:'accordeur'}]},
+ {id:'metronome',t:'Métronome',items:[{id:'tempo',t:'Métronome',view:'metronome'}]}
 ];
 // ==== Parcours en 7 niveaux : chaque niveau réunit accords, gammes et arpèges, les révisions des niveaux précédents et les jeux ====
 const LEVELS=[null,
@@ -2076,7 +2121,7 @@ const LEVELS=[null,
     mat[n].filter(c=>c.view==='schema'&&(c.cat==='G'||c.cat==='R')&&!c.enc).forEach(c=>items.push({...c,id:'n'+n+'-pat-'+c.cat.toLowerCase()+'-'+c.src,g:'Motifs libres',st:c.t,niv:n,pgen:true,view:'schema'}));}
   const at=MENU.findIndex(t=>t.id==='gammes');MENU.splice(at,3,{id:'niveaux',t:'Niveaux',items});}
 let CUR={},EMB=false; // EMB : le jeu au métronome est affiché sous le schéma (gammes, modes, arpèges)
-const PANELS=['schemas','jeux','notes','presentation','mains','accordeur'];
+const PANELS=['schemas','jeux','notes','presentation','mains','accordeur','metronome'];
 function findRoute(h){
   for(const tab of MENU){if(h===tab.id)return [tab,tab.items[0]];for(const it of tab.items)if(h===tab.id+'-'+it.id)return [tab,it];}
   return null;
@@ -2111,6 +2156,7 @@ function route(){
   if(it.view==='game'){GI=Math.max(0,GAMES.findIndex(g=>g.id===it.game));renderGame();}
   if(it.view==='notes')renderNotes();
   if(it.view!=='accordeur')tunerStop();
+  if(it.view==='metronome')mtInit();else mtStop();
   if(PENDING)hzApply(it);
   window.scrollTo(0,0);
 }
