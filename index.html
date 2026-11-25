@@ -276,8 +276,8 @@ label.chk input{width:18px;height:18px;accent-color:var(--accent)}
     <p>La gamme majeure et l'accord majeur servent de référence. Les autres gammes et modes utilisent les mêmes intervalles, avec d'éventuelles altérations. S'entraîner à visualiser et à entendre ces différences est ce qui les rend vraiment utiles.</p>
     <h3>Écouter, jouer, analyser</h3>
     <p>Pour assimiler pleinement une gamme ou un accord, il est utile d'entraîner son oreille à le reconnaître, et de prendre le temps de l'analyser : d'où vient-il, sur quel accord sonne-t-il, pourquoi fonctionne-t-il ici.</p>
-    <h3>Un parcours en 7 niveaux</h3>
-    <p>L'onglet <b>Niveaux</b> réunit, à chaque étape, les accords, les gammes et les arpèges qui vont ensemble, puis les jeux au métronome. Les motifs (tierces, groupes de notes, sauts…) arrivent peu à peu : au niveau 1, on joue simplement la gamme et l'accord. Les <b>Révisions</b> permettent de reprendre tout ce qui a été vu aux niveaux précédents, avec les motifs du niveau où l'on est. Le bouton <b>🎲 Exercice au hasard</b> propose un exercice tiré dans le niveau.</p>
+    <h3>Un parcours en 8 niveaux</h3>
+    <p>Les onglets <b>Gammes</b>, <b>Accords</b> et <b>Arpèges</b> ont chacun 8 niveaux qui se correspondent : au niveau 4, par exemple, les modes de la gamme majeure, les accords à 4 sons et les arpèges à 4 sons. Les motifs (tierces, groupes de notes, sauts…) arrivent peu à peu : au niveau 1, on joue simplement la gamme et l'accord. Les <b>Révisions</b> reprennent ce qui a été vu aux niveaux précédents, avec les motifs du niveau où l'on est, et le bouton <b>🎲 Exercice au hasard</b> propose un exercice tiré dans le niveau.</p>
     <h3>Un pas après l'autre</h3>
     <p>Il n'est pas utile de chercher à tout apprendre d'un coup. Mieux vaut approfondir peu de choses que survoler beaucoup de pages.</p>
     <h3>Se faire accompagner</h3>
@@ -297,7 +297,7 @@ label.chk input{width:18px;height:18px;accent-color:var(--accent)}
 </section>
 
 </main>
-<footer class="meta" style="max-width:1100px;margin:0 auto;padding:0 20px 30px;text-align:center">Boîte à outils guitare · <span id="appver">version 91</span><br><span style="font-size:12px">Sons : guitare et basse <a href="https://www.karoryfer.com/karoryfer-samples" target="_blank" rel="noopener">Karoryfer Samples</a> (CC BY 3.0) · batterie Virtuosity Drums et contrebasse <a href="https://github.com/sgossner/VSCO-2-CE" target="_blank" rel="noopener">VSCO 2</a> (CC0)</span></footer>
+<footer class="meta" style="max-width:1100px;margin:0 auto;padding:0 20px 30px;text-align:center">Boîte à outils guitare · <span id="appver">version 92</span><br><span style="font-size:12px">Sons : guitare et basse <a href="https://www.karoryfer.com/karoryfer-samples" target="_blank" rel="noopener">Karoryfer Samples</a> (CC BY 3.0) · batterie Virtuosity Drums et contrebasse <a href="https://github.com/sgossner/VSCO-2-CE" target="_blank" rel="noopener">VSCO 2</a> (CC0)</span></footer>
 <script src="contenu/formes.js"></script>
 <script>
 'use strict';
@@ -1385,7 +1385,7 @@ const GAMES=[
   }},
  {id:'hasard',titre:'Exercice au hasard',
   desc:'L\'appli tire un exercice du niveau : une gamme, un arpège ou des accords, avec un motif, des valeurs, une tonalité et un tempo. Les révisions des niveaux précédents reviennent de temps en temps.',
-  opts:()=>{const n=VIEW.niv||1,L=LEVELS[n]||LEVELS[1];return `<div style="grid-column:1/-1;flex-basis:100%"><p style="margin:0 0 4px"><b>Niveau ${n} · ${esc(L.t)}</b></p><p class="meta" style="margin:0 0 10px">${esc(L.d)}</p><button type="button" class="primary" id="hzDice">🎲 Tirer un exercice</button><div id="hzBox"></div></div>`;},
+  opts:()=>{const n=VIEW.niv||1,tt=(LT[CURTAB&&CURTAB.id]||[])[n]||'';return `<div style="grid-column:1/-1;flex-basis:100%"><p style="margin:0 0 10px"><b>Niveau ${n} · ${esc(tt)}</b></p><button type="button" class="primary" id="hzDice">🎲 Tirer un exercice</button><div id="hzBox"></div></div>`;},
   after:()=>{$('hzDice').onclick=hzShow;},
   make:()=>({sub:1,items:()=>({}),len:()=>4,label:()=>'',step:()=>{}})},
  {id:'harmo',titre:'La gamme et ses accords',
@@ -1459,12 +1459,13 @@ const GAMES=[
 // ---- Exercice au hasard : on tire un exercice du niveau (révisions comprises), puis on l'ouvre et on le lance ----
 let PENDING=null;
 const HZ_KEYS=[0,2,4,5,7,9]; // C, D, E, F, G, A pour les premiers niveaux
-function hzDraw(n){const R=a=>a[Math.floor(Math.random()*a.length)],tab=MENU.find(t=>t.id==='niveaux'),its=tab.items.filter(x=>x.niv===n&&x.view==='schema'&&!x.pgen);
+function hzDraw(n){const R=a=>a[Math.floor(Math.random()*a.length)],tab=CURTAB,cat=tab.id==='accords'?'A':tab.id==='gammes'?'G':'R',its=cat==='A'?[]:tab.items.filter(x=>x.niv===n&&x.view==='schema'&&!x.pgen);
   const pool=[];its.forEach(x=>{const w=x.rev?1:3;for(let i=0;i<w;i++)pool.push(x);});
-  for(let i=0;i<4;i++)pool.push('accords');if(n>=8)for(let i=0;i<8;i++)pool.push('harmo');for(let i=0;i<(n<=2?3:1);i++)pool.push('patterns');
-  const pick=R(pool),key=n<=2?R(HZ_KEYS):Math.floor(Math.random()*12),bpm=[0,60,66,72,80,88,96,104][n]+R([-6,0,6]);
+  if(cat==='A'){for(let i=0;i<4;i++)pool.push('accords');for(let i=0;i<(n<=2?3:1);i++)pool.push('patterns');}
+  if(n>=8)for(let i=0;i<(cat==='A'?4:its.length+2);i++)pool.push('harmo');
+  const pick=R(pool),key=n<=2?R(HZ_KEYS):Math.floor(Math.random()*12),bpm=[0,60,66,72,80,88,96,104,96][n]+R([-6,0,6]);
   const ords=n===1?['same']:n===2?['same','q']:['same','q','c','r'],ordN={same:'même tonalité',q:'cycle des quartes',c:'un demi-ton plus haut à chaque fois',r:'tonalité au hasard'};
-  if(pick==='harmo'){const sc=R(['maj','maj','mel','harm']),ty=R(['tri','q']),mat=R(['acc','arp','gam']),ord=R(ords);
+  if(pick==='harmo'){const sc=R(['maj','maj','mel','harm']),ty=R(['tri','q']),mat=({A:'acc',G:'gam',R:'arp'})[cat],ord=R(ords);
     return {id:'n'+n+'-harmo-'+mat,bpm:bpm-16,store:{gHSc:sc,gHTy:ty,gHMat:mat,gKey:String(key),gOrd:ord},titre:'La gamme et ses accords : '+HSC[sc].n.toLowerCase(),
       lignes:[mat==='gam'?'La gamme jouée à partir de chaque degré':(ty==='q'?'Accords à 4 sons':'Triades')+', on joue '+({acc:'les accords',arp:'les arpèges'})[mat],'Tonalité de départ : '+KEYS[key][0],'Après chaque tour : '+ordN[ord],(bpm-16)+' à la noire']};}
   if(pick==='patterns'){const type=R(['strum','pick']);
@@ -1482,7 +1483,7 @@ function hzDraw(n){const R=a=>a[Math.floor(Math.random()*a.length)],tab=MENU.fin
 function hzShow(){const n=VIEW.niv||1,E=hzDraw(n);$('hzBox').innerHTML=`<div class="hzcard"><h4>${esc(E.titre)}</h4><ul>${E.lignes.map(l=>`<li>${esc(l)}</li>`).join('')}</ul><div class="row"><button type="button" class="primary" id="hzGo">▶ C'est parti</button><button type="button" id="hzAgain">🎲 Un autre</button></div></div>`;
   $('hzAgain').onclick=hzShow;
   $('hzGo').onclick=()=>{Object.entries(E.store).forEach(([k,v])=>store.set('g-'+k,v));BPMV=Math.max(40,Math.min(200,E.bpm));store.set('bpm',BPMV);showTempo();
-    PENDING=E;if(location.hash==='#niveaux-'+E.id)route();else location.hash='niveaux-'+E.id;};}
+    PENDING=E;if(location.hash==='#'+CURTAB.id+'-'+E.id)route();else location.hash=CURTAB.id+'-'+E.id;};}
 function hzApply(it){const E=PENDING;if(!E||E.id!==it.id)return;PENDING=null;
   if(E.regen){const P=patGet();P.slots=patRand(P.type,VIEW.niv||1);patSet(P);if($('patEd'))$('patEd').innerHTML=patHTML(P);}
   if(E.shape){SH.key=E.key;store.set('key',E.key);const s=$('shSel');if(s&&s.options.length){SH.f=+s.options[Math.floor(Math.random()*s.options.length)].value;}
@@ -2092,9 +2093,9 @@ const MENU=[
 // ==== Parcours en 7 niveaux : chaque niveau réunit accords, gammes et arpèges, les révisions des niveaux précédents et les jeux ====
 const LEVELS=[null,
  {t:'Premiers accords, premières gammes',d:'Accords ouverts majeurs et mineurs, power chords ; gamme majeure et pentatonique mineure ; arpèges majeurs et mineurs sur une octave. On joue la gamme et l\'accord simplement, sans motif.',
-  A:['ouverts-maj','ouverts-min','power'],G:[['premieres','g1']],R:['maj-min']},
+  A:['ouverts-maj','ouverts-min','power'],G:[['premieres','g1','Gamme majeure et pentatonique mineure']],R:['maj-min']},
  {t:'Les 7, les octaves et les jazz shells',d:'Accords ouverts de 7, octaves, jazz shells ; gamme mineure naturelle, pentatonique majeure ; arpèges de 7. Premiers motifs : la gamme par groupes de 3.',
-  A:['ouverts-7','octaves','shell-6','shell-5'],G:[['premieres','g2']],R:['7-octave']},
+  A:['ouverts-7','octaves','shell-6','shell-5'],G:[['premieres','g2','Mineure naturelle, pentatonique majeure, chromatique']],R:['7-octave']},
  {t:'Le barré',d:'Positions transposables majeures et mineures, triades sur les cordes 1 à 4 ; les pentatoniques sur tout le manche ; arpèges majeurs et mineurs en position complète. Motifs : tierces, groupes de 4.',
   A:['positions','triades','triades-min'],G:[['penta',null,'Les pentatoniques, position par position'],['penta',null,'Pentatonique mineure sur tout le manche','manche-pmin'],['penta',null,'Pentatonique majeure sur tout le manche','manche-pmaj']],R:['maj-min-complet']},
  {t:'Les accords à 4 sons',d:'Positions transposables à 4 sons, renversements ; les modes de la gamme majeure ; arpèges Maj7, 7, m7, m7♭5, dim7 en position. Motifs : tierces alternées, arpège brisé par 3.',
@@ -2110,16 +2111,24 @@ const LEVELS=[null,
 {const T=id=>MENU.find(t=>t.id===id),SRC={A:T('accords'),G:T('gammes'),R:T('arpeges')},CAT={A:'Accords',G:'Gammes',R:'Arpèges'},items=[],mat={};
   const clone=(k,spec,n)=>{const [id,filt,lab,vsel,over]=Array.isArray(spec)?spec:[spec];const o=SRC[k].items.find(x=>x.id===id);if(!o)return null;
     const c={...o};delete c.g;delete c.st;delete c.niv;c.t=lab||o.t;if(filt)c.filt=filt;if(vsel)c.vsel=vsel;if(over)Object.assign(c,over);c.cat=k;c.src=id+(filt?'-'+filt:'')+(vsel?'-'+vsel:'')+(over&&over.gfilt?'-'+over.gfilt:'');return c;};
-  for(let n=1;n<LEVELS.length;n++){const L=LEVELS[n];mat[n]=[];
-    ['A','G','R'].forEach(k=>L[k].forEach(sp=>{const c=clone(k,sp,n);if(!c)return;mat[n].push(c);items.push({...c,id:'n'+n+'-'+k.toLowerCase()+'-'+c.src,g:CAT[k],st:c.t,niv:n});}));
-    for(let m=1;m<n;m++)mat[m].forEach(c=>items.push({...c,id:'n'+n+'-rev-'+c.cat.toLowerCase()+'-'+c.src,g:'Révisions',st:CAT[c.cat]+' · '+c.t,og:'Niveau '+m,niv:n,rev:m}));
-    if(n===8)items.splice(items.findIndex(x=>x.niv===8),0,{id:'n8-harmo-gam',niv:8,t:'Gammes par degrés',view:'game',game:'harmo',hmat:'gam'},{id:'n8-harmo-acc',niv:8,t:'Accords par degrés',view:'game',game:'harmo',hmat:'acc'},{id:'n8-harmo-arp',niv:8,t:'Arpèges par degrés',view:'game',game:'harmo',hmat:'arp'});
-    items.push({id:'n'+n+'-hasard',niv:n,t:'🎲 Exercice au hasard',view:'game',game:'hasard'},
-      {id:'n'+n+'-enchainements',niv:n,t:'Enchaînements',view:'game',game:'accords'});
-    if(GEN_LV[n])items.push({id:'n'+n+'-generateur',niv:n,t:'Générateur d\'accords',view:'game',game:'generateur'});
-    items.push({id:'n'+n+'-patterns',niv:n,t:'Main droite',view:'game',game:'patterns'});
-    mat[n].filter(c=>c.view==='schema'&&(c.cat==='G'||c.cat==='R')&&!c.enc).forEach(c=>items.push({...c,id:'n'+n+'-pat-'+c.cat.toLowerCase()+'-'+c.src,g:'Motifs libres',st:c.t,niv:n,pgen:true,view:'schema'}));}
-  const at=MENU.findIndex(t=>t.id==='gammes');MENU.splice(at,3,{id:'niveaux',t:'Niveaux',items});}
+  // trois onglets (Gammes, Accords, Arpèges), chacun en 8 niveaux qui se correspondent
+  const TABS={G:{id:'gammes',t:'Gammes'},A:{id:'accords',t:'Accords'},R:{id:'arpeges',t:'Arpèges'}},out={G:[],A:[],R:[]};
+  for(let n=1;n<LEVELS.length;n++){const L=LEVELS[n];mat[n]={G:[],A:[],R:[]};
+    ['A','G','R'].forEach(k=>{const its=out[k];
+      L[k].forEach(sp=>{const c=clone(k,sp,n);if(!c)return;mat[n][k].push(c);its.push({...c,id:'n'+n+'-'+c.src,g:({G:'Les gammes',A:'Les accords',R:'Les arpèges'})[k],st:c.t,niv:n});});
+      if(n===8)its.push({id:'n8-harmo-'+({G:'gam',A:'acc',R:'arp'})[k],niv:8,t:({G:'Gammes par degrés',A:'Accords par degrés',R:'Arpèges par degrés'})[k],view:'game',game:'harmo',hmat:({G:'gam',A:'acc',R:'arp'})[k]});
+      for(let m=1;m<n;m++)mat[m][k].forEach(c=>its.push({...c,id:'n'+n+'-rev-'+c.src,g:'Révisions',st:c.t,og:'Niveau '+m,niv:n,rev:m}));
+      its.push({id:'n'+n+'-hasard',niv:n,t:'🎲 Exercice au hasard',view:'game',game:'hasard'});
+      if(k==='A'){its.push({id:'n'+n+'-enchainements',niv:n,t:'Enchaînements',view:'game',game:'accords'});
+        if(GEN_LV[n])its.push({id:'n'+n+'-generateur',niv:n,t:'Générateur d\'accords',view:'game',game:'generateur'});
+        its.push({id:'n'+n+'-patterns',niv:n,t:'Main droite',view:'game',game:'patterns'});}
+      else mat[n][k].filter(c=>c.view==='schema'&&!c.enc).forEach(c=>its.push({...c,id:'n'+n+'-pat-'+c.src,g:'Motifs libres',st:c.t,niv:n,pgen:true,view:'schema'}));});}
+  const at=MENU.findIndex(t=>t.id==='gammes');MENU.splice(at,3,{...TABS.G,items:out.G},{...TABS.A,items:out.A},{...TABS.R,items:out.R});}
+// intitulés des niveaux, onglet par onglet
+const LT={gammes:[null,'Gamme majeure et pentatonique mineure','Mineure naturelle, pentatonique majeure, chromatique','Les pentatoniques sur tout le manche','Les modes de la gamme majeure','Majeure et mineure sur tout le manche','Mineur mélodique et mineur harmonique','Gammes symétriques','La gamme à partir de chaque degré'],
+  accords:[null,'Accords ouverts et power chords','Accords de 7, octaves et jazz shells','Le barré et les triades','Accords à 4 sons et renversements','Triades sur tout le manche, accords enrichis','Triades ouvertes et drop 2','Drop 3, drop 2+4, basse étrangère','Les accords de la gamme (harmonisation)'],
+  arpeges:[null,'Majeur et mineur sur une octave','Arpèges de 7','Majeur et mineur en position complète','Arpèges à 4 sons','Sur 3 octaves en diagonale','Arpèges du mineur mélodique','Enclosures','Les arpèges de la gamme (harmonisation)']};
+let CURTAB=null;
 let CUR={},EMB=false; // EMB : le jeu au métronome est affiché sous le schéma (gammes, modes, arpèges)
 const PANELS=['schemas','jeux','notes','presentation','mains','accordeur','metronome'];
 function findRoute(h){
@@ -2129,13 +2138,13 @@ function findRoute(h){
 function route(){
   const h=location.hash.slice(1);
   const r=findRoute(h)||findRoute(store.get('route','presentation'))||[MENU[0],MENU[0].items[0]];
-  const [tab,it]=r;store.set('route',tab.id+'-'+it.id);
+  const [tab,it]=r;CURTAB=tab;store.set('route',tab.id+'-'+it.id);
   if(RUN.on)stopGame();
   CUR=it;if(it.g)store.set('grp-'+tab.id+'-'+it.g,it.id);if(it.niv)store.set('lvl-'+tab.id+'-'+it.niv,it.id);
   $('tabs').innerHTML=MENU.map(t=>`<a href="#${t.id}-${(t===tab?it:t.items[0]).id}"${t===tab?' aria-current="page"':''}>${esc(t.t)}</a>`).join('');
   // onglets à niveaux : on ne voit que les pages du niveau choisi ; un clic sur un niveau l'ouvre
   const lv=it.niv,vis=lv?tab.items.filter(x=>x.niv===lv):tab.items,levels=[...new Set(tab.items.map(x=>x.niv).filter(Boolean))];
-  $('subnav').innerHTML=tab.items.length<2?'':(levels.length?`<label class="nivsel"><select aria-label="Niveau" onchange="location.hash=this.value">${levels.map(n=>`<option value="${tab.id}-${(tab.items.find(x=>x.niv===n&&x.id===store.get('lvl-'+tab.id+'-'+n,''))||tab.items.find(x=>x.niv===n)).id}"${n===lv?' selected':''}>Niveau ${n}${typeof LEVELS!=='undefined'&&LEVELS[n]?' · '+esc(LEVELS[n].t):''}</option>`).join('')}</select></label>`+'<span class="brk"></span>':'')+vis.filter((x,i)=>!x.g||!i||vis[i-1].g!==x.g).map((x,i,a)=>{const mem=x.g&&vis.find(y=>y.g===x.g&&y.id===store.get('grp-'+tab.id+'-'+x.g,'')),to=mem||x,on=x.g?it.g===x.g&&it.niv===x.niv:x===it;
+  $('subnav').innerHTML=tab.items.length<2?'':(levels.length?`<label class="nivsel"><select aria-label="Niveau" onchange="location.hash=this.value">${levels.map(n=>`<option value="${tab.id}-${(tab.items.find(x=>x.niv===n&&x.id===store.get('lvl-'+tab.id+'-'+n,''))||tab.items.find(x=>x.niv===n)).id}"${n===lv?' selected':''}>Niveau ${n}${LT[tab.id]&&LT[tab.id][n]?' · '+esc(LT[tab.id][n]):''}</option>`).join('')}</select></label>`+'<span class="brk"></span>':'')+vis.filter((x,i)=>!x.g||!i||vis[i-1].g!==x.g).map((x,i,a)=>{const mem=x.g&&vis.find(y=>y.g===x.g&&y.id===store.get('grp-'+tab.id+'-'+x.g,'')),to=mem||x,on=x.g?it.g===x.g&&it.niv===x.niv:x===it;
     return (x.view==='game'&&i&&a[i-1].view!=='game'?'<span class="sep"></span>':'')+`<a href="#${tab.id}-${to.id}" class="${x.view==='game'?'jeu':''}"${on?' aria-current="page"':''}>${esc(x.g||x.t)}</a>`;}).join('');
   // menu déroulant à l'intérieur d'une page de groupe (majeurs, mineurs, 7…)
   {const sib=it.g?vis.filter(y=>y.g===it.g):[];
@@ -2148,7 +2157,7 @@ function route(){
   Object.assign(VIEW,{filt:FILTS[it.filt]||null,grps:it.grps||null,grid:it.grid||null,gridIntro:it.intro||'',niv:it.niv||0,gmode:it.gmode||'',gridFilt:{c6:f=>/corde 6/.test(f.groupe),c5:f=>/corde 5/.test(f.groupe),pw:f=>/^Power/.test(f.n),oct:f=>/^Octave/.test(f.n),majmin:f=>f.acc===''||f.acc==='m',quatre:f=>!(f.acc===''||f.acc==='m'),q6:f=>!(f.acc===''||f.acc==='m')&&/corde 6/.test(f.n),q5:f=>!(f.acc===''||f.acc==='m')&&/corde 5/.test(f.n),mi:f=>/Mi/.test(f.groupe||''),la:f=>/La/.test(f.groupe||'')}[it.gfilt]||(()=>true)});
   const panel=it.view==='schema'?'schemas':it.view==='game'?'jeux':it.view;
   PANELS.forEach(p=>$('p-'+p).classList.toggle('on',p===panel));
-  if(it.view==='schema'){const ci=CHAPITRES.findIndex(c=>c.id===it.chap);if(ci!==SH.ch||SH.item!==it){SH.ch=ci;SH.f=0;}SH.item=it;$('h-sch').textContent=(it.niv?'Niveau '+it.niv+' · ':'')+(it.g?it.g+(it.g!=='Révisions'?'':'')+' · '+it.st:it.t);
+  if(it.view==='schema'){const ci=CHAPITRES.findIndex(c=>c.id===it.chap);if(ci!==SH.ch||SH.item!==it){SH.ch=ci;SH.f=0;}SH.item=it;$('h-sch').textContent=(it.niv?'Niveau '+it.niv+' · ':'')+(it.g==='Révisions'?'Révision · '+it.st:it.g==='Motifs libres'?'Motifs libres · '+it.st:it.st||it.t);
     const C=CHAPITRES[SH.ch];EMB=isScaleChap(C)||C.id.startsWith('arp-');
     if(EMB){$('shPlayBox').appendChild($('gCard'));GI=GAMES.findIndex(g=>g.id==='gamme');}else $('p-jeux').appendChild($('gCard'));
     $('shGame').hidden=EMB||C.id==='slash'||!!it.grid;fillShapes();renderShape();if(EMB)renderGame();}
@@ -2181,7 +2190,7 @@ function start(){
   $('cordeSel').value=store.get('corde','5');$('etSel').value=store.get('etendue','pos');
   $('cordeSel').onchange=()=>{store.set('corde',$('cordeSel').value);renderShape();};$('etSel').onchange=()=>{store.set('etendue',$('etSel').value);renderShape();};
   $('shPlay').onclick=playShape;
-  $('shGame').onclick=()=>{const c=CHAPITRES[SH.ch],f=c.formes[SH.f],nv=VIEW.niv||1;let to='#niveaux-n'+nv+'-enchainements';
+  $('shGame').onclick=()=>{const c=CHAPITRES[SH.ch],f=c.formes[SH.f],nv=VIEW.niv||1;let to='#accords-n'+nv+'-enchainements';
     if(['gammes','modes'].includes(c.id)){to='#gammes-rythme';store.set('g-gShape',c.id+':'+SH.f);store.set('g-gKey',SH.key);}
     else if(c.id.startsWith('arp')){to='#arpeges-rythme';store.set('g-gShape',c.id+':'+SH.f);store.set('g-gKey',SH.key);}
     else if(f.acc!==undefined&&['shell','positions','enrichis','cordes1234'].includes(c.id)){store.set('g-gFam',c.id+':'+f.acc.replace('♭5','b5'));store.set('g-gKey',SH.key);if(f.groupe)store.set('g-gGrp',f.groupe);store.set('g-gInv',restName(f.n)||'*');}
