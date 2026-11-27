@@ -297,7 +297,7 @@ label.chk input{width:18px;height:18px;accent-color:var(--accent)}
 </section>
 
 </main>
-<footer class="meta" style="max-width:1100px;margin:0 auto;padding:0 20px 30px;text-align:center">Boîte à outils guitare · <span id="appver">version 106</span><br><span style="font-size:12px">Sons : guitare et basse <a href="https://www.karoryfer.com/karoryfer-samples" target="_blank" rel="noopener">Karoryfer Samples</a> (CC BY 3.0) · batterie Virtuosity Drums et contrebasse <a href="https://github.com/sgossner/VSCO-2-CE" target="_blank" rel="noopener">VSCO 2</a> (CC0)</span></footer>
+<footer class="meta" style="max-width:1100px;margin:0 auto;padding:0 20px 30px;text-align:center">Boîte à outils guitare · <span id="appver">version 107</span><br><span style="font-size:12px">Sons : guitare et basse <a href="https://www.karoryfer.com/karoryfer-samples" target="_blank" rel="noopener">Karoryfer Samples</a> (CC BY 3.0) · batterie Virtuosity Drums et contrebasse <a href="https://github.com/sgossner/VSCO-2-CE" target="_blank" rel="noopener">VSCO 2</a> (CC0)</span></footer>
 <script src="contenu/formes.js"></script>
 <script>
 'use strict';
@@ -1439,7 +1439,7 @@ const GAMES=[
   opts:()=>opt('gHSc','Gamme',[['maj','Gamme majeure'],['mel','Mineur mélodique'],['harm','Mineur harmonique']],'maj')
     +(CUR.hmat==='gam'?'':opt('gHTy','Accords',CUR.quart?[['tri','En quartes à 3 sons (1 4 7)'],['q','En quartes à 4 sons (1 4 7 3)']]:[['tri','Triades (3 sons)'],['q','Accords à 4 sons']],'tri'))
     +(CUR.hmat?'':opt('gHMat','On joue',[['acc','Les accords'],['arp','Les arpèges'],['gam','La gamme de chaque degré']],'acc'))
-    +(CUR.hmat==='arp'?opt('gHPos','Doigté',[['p6','En position, départ corde 6'],['p5','En position, départ corde 5'],['6','Le long de la corde 6'],['5','Le long de la corde 5'],['4','Le long de la corde 4'],['3','Le long de la corde 3'],['2','Le long de la corde 2 (3 sons)']],'p6'):'')
+    +(CUR.hmat==='arp'?opt('gHPos','Doigté',[['p6','En position, départ corde 6'],['p5','En position, départ corde 5'],['6','Le long de la corde 6'],['5','Le long de la corde 5'],['4','Le long de la corde 4'],['3','Le long de la corde 3'],['2','Le long de la corde 2']],'p6'):'')
     +(CUR.hmat==='arp'?opt('gHMot','Motif',[['up','Arpège montant (jusqu\'à la 7e), puis degré suivant'],['alt','Alterné : un degré en montant, le suivant en descendant'],['ar','Aller-retour sur chaque degré'],['b3','Arpège brisé par 3'],['b4','Arpège brisé par 4']],'up'):'')
     +(CUR.hmat&&CUR.hmat!=='acc'?opt('gHSub','Valeurs',[[1,'Noires'],[2,'Croches'],[3,'Triolets'],[4,'Doubles croches']],2):'')
     +opt('gKey','Tonalité de départ',KEYS.map((k,i)=>[i,k[0]]),0)
@@ -1614,8 +1614,9 @@ document.addEventListener('click',e=>{const b=e.target.closest&&e.target.closest
   if(e.target.closest&&e.target.closest('#gPDice')){const P=patGet();P.slots=patRand(P.type,VIEW.niv||1);patSet(P);$('patEd').innerHTML=patHTML(P);}});
 // corde 2 : seulement pour les accords à 3 sons
 // corde 2 : seulement pour les accords à 3 sons, sans les motifs brisés (ils monteraient au-delà de la corde 1)
-const h2=()=>{const t=$('gHTy'),P=$('gHPos'),o=P&&P.querySelector('option[value="2"]');if(!t||!o)return;o.disabled=t.value==='q';
-  if(o.disabled&&P.value==='2'){P.value='3';P.dispatchEvent(new Event('change',{bubbles:true}));}
+const h2=()=>{const t=$('gHTy'),P=$('gHPos');if(!t||!P)return;let o=P.querySelector('option[value="2"]');
+  if(t.value==='q'){if(o){const was=P.value==='2';o.remove();if(was){P.value='3';P.dispatchEvent(new Event('change',{bubbles:true}));}}}
+  else if(!o){o=document.createElement('option');o.value='2';o.textContent='Le long de la corde 2';P.appendChild(o);}
   const M=$('gHMot');if(M){const c2=P.value==='2';[...M.options].forEach(x=>{if(/^b[34]$/.test(x.value))x.disabled=c2;});if(c2&&/^b[34]$/.test(M.value)){M.value='up';M.dispatchEvent(new Event('change',{bubbles:true}));}}};
 document.addEventListener('change',e=>{if(e.target&&(e.target.id==='gHTy'||e.target.id==='gHPos'))h2();});
 document.addEventListener('change',e=>{if(e.target&&e.target.id==='gPType'){store.set('g-gPType',e.target.value);$('patEd').innerHTML=patHTML(patGet());}});
