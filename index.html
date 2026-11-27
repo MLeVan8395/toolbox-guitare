@@ -297,7 +297,7 @@ label.chk input{width:18px;height:18px;accent-color:var(--accent)}
 </section>
 
 </main>
-<footer class="meta" style="max-width:1100px;margin:0 auto;padding:0 20px 30px;text-align:center">Boîte à outils guitare · <span id="appver">version 107</span><br><span style="font-size:12px">Sons : guitare et basse <a href="https://www.karoryfer.com/karoryfer-samples" target="_blank" rel="noopener">Karoryfer Samples</a> (CC BY 3.0) · batterie Virtuosity Drums et contrebasse <a href="https://github.com/sgossner/VSCO-2-CE" target="_blank" rel="noopener">VSCO 2</a> (CC0)</span></footer>
+<footer class="meta" style="max-width:1100px;margin:0 auto;padding:0 20px 30px;text-align:center">Boîte à outils guitare · <span id="appver">version 108</span><br><span style="font-size:12px">Sons : guitare et basse <a href="https://www.karoryfer.com/karoryfer-samples" target="_blank" rel="noopener">Karoryfer Samples</a> (CC BY 3.0) · batterie Virtuosity Drums et contrebasse <a href="https://github.com/sgossner/VSCO-2-CE" target="_blank" rel="noopener">VSCO 2</a> (CC0)</span></footer>
 <script src="contenu/formes.js"></script>
 <script>
 'use strict';
@@ -1467,7 +1467,7 @@ const GAMES=[
         if(mat==='acc'){notes=harmVoicing(D,b,r,four);line=notes;}
         else{const T=[0,1,2].map(o=>D.ints.map(x=>x+12*o)).flat(),ST=[0,1,2].map(o=>[0,2,4,6].slice(0,nT).map(x=>x+7*o)).flat(),idx=mat==='arp'?ARPI(D.d):IDX,MD=D.mode.concat([12]);
           const ms=mat==='arp'?idx.map(i=>R0+T[i]):idx.map(i=>R0+MD[i]);
-          const SM=four?[0,1,1,2,2,3,3,4,4,5,5,6]:[0,1,1,2,3,3,4,5,5,6]; // le long d'une corde : 1 note, puis 2 sur la corde suivante (puis 1 pour la 7e)
+          const SM=four?(b===3?[0,1,2,2,3,3,3,3,3,3,3,3]:[0,1,1,2,2,3,3,4,4,5,5,6]):[0,1,1,2,3,3,4,5,5,6]; // 4 sons depuis la corde 3 : 1 note (corde 3), 1 (corde 2), 2 (corde 1) // le long d'une corde : 1 note, puis 2 sur la corde suivante (puis 1 pour la 7e)
           const along=mat==='arp'&&/^[2-6]$/.test(hp),uq=[...new Set(ms)].sort((a,b)=>a-b);
           const pl=along&&uq.every(m=>T.indexOf(m-R0)>=0)?uq.map(m=>{const s2=Math.max(1,b-SM[T.indexOf(m-R0)]);return {s:s2,fr:m-TUN[s2],m};}):harmLine(uq,b,POS?W:r,mat==='arp'?3:2,MINF),byM={};pl.forEach(p=>byM[p.m]=p); // gammes : majeur sur la fondamentale, main en position (cases r-1 à r+2)
           line=ms.map((m,k)=>{const semi=m-R0,step=mat==='arp'?ST[T.indexOf(semi)]:MD.indexOf(semi);
@@ -1617,7 +1617,7 @@ document.addEventListener('click',e=>{const b=e.target.closest&&e.target.closest
 const h2=()=>{const t=$('gHTy'),P=$('gHPos');if(!t||!P)return;let o=P.querySelector('option[value="2"]');
   if(t.value==='q'){if(o){const was=P.value==='2';o.remove();if(was){P.value='3';P.dispatchEvent(new Event('change',{bubbles:true}));}}}
   else if(!o){o=document.createElement('option');o.value='2';o.textContent='Le long de la corde 2';P.appendChild(o);}
-  const M=$('gHMot');if(M){const c2=P.value==='2';[...M.options].forEach(x=>{if(/^b[34]$/.test(x.value))x.disabled=c2;});if(c2&&/^b[34]$/.test(M.value)){M.value='up';M.dispatchEvent(new Event('change',{bubbles:true}));}}};
+  const M=$('gHMot');if(M){const no=v=>P.value==='2'?/^b[34]$/.test(v):P.value==='3'&&t.value==='q'&&v==='b4';[...M.options].forEach(x=>{x.disabled=no(x.value);});if(no(M.value)){M.value='up';M.dispatchEvent(new Event('change',{bubbles:true}));}}};
 document.addEventListener('change',e=>{if(e.target&&(e.target.id==='gHTy'||e.target.id==='gHPos'))h2();});
 document.addEventListener('change',e=>{if(e.target&&e.target.id==='gPType'){store.set('g-gPType',e.target.value);$('patEd').innerHTML=patHTML(patGet());}});
 const G12=['Cordes 1, 2, 3','Cordes 2, 3, 4'],G34=['Cordes 3, 4, 5','Cordes 4, 5, 6'];
