@@ -297,7 +297,7 @@ label.chk input{width:18px;height:18px;accent-color:var(--accent)}
 </section>
 
 </main>
-<footer class="meta" style="max-width:1100px;margin:0 auto;padding:0 20px 30px;text-align:center">Boîte à outils guitare · <span id="appver">version 100</span><br><span style="font-size:12px">Sons : guitare et basse <a href="https://www.karoryfer.com/karoryfer-samples" target="_blank" rel="noopener">Karoryfer Samples</a> (CC BY 3.0) · batterie Virtuosity Drums et contrebasse <a href="https://github.com/sgossner/VSCO-2-CE" target="_blank" rel="noopener">VSCO 2</a> (CC0)</span></footer>
+<footer class="meta" style="max-width:1100px;margin:0 auto;padding:0 20px 30px;text-align:center">Boîte à outils guitare · <span id="appver">version 101</span><br><span style="font-size:12px">Sons : guitare et basse <a href="https://www.karoryfer.com/karoryfer-samples" target="_blank" rel="noopener">Karoryfer Samples</a> (CC BY 3.0) · batterie Virtuosity Drums et contrebasse <a href="https://github.com/sgossner/VSCO-2-CE" target="_blank" rel="noopener">VSCO 2</a> (CC0)</span></footer>
 <script src="contenu/formes.js"></script>
 <script>
 'use strict';
@@ -1324,7 +1324,7 @@ const GAMES=[
         // tonalité du tour : même tonalité, cycle des quartes, un demi-ton plus haut, ou au hasard (jamais deux fois la même de suite)
         const key=jj?prevK:nxt==='q'?KEYQ[(startQ+tn)%12]:nxt==='c'?KEYS[(k0+tn)%12]:nxt==='r'?(tn===0?KEYS[k0]:(()=>{let k;do{k=KEYS[Math.floor(Math.random()*12)];}while(k===prevK);return k;})()):KEYS[k0];
         const fx=CHN?CHN.L[jj]:f0,fp=CHN&&CHN.t==='pos'?fx:CHN?shapeForPlay(fx,ch):f;let pl;
-        if(CHN&&CHN.t==='pos'){if(!jj)flo=0;pl=place(fp,key,{floor:flo});if(Math.max(...pl.map(x=>x.fr))>20)pl=place(fp,key,{floor:Math.max(0,flo-12)});flo=Math.min(...pl.map(x=>x.fr))+1;}
+        if(CHN&&CHN.t==='pos'){if(!jj)flo=0;pl=place(fp,key,{floor:flo});if(Math.max(...pl.map(x=>x.fr))>17)pl=place(fp,key,{floor:Math.max(0,flo-12)});flo=Math.min(...pl.map(x=>x.fr))+1;}
         else if(EPOS&&pos!==null){ // enclosures en position : on garde les mêmes cases, en changeant de forme (fondamentale sur une autre corde) si besoin
           const C=ch.formes.filter(x=>!x.diag&&x.acc===f0.acc&&x.groupe===f0.groupe&&(!VIEW.filt||VIEW.filt(x))).map(x=>place(x,key,{near:pos0,floor:1}));
           pl=C.reduce((a,c)=>Math.abs(c.reduce((u,v)=>u+v.fr,0)/c.length-pos0)<Math.abs(a.reduce((u,v)=>u+v.fr,0)/a.length-pos0)?c:a);}
@@ -1454,10 +1454,12 @@ const GAMES=[
     const IDX=sub===3?[0,1,2,3,4,5,6,7,6,5,4,3,2,1,0]:[0,1,2,3,4,5,6,7];
     const LEN=mat==='acc'?4:mat==='arp'?ARPI(0).length:IDX.length;
     const hp=mat==='arp'?(val('gHPos')||'pos'):'';
-    const tourOf=n=>{if(tours[n])return tours[n];const key=keys(n),H=harmDegrees(sc,key,four,qrt),f6=mod(H.T[1]-TUN[6],12),B=/^[3-6]$/.test(hp)?+hp:f6<=5?6:5,r00=mod(H.T[1]-TUN[B],12)+(/^[3-6]$/.test(hp)&&mod(H.T[1]-TUN[B],12)<3?12:0);
+    const tourOf=n=>{if(tours[n])return tours[n];const key=keys(n),H=harmDegrees(sc,key,four,qrt),f6=mod(H.T[1]-TUN[6],12),B=/^[3-6]$/.test(hp)?+hp:f6<=5?6:5,r00=mod(H.T[1]-TUN[B],12);
       // en position : la main reste autour de la tonique (cases P-1 à P+3), chaque arpège part de sa fondamentale la plus grave dans la position
       let prevM=-1;
       const degs=H.deg.map(D=>{let b=B,r=r00+(D.oct?12:HSC[sc].st[D.d]),W=r;
+        // le long d'une corde : on reste entre les cases 2 et 15 (octave en dessous si ça monte trop, au-dessus si la tierce passerait sous la corde à vide)
+        if(/^[3-6]$/.test(hp)){while(r>15)r-=12;while(r<2)r+=12;W=r;}
         if(hp==='pos'){const pc=mod(H.T[1]+(D.oct?0:HSC[sc].st[D.d]),12),P=r00,C=[];
           [6,5,4,3,2].forEach(s2=>{const x=mod(pc-TUN[s2],12);[x,x+12].forEach(fr=>{if(fr>=Math.max(0,P-1)&&fr<=P+3)C.push({s:s2,fr,m:TUN[s2]+fr});});});
           C.sort((a,c)=>a.m-c.m);const pk=C.find(c=>c.m>prevM)||C[C.length-1];if(pk){b=pk.s;r=pk.fr;W=P;prevM=pk.m;}}
@@ -2216,7 +2218,8 @@ function route(){
   // onglets à niveaux : on ne voit que les pages du niveau choisi ; un clic sur un niveau l'ouvre
   const lv=it.niv,vis=lv?tab.items.filter(x=>x.niv===lv):tab.items,levels=[...new Set(tab.items.map(x=>x.niv).filter(Boolean))];
   $('subnav').innerHTML=tab.items.length<2?'':(levels.length?`<label class="nivsel"><select aria-label="Niveau" onchange="location.hash=this.value">${levels.map(n=>`<option value="${tab.id}-${(tab.items.find(x=>x.niv===n&&x.id===store.get('lvl-'+tab.id+'-'+n,''))||tab.items.find(x=>x.niv===n)).id}"${n===lv?' selected':''}>Niveau ${n}${LT[tab.id]&&LT[tab.id][n]?' · '+esc(LT[tab.id][n]):''}</option>`).join('')}</select></label>`+'<span class="brk"></span>':'')+vis.filter((x,i)=>!x.g||!i||vis[i-1].g!==x.g).map((x,i,a)=>{const mem=x.g&&vis.find(y=>y.g===x.g&&y.id===store.get('grp-'+tab.id+'-'+x.g,'')),to=mem||x,on=x.g?it.g===x.g&&it.niv===x.niv:x===it;
-    return (x.view==='game'&&i&&a[i-1].view!=='game'?'<span class="sep"></span>':'')+`<a href="#${tab.id}-${to.id}" class="${x.view==='game'?'jeu':''}"${on?' aria-current="page"':''}>${esc(((c=>c.length===1&&c[0]===x)(a.filter(y=>!/-hasard$/.test(y.id))))?(x.view==='game'?'Exercice':'Schéma'):x.g||x.t)}</a>`;}).join('');
+    const solo=(c=>c.length===1&&c[0]===x)(a.filter(y=>!/-hasard$/.test(y.id)));if(solo&&on)return '';
+    return (x.view==='game'&&i&&a[i-1].view!=='game'?'<span class="sep"></span>':'')+`<a href="#${tab.id}-${to.id}" class="${x.view==='game'?'jeu':''}"${on?' aria-current="page"':''}>${esc(solo?(x.view==='game'?'Exercice':'Schéma'):x.g||x.t)}</a>`;}).join('').replace(/^((?:<label[\s\S]*?<\/label><span class="brk"><\/span>)?)<span class="sep"><\/span>/,'$1');
   // menu déroulant à l'intérieur d'une page de groupe (majeurs, mineurs, 7…)
   {const sib=it.g?vis.filter(y=>y.g===it.g):[];
    $('grpWrap').hidden=sib.length<2;let og='';$('grpSel').innerHTML=sib.map(y=>{const h=y.og&&y.og!==og?(og?'</optgroup>':'')+`<optgroup label="${esc(og=y.og)}">`:'';return h+`<option value="${tab.id}-${y.id}"${y===it?' selected':''}>${esc(y.st)}</option>`;}).join('')+(og?'</optgroup>':'');}
