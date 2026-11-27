@@ -297,7 +297,7 @@ label.chk input{width:18px;height:18px;accent-color:var(--accent)}
 </section>
 
 </main>
-<footer class="meta" style="max-width:1100px;margin:0 auto;padding:0 20px 30px;text-align:center">Boîte à outils guitare · <span id="appver">version 105</span><br><span style="font-size:12px">Sons : guitare et basse <a href="https://www.karoryfer.com/karoryfer-samples" target="_blank" rel="noopener">Karoryfer Samples</a> (CC BY 3.0) · batterie Virtuosity Drums et contrebasse <a href="https://github.com/sgossner/VSCO-2-CE" target="_blank" rel="noopener">VSCO 2</a> (CC0)</span></footer>
+<footer class="meta" style="max-width:1100px;margin:0 auto;padding:0 20px 30px;text-align:center">Boîte à outils guitare · <span id="appver">version 106</span><br><span style="font-size:12px">Sons : guitare et basse <a href="https://www.karoryfer.com/karoryfer-samples" target="_blank" rel="noopener">Karoryfer Samples</a> (CC BY 3.0) · batterie Virtuosity Drums et contrebasse <a href="https://github.com/sgossner/VSCO-2-CE" target="_blank" rel="noopener">VSCO 2</a> (CC0)</span></footer>
 <script src="contenu/formes.js"></script>
 <script>
 'use strict';
@@ -1439,7 +1439,7 @@ const GAMES=[
   opts:()=>opt('gHSc','Gamme',[['maj','Gamme majeure'],['mel','Mineur mélodique'],['harm','Mineur harmonique']],'maj')
     +(CUR.hmat==='gam'?'':opt('gHTy','Accords',CUR.quart?[['tri','En quartes à 3 sons (1 4 7)'],['q','En quartes à 4 sons (1 4 7 3)']]:[['tri','Triades (3 sons)'],['q','Accords à 4 sons']],'tri'))
     +(CUR.hmat?'':opt('gHMat','On joue',[['acc','Les accords'],['arp','Les arpèges'],['gam','La gamme de chaque degré']],'acc'))
-    +(CUR.hmat==='arp'?opt('gHPos','Doigté',[['p6','En position, départ corde 6'],['p5','En position, départ corde 5'],['6','Le long de la corde 6'],['5','Le long de la corde 5']],'p6'):'')
+    +(CUR.hmat==='arp'?opt('gHPos','Doigté',[['p6','En position, départ corde 6'],['p5','En position, départ corde 5'],['6','Le long de la corde 6'],['5','Le long de la corde 5'],['4','Le long de la corde 4'],['3','Le long de la corde 3'],['2','Le long de la corde 2 (3 sons)']],'p6'):'')
     +(CUR.hmat==='arp'?opt('gHMot','Motif',[['up','Arpège montant (jusqu\'à la 7e), puis degré suivant'],['alt','Alterné : un degré en montant, le suivant en descendant'],['ar','Aller-retour sur chaque degré'],['b3','Arpège brisé par 3'],['b4','Arpège brisé par 4']],'up'):'')
     +(CUR.hmat&&CUR.hmat!=='acc'?opt('gHSub','Valeurs',[[1,'Noires'],[2,'Croches'],[3,'Triolets'],[4,'Doubles croches']],2):'')
     +opt('gKey','Tonalité de départ',KEYS.map((k,i)=>[i,k[0]]),0)
@@ -1453,13 +1453,13 @@ const GAMES=[
     const ARPI=d=>mot==='up'?up:mot==='alt'?(d%2?[...up].reverse():up):mot==='ar'?up.concat(up.slice(1,-1).reverse()):mot==='b3'?[].concat(...up.map(i=>[i,i+1,i+2])):[].concat(...up.map(i=>[i,i+1,i+2,i+3]));
     const IDX=sub===3?[0,1,2,3,4,5,6,7,6,5,4,3,2,1,0]:[0,1,2,3,4,5,6,7];
     const LEN=mat==='acc'?4:mat==='arp'?ARPI(0).length:IDX.length;
-    const hp=mat==='arp'?(val('gHPos')||'p6'):'',POS=/^p/.test(hp),MINF=mat==='arp'?1:0; // arpèges : jamais de corde à vide
-    const tourOf=n=>{if(tours[n])return tours[n];const key=keys(n),H=harmDegrees(sc,key,four,qrt),f6=mod(H.T[1]-TUN[6],12),B=/^p?[3-6]$/.test(hp)?+hp.replace('p',''):f6<=5?6:5,r00=mod(H.T[1]-TUN[B],12)+(POS&&mod(H.T[1]-TUN[B],12)<2?12:0);
+    const hp=mat==='arp'?((v=>v==='2'&&four?'3':v)(val('gHPos')||'p6')):'',POS=/^p/.test(hp),MINF=mat==='arp'?1:0; // arpèges : jamais de corde à vide
+    const tourOf=n=>{if(tours[n])return tours[n];const key=keys(n),H=harmDegrees(sc,key,four,qrt),f6=mod(H.T[1]-TUN[6],12),B=/^p?[2-6]$/.test(hp)?+hp.replace('p',''):f6<=5?6:5,r00=mod(H.T[1]-TUN[B],12)+(POS&&mod(H.T[1]-TUN[B],12)<2?12:0);
       // en position : la main reste autour de la tonique (cases P-1 à P+3), chaque arpège part de sa fondamentale la plus grave dans la position
       let prevM=-1;
       const degs=H.deg.map(D=>{let b=B,r=r00+(D.oct?12:HSC[sc].st[D.d]),W=r;
         // le long d'une corde : octave en dessous seulement si l'arpège dépasse la case 22 ( au-dessus si la tierce passerait sous la corde à vide)
-        if(/^[3-6]$/.test(hp)){while(r<2)r+=12;W=r;}
+        if(/^[2-6]$/.test(hp)){while(r<2)r+=12;W=r;}
         if(POS){const pc=mod(H.T[1]+(D.oct?0:HSC[sc].st[D.d]),12),P=r00,C=[];
           [6,5,4,3,2].forEach(s2=>{const x=mod(pc-TUN[s2],12);[x,x+12].forEach(fr=>{if(fr>=Math.max(1,P-1)&&fr<=P+3)C.push({s:s2,fr,m:TUN[s2]+fr});});});
           C.sort((a,c)=>a.m-c.m);const pk=C.find(c=>c.m>prevM)||C[C.length-1];if(pk){b=pk.s;r=pk.fr;W=P;prevM=pk.m;}}
@@ -1468,13 +1468,13 @@ const GAMES=[
         else{const T=[0,1,2].map(o=>D.ints.map(x=>x+12*o)).flat(),ST=[0,1,2].map(o=>[0,2,4,6].slice(0,nT).map(x=>x+7*o)).flat(),idx=mat==='arp'?ARPI(D.d):IDX,MD=D.mode.concat([12]);
           const ms=mat==='arp'?idx.map(i=>R0+T[i]):idx.map(i=>R0+MD[i]);
           const SM=four?[0,1,1,2,2,3,3,4,4,5,5,6]:[0,1,1,2,3,3,4,5,5,6]; // le long d'une corde : 1 note, puis 2 sur la corde suivante (puis 1 pour la 7e)
-          const along=mat==='arp'&&/^[3-6]$/.test(hp),uq=[...new Set(ms)].sort((a,b)=>a-b);
+          const along=mat==='arp'&&/^[2-6]$/.test(hp),uq=[...new Set(ms)].sort((a,b)=>a-b);
           const pl=along&&uq.every(m=>T.indexOf(m-R0)>=0)?uq.map(m=>{const s2=Math.max(1,b-SM[T.indexOf(m-R0)]);return {s:s2,fr:m-TUN[s2],m};}):harmLine(uq,b,POS?W:r,mat==='arp'?3:2,MINF),byM={};pl.forEach(p=>byM[p.m]=p); // gammes : majeur sur la fondamentale, main en position (cases r-1 à r+2)
           line=ms.map((m,k)=>{const semi=m-R0,step=mat==='arp'?ST[T.indexOf(semi)]:MD.indexOf(semi);
             return {...byM[m],m,l:mat==='arp'?HLAB[mod(semi,12)]:labOf(mod(semi,12),mod(step,7)+1),L:(L0+step)%7};});notes=pl.map(p=>{const q=line.find(x=>x.m===p.m);return {...p,l:q.l};});}
         return {...D,b,r,notes,line,key};};
         let res=bld(b,r,W);const top=x=>Math.max(...x.notes.concat(x.line).map(q=>q.fr)),bot=x=>Math.min(...x.notes.concat(x.line).map(q=>q.fr));
-        if(/^[3-6]$/.test(hp)){if(bot(res)<MINF)res=bld(b,r+12,r+12);else if(top(res)>22&&r-12>=0){const lo=bld(b,r-12,r-12);if(bot(lo)>=MINF)res=lo;}}
+        if(/^[2-6]$/.test(hp)){if(bot(res)<MINF)res=bld(b,r+12,r+12);else if(top(res)>22&&r-12>=0){const lo=bld(b,r-12,r-12);if(bot(lo)>=MINF)res=lo;}}
         return res;});
       // chaque tour finit sur une barre de mesure : silences ajoutés après le dernier degré, la tonalité suivante part sur le temps 1
       if(mat!=='acc'){const tot=degs.reduce((a,D)=>a+D.line.length,0);degs[degs.length-1].pad=mod(-tot,4*sub);}
@@ -1612,6 +1612,12 @@ function patHTML(P){const cnt=P.n===8?['1','&','2','&','3','&','4','&']:['1','e'
 document.addEventListener('click',e=>{const b=e.target.closest&&e.target.closest('.patslot');if(b){const P=patGet(),k=+b.dataset.k,cyc=P.type==='strum'?['·','↓','↑','x']:['·','B','A','4','3','2','1'];
     P.slots[k]=cyc[(cyc.indexOf(P.slots[k])+1)%cyc.length];patSet(P);b.textContent=P.slots[k];return;}
   if(e.target.closest&&e.target.closest('#gPDice')){const P=patGet();P.slots=patRand(P.type,VIEW.niv||1);patSet(P);$('patEd').innerHTML=patHTML(P);}});
+// corde 2 : seulement pour les accords à 3 sons
+// corde 2 : seulement pour les accords à 3 sons, sans les motifs brisés (ils monteraient au-delà de la corde 1)
+const h2=()=>{const t=$('gHTy'),P=$('gHPos'),o=P&&P.querySelector('option[value="2"]');if(!t||!o)return;o.disabled=t.value==='q';
+  if(o.disabled&&P.value==='2'){P.value='3';P.dispatchEvent(new Event('change',{bubbles:true}));}
+  const M=$('gHMot');if(M){const c2=P.value==='2';[...M.options].forEach(x=>{if(/^b[34]$/.test(x.value))x.disabled=c2;});if(c2&&/^b[34]$/.test(M.value)){M.value='up';M.dispatchEvent(new Event('change',{bubbles:true}));}}};
+document.addEventListener('change',e=>{if(e.target&&(e.target.id==='gHTy'||e.target.id==='gHPos'))h2();});
 document.addEventListener('change',e=>{if(e.target&&e.target.id==='gPType'){store.set('g-gPType',e.target.value);$('patEd').innerHTML=patHTML(patGet());}});
 const G12=['Cordes 1, 2, 3','Cordes 2, 3, 4'],G34=['Cordes 3, 4, 5','Cordes 4, 5, 6'];
 // familles des enchaînements, par niveau : [clé, nom, niveau] ; « #2 » distingue les triades du niveau 2 (autres groupes de cordes)
@@ -2088,7 +2094,8 @@ function tunerInit(){
 }
 
 let GI=0;
-function renderGame(){
+function renderGame(){renderGame0();h2();}
+function renderGame0(){
   const g=GAMES[GI];NEXTWORD=['accords','generateur','grille'].includes(g.id)?'Accord suivant':'Note suivante';if(!EMB)$('gTitle').textContent=CUR.t||g.titre;$('gCardT').hidden=!EMB;$('gCardT').textContent='Jouer au métronome';$('gDesc').textContent=EMB?g.desc:(CUR.desc||g.desc);$('gOpts').innerHTML=g.opts();
   $('gStaff').hidden=!['lecture','grille','gamme','quartes','accords','generateur'].includes(g.id);$('gStaff').innerHTML='';$('gCircle').hidden=true;
   $('gCard').classList.toggle('hz',g.id==='hasard');
