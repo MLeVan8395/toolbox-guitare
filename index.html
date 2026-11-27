@@ -297,7 +297,7 @@ label.chk input{width:18px;height:18px;accent-color:var(--accent)}
 </section>
 
 </main>
-<footer class="meta" style="max-width:1100px;margin:0 auto;padding:0 20px 30px;text-align:center">Boîte à outils guitare · <span id="appver">version 102</span><br><span style="font-size:12px">Sons : guitare et basse <a href="https://www.karoryfer.com/karoryfer-samples" target="_blank" rel="noopener">Karoryfer Samples</a> (CC BY 3.0) · batterie Virtuosity Drums et contrebasse <a href="https://github.com/sgossner/VSCO-2-CE" target="_blank" rel="noopener">VSCO 2</a> (CC0)</span></footer>
+<footer class="meta" style="max-width:1100px;margin:0 auto;padding:0 20px 30px;text-align:center">Boîte à outils guitare · <span id="appver">version 103</span><br><span style="font-size:12px">Sons : guitare et basse <a href="https://www.karoryfer.com/karoryfer-samples" target="_blank" rel="noopener">Karoryfer Samples</a> (CC BY 3.0) · batterie Virtuosity Drums et contrebasse <a href="https://github.com/sgossner/VSCO-2-CE" target="_blank" rel="noopener">VSCO 2</a> (CC0)</span></footer>
 <script src="contenu/formes.js"></script>
 <script>
 'use strict';
@@ -1487,6 +1487,8 @@ const GAMES=[
     const chordAcc=D=>{const b0=55+mod(D.root[1]-7,12);return {key:D.root,name:D.name,tri:!four,pl:D.ints.map(x=>({m:b0+x,l:HLAB[mod(x,12)]}))};};
     return {sub,noClick:accSt!=='none',items:i=>{const n=Math.floor(i/8),T=tourOf(n),D=T.degs[i%8];return {i,n,T,D};},len:x=>x&&x.D&&x.D.line&&mat!=='acc'?x.D.line.length+(x.D.pad||0):LEN,label:x=>x.D.rom+' · '+x.D.name,
       show:x=>{const D=x.D;showNow(mat==='gam'?'De '+spell(D.root,'1')+' à '+spell(D.root,'1'):D.rom+'  ·  '+D.name,HSC[sc].n+' de '+(sc==='maj'?x.T.H.T[0]:x.T.H.T[0]+'m'));
+        // tonalité suivante affichée pendant tout le tour, pour avoir le temps de se préparer
+        {const ord=val('gOrd')||'same',NT=ord==='same'?null:tourOf(x.n+1);$('gNext').innerHTML=NT?'Tonalité suivante : <span class="nx">'+esc(HSC[sc].n+' de '+(sc==='maj'?NT.H.T[0]:NT.H.T[0]+'m'))+'</span>':'';}
         const frs=D.notes.map(q=>q.fr);drawBoard($('gBoard'),{from:Math.max(0,Math.min(...frs)-1),to:Math.max(Math.min(...frs)+5,Math.max(...frs)+1),notes:D.notes.map(q=>({s:q.s,fr:q.fr,m:q.m,root:q.l==='1',txt:q.l})),label:D.name});
         if(mat==='acc'||shownTour!==x.n){shownTour=x.n;drawStaffT(x.T,mat==='acc'?D.d:-1);}},
       step:(x,k,t,dur)=>{const D=x.D;
