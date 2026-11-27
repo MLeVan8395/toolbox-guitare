@@ -297,7 +297,7 @@ label.chk input{width:18px;height:18px;accent-color:var(--accent)}
 </section>
 
 </main>
-<footer class="meta" style="max-width:1100px;margin:0 auto;padding:0 20px 30px;text-align:center">Boîte à outils guitare · <span id="appver">version 101</span><br><span style="font-size:12px">Sons : guitare et basse <a href="https://www.karoryfer.com/karoryfer-samples" target="_blank" rel="noopener">Karoryfer Samples</a> (CC BY 3.0) · batterie Virtuosity Drums et contrebasse <a href="https://github.com/sgossner/VSCO-2-CE" target="_blank" rel="noopener">VSCO 2</a> (CC0)</span></footer>
+<footer class="meta" style="max-width:1100px;margin:0 auto;padding:0 20px 30px;text-align:center">Boîte à outils guitare · <span id="appver">version 102</span><br><span style="font-size:12px">Sons : guitare et basse <a href="https://www.karoryfer.com/karoryfer-samples" target="_blank" rel="noopener">Karoryfer Samples</a> (CC BY 3.0) · batterie Virtuosity Drums et contrebasse <a href="https://github.com/sgossner/VSCO-2-CE" target="_blank" rel="noopener">VSCO 2</a> (CC0)</span></footer>
 <script src="contenu/formes.js"></script>
 <script>
 'use strict';
@@ -1324,7 +1324,7 @@ const GAMES=[
         // tonalité du tour : même tonalité, cycle des quartes, un demi-ton plus haut, ou au hasard (jamais deux fois la même de suite)
         const key=jj?prevK:nxt==='q'?KEYQ[(startQ+tn)%12]:nxt==='c'?KEYS[(k0+tn)%12]:nxt==='r'?(tn===0?KEYS[k0]:(()=>{let k;do{k=KEYS[Math.floor(Math.random()*12)];}while(k===prevK);return k;})()):KEYS[k0];
         const fx=CHN?CHN.L[jj]:f0,fp=CHN&&CHN.t==='pos'?fx:CHN?shapeForPlay(fx,ch):f;let pl;
-        if(CHN&&CHN.t==='pos'){if(!jj)flo=0;pl=place(fp,key,{floor:flo});if(Math.max(...pl.map(x=>x.fr))>17)pl=place(fp,key,{floor:Math.max(0,flo-12)});flo=Math.min(...pl.map(x=>x.fr))+1;}
+        if(CHN&&CHN.t==='pos'){if(!jj)flo=0;pl=place(fp,key,{floor:flo});if(Math.max(...pl.map(x=>x.fr))>22)pl=place(fp,key,{floor:Math.max(0,flo-12)});flo=Math.min(...pl.map(x=>x.fr))+1;}
         else if(EPOS&&pos!==null){ // enclosures en position : on garde les mêmes cases, en changeant de forme (fondamentale sur une autre corde) si besoin
           const C=ch.formes.filter(x=>!x.diag&&x.acc===f0.acc&&x.groupe===f0.groupe&&(!VIEW.filt||VIEW.filt(x))).map(x=>place(x,key,{near:pos0,floor:1}));
           pl=C.reduce((a,c)=>Math.abs(c.reduce((u,v)=>u+v.fr,0)/c.length-pos0)<Math.abs(a.reduce((u,v)=>u+v.fr,0)/a.length-pos0)?c:a);}
@@ -1458,21 +1458,24 @@ const GAMES=[
       // en position : la main reste autour de la tonique (cases P-1 à P+3), chaque arpège part de sa fondamentale la plus grave dans la position
       let prevM=-1;
       const degs=H.deg.map(D=>{let b=B,r=r00+(D.oct?12:HSC[sc].st[D.d]),W=r;
-        // le long d'une corde : on reste entre les cases 2 et 15 (octave en dessous si ça monte trop, au-dessus si la tierce passerait sous la corde à vide)
-        if(/^[3-6]$/.test(hp)){while(r>15)r-=12;while(r<2)r+=12;W=r;}
+        // le long d'une corde : octave en dessous seulement si l'arpège dépasse la case 22 ( au-dessus si la tierce passerait sous la corde à vide)
+        if(/^[3-6]$/.test(hp)){while(r<2)r+=12;W=r;}
         if(hp==='pos'){const pc=mod(H.T[1]+(D.oct?0:HSC[sc].st[D.d]),12),P=r00,C=[];
           [6,5,4,3,2].forEach(s2=>{const x=mod(pc-TUN[s2],12);[x,x+12].forEach(fr=>{if(fr>=Math.max(0,P-1)&&fr<=P+3)C.push({s:s2,fr,m:TUN[s2]+fr});});});
           C.sort((a,c)=>a.m-c.m);const pk=C.find(c=>c.m>prevM)||C[C.length-1];if(pk){b=pk.s;r=pk.fr;W=P;prevM=pk.m;}}
-        const R0=TUN[b]+r,L0=D.root[2];let line,notes;
+        const bld=(b,r,W)=>{const R0=TUN[b]+r,L0=D.root[2];let line,notes;
         if(mat==='acc'){notes=harmVoicing(D,b,r,four);line=notes;}
         else{const T=[0,1,2].map(o=>D.ints.map(x=>x+12*o)).flat(),ST=[0,1,2].map(o=>[0,2,4,6].slice(0,nT).map(x=>x+7*o)).flat(),idx=mat==='arp'?ARPI(D.d):IDX,MD=D.mode.concat([12]);
           const ms=mat==='arp'?idx.map(i=>R0+T[i]):idx.map(i=>R0+MD[i]);
           const SM=four?[0,1,1,2,2,3,3,4,4,5,5,6]:[0,1,1,2,3,3,4,5,5,6]; // le long d'une corde : 1 note, puis 2 sur la corde suivante (puis 1 pour la 7e)
           const along=mat==='arp'&&/^[3-6]$/.test(hp),uq=[...new Set(ms)].sort((a,b)=>a-b);
-          const pl=along&&uq.every(m=>b-SM[T.indexOf(m-R0)]>=1)?uq.map(m=>{const s2=b-SM[T.indexOf(m-R0)];return {s:s2,fr:m-TUN[s2],m};}):harmLine(uq,b,hp==='pos'?W:r,mat==='arp'?3:2),byM={};pl.forEach(p=>byM[p.m]=p); // gammes : majeur sur la fondamentale, main en position (cases r-1 à r+2)
+          const pl=along&&uq.every(m=>T.indexOf(m-R0)>=0)?uq.map(m=>{const s2=Math.max(1,b-SM[T.indexOf(m-R0)]);return {s:s2,fr:m-TUN[s2],m};}):harmLine(uq,b,hp==='pos'?W:r,mat==='arp'?3:2),byM={};pl.forEach(p=>byM[p.m]=p); // gammes : majeur sur la fondamentale, main en position (cases r-1 à r+2)
           line=ms.map((m,k)=>{const semi=m-R0,step=mat==='arp'?ST[T.indexOf(semi)]:MD.indexOf(semi);
             return {...byM[m],m,l:mat==='arp'?HLAB[mod(semi,12)]:labOf(mod(semi,12),mod(step,7)+1),L:(L0+step)%7};});notes=pl.map(p=>{const q=line.find(x=>x.m===p.m);return {...p,l:q.l};});}
-        return {...D,b,r,notes,line,key};});
+        return {...D,b,r,notes,line,key};};
+        let res=bld(b,r,W);const top=x=>Math.max(...x.notes.concat(x.line).map(q=>q.fr));
+        if(/^[3-6]$/.test(hp)&&top(res)>22&&r-12>=0){const lo=bld(b,r-12,r-12);if(Math.min(...lo.notes.concat(lo.line).map(q=>q.fr))>=0)res=lo;}
+        return res;});
       // chaque tour finit sur une barre de mesure : silences ajoutés après le dernier degré, la tonalité suivante part sur le temps 1
       if(mat!=='acc'){const tot=degs.reduce((a,D)=>a+D.line.length,0);degs[degs.length-1].pad=mod(-tot,4*sub);}
       return tours[n]={key,H,degs,sk:staffKeyOf({n:HSC[sc].f},key)};};
