@@ -297,7 +297,7 @@ label.chk input{width:18px;height:18px;accent-color:var(--accent)}
 </section>
 
 </main>
-<footer class="meta" style="max-width:1100px;margin:0 auto;padding:0 20px 30px;text-align:center">Boîte à outils guitare · <span id="appver">version 95</span><br><span style="font-size:12px">Sons : guitare et basse <a href="https://www.karoryfer.com/karoryfer-samples" target="_blank" rel="noopener">Karoryfer Samples</a> (CC BY 3.0) · batterie Virtuosity Drums et contrebasse <a href="https://github.com/sgossner/VSCO-2-CE" target="_blank" rel="noopener">VSCO 2</a> (CC0)</span></footer>
+<footer class="meta" style="max-width:1100px;margin:0 auto;padding:0 20px 30px;text-align:center">Boîte à outils guitare · <span id="appver">version 96</span><br><span style="font-size:12px">Sons : guitare et basse <a href="https://www.karoryfer.com/karoryfer-samples" target="_blank" rel="noopener">Karoryfer Samples</a> (CC BY 3.0) · batterie Virtuosity Drums et contrebasse <a href="https://github.com/sgossner/VSCO-2-CE" target="_blank" rel="noopener">VSCO 2</a> (CC0)</span></footer>
 <script src="contenu/formes.js"></script>
 <script>
 'use strict';
@@ -350,8 +350,9 @@ const hepta=f=>{const ls=[...new Set(f.notes.map(n=>n[2]))];return ls.length===7
     return out;}
   const add=(id,nom,acc,T,span)=>{const c=C(id);if(!c||c.formes.some(f=>f.diag))return;
     c.formes.push({n:nom+', 3 octaves en diagonale',notes:diag(T,span),groupe:'Deux et trois octaves',acc,arp:true,diag:true});};
-  add('arp-tri','Majeur','',{0:'1',4:'3',7:'5'},5);
-  {const c=C('arp-tri');if(c&&!c.formes.some(f=>f.n==='Mineur, 3 octaves en diagonale'))c.formes.push({n:'Mineur, 3 octaves en diagonale',notes:diag({0:'1',3:'♭3',7:'5'},5),groupe:'Deux et trois octaves',acc:'m',arp:true,diag:true});}
+  // triades : Do Mi (corde 6), Sol (5), Do Mi (4), Sol (3), Do (2), Mi Sol Do (1)
+  {const c=C('arp-tri'),tri=t=>[[6,0,'1'],[6,4-t,t?'♭3':'3'],[5,2,'5'],[4,2,'1'],[4,6-t,t?'♭3':'3'],[3,4,'5'],[2,5,'1'],[1,4-t,t?'♭3':'3'],[1,7,'5'],[1,12,'1']];
+   if(c&&!c.formes.some(f=>f.diag))c.formes.push({n:'Majeur, 3 octaves en diagonale',notes:tri(0),groupe:'Deux et trois octaves',acc:'',arp:true,diag:true},{n:'Mineur, 3 octaves en diagonale',notes:tri(1),groupe:'Deux et trois octaves',acc:'m',arp:true,diag:true});}
   add('arp-mmaj7','m(Maj7)','m(Maj7)',{0:'1',3:'♭3',7:'5',11:'7'},4);
   add('arp-maj7s5','Maj7♯5','Maj7♯5',{0:'1',4:'3',8:'♯5',11:'7'},4);
   add('arp-7s5','7♯5','7♯5',{0:'1',4:'3',8:'♯5',10:'♭7'},4);
@@ -884,7 +885,7 @@ function custSeq(asc,off){
 const CHRMOT=[['apb','Approche chromatique par en dessous'],['aph','Approche chromatique par au-dessus'],['3b','En tierces avec broderie chromatique']].concat(ENCMOT.map(([v,t])=>[v,'Enclosure : '+t.toLowerCase()]));
 const MOTS8=MOTIFS.filter(m=>m[0]!=='3b');
 // gammes : un seul motif (la gamme simple) aux niveaux 1 à 7 ; tous les motifs au niveau 8 ; approches chromatiques et enclosures au niveau 9
-const motsOf=(it,arp,lv)=>arp?ARPMOT.filter(m=>ALV[m[0]]<=lv):it&&it.mset==='chr'?CHRMOT:it&&it.mset==='mot'?MOTS8:[['lin','Gamme simple']];
+const motsOf=(it,arp,lv)=>arp?(it&&it.mset==='mot'?ARPMOT:[['lin','Arpège simple']]):it&&it.mset==='chr'?CHRMOT:it&&it.mset==='mot'?MOTS8:[['lin','Gamme simple']];
 const MLV={lin:1,b3:2,'3':3,b4:3,'3a':4,'4':5,'4a':5,'5':6,'5a':6,'6':6,'6a':6,'7':7,'7a':7,'3b':7},ALV={lin:1,b3:4,b4:5,s:6,sa:6};
 const VALS_LV=lv=>[[1,'Noires'],[2,'Croches'],[3,'Triolets'],[4,'Doubles croches']].slice(0,lv===1?2:lv===2?3:4);
 function chainList(){const ch=CHAPITRES[SH.ch],f0=ch&&ch.formes[SH.f];if(!f0)return null;
@@ -1494,7 +1495,7 @@ const HZ_KEYS=[0,2,4,5,7,9]; // C, D, E, F, G, A pour les premiers niveaux
 function hzDraw(n){const R=a=>a[Math.floor(Math.random()*a.length)],tab=CURTAB,cat=tab.id==='accords'?'A':tab.id==='gammes'?'G':'R',its=cat==='A'?[]:tab.items.filter(x=>x.niv===n&&x.view==='schema'&&!x.pgen);
   const pool=[];its.forEach(x=>{const w=x.rev?1:3;for(let i=0;i<w;i++)pool.push(x);});
   if(cat==='A'&&n===9)pool.push('quartes');else if(cat==='A'){for(let i=0;i<4;i++)pool.push('accords');for(let i=0;i<(n<=2?3:1);i++)pool.push('patterns');}
-  if(cat==='G'?n===5:n===8)for(let i=0;i<(cat==='A'?4:its.length+2);i++)pool.push('harmo');
+  if(n===(cat==='G'?5:cat==='R'?9:8))for(let i=0;i<(cat==='A'?4:its.length+2);i++)pool.push('harmo');
   const pick=R(pool),key=n<=2?R(HZ_KEYS):Math.floor(Math.random()*12),bpm=[0,60,66,72,80,88,96,104,96,92][n]+R([-6,0,6]);
   const ords=n===1?['same']:n===2?['same','q']:['same','q','c','r'],ordN={same:'même tonalité',q:'cycle des quartes',c:'un demi-ton plus haut à chaque fois',r:'tonalité au hasard'};
   if(pick==='quartes'){const sc=R(['maj','maj','mel','harm']),ty=R(['tri','q']),ord=R(ords);
@@ -1510,7 +1511,7 @@ function hzDraw(n){const R=a=>a[Math.floor(Math.random()*a.length)],tab=CURTAB,c
     const len=R(n<=2?[8,16]:n<=4?[4,8]:[2,4]),ord=R(ords);
     return {id:'n'+n+'-enchainements',bpm,store:{gFam:fam[0],gLen:String(len),gOrd:ord,gKey:String(key)},
       titre:'Accords : '+fam[1],lignes:['Enchaînements au métronome','Tonalité de départ : '+KEYS[key][0],'Ordre : '+ordN[ord],LENS.find(l=>l[0]===len)[1],bpm+' à la noire']};}
-  const arp=pick.cat==='R',M=motsOf(pick,arp,n),neu=arp?M.filter(m=>ALV[m[0]]===n):[];
+  const arp=pick.cat==='R',M=motsOf(pick,arp,n),neu=[];
   const mot=pick.enc?R(ENCMOT):(neu.length&&Math.random()<.5?R(neu):R(M)),V=pick.enc?[[3,'Triolets']]:pick.mset==='chr'?[[2,'Croches'],[3,'Triolets'],[4,'Doubles croches']]:VALS_LV(n),sub=Math.random()<.5?V[V.length-1]:R(V),nxt=R(ords==='x'?[]:['same'].concat(ords.slice(1)));
   return {id:pick.id,bpm,shape:true,key,store:{gMot:mot[0],gSub:String(sub[0]),gNxt:nxt==='same'?'same':nxt},
     titre:(arp?'Arpège':'Gamme')+' : '+pick.t,
@@ -2133,9 +2134,9 @@ const LEVELS=[null,
  {t:'Premiers accords, premières gammes',d:'Accords ouverts majeurs et mineurs, power chords ; gamme majeure et pentatonique mineure ; arpèges majeurs et mineurs sur une octave. On joue la gamme et l\'accord simplement, sans motif.',
   A:['ouverts-maj','ouverts-min','power'],G:[['premieres','g1','Gamme majeure et pentatonique mineure']],R:['maj-min']},
  {t:'Les 7, les octaves et les jazz shells',d:'Accords ouverts de 7, octaves, jazz shells ; gamme mineure naturelle, pentatonique majeure ; arpèges de 7. Premiers motifs : la gamme par groupes de 3.',
-  A:['ouverts-7','octaves','shell-6','shell-5'],G:[['premieres','g2','Mineure naturelle, pentatonique majeure, chromatique']],R:['7-octave']},
+  A:['ouverts-7','octaves','shell-6','shell-5'],G:[['premieres','g2','Mineure naturelle, pentatonique majeure, chromatique']],R:[['7-octave',null,'Arpège 7']]},
  {t:'Le barré',d:'Positions transposables majeures et mineures, triades sur les cordes 1 à 4 ; les pentatoniques sur tout le manche ; arpèges majeurs et mineurs en position complète. Motifs : tierces, groupes de 4.',
-  A:['positions','triades','triades-min'],G:[['penta','pmin','Pentatonique mineure','manche-pmin'],['penta','pmaj','Pentatonique majeure','manche-pmaj']],R:['maj-min-complet']},
+  A:['positions','triades','triades-min'],G:[['penta','pmin','Pentatonique mineure','manche-pmin'],['penta','pmaj','Pentatonique majeure','manche-pmaj']],R:[['maj-min-complet','pcomp','Majeur et mineur en position complète']]},
  {t:'Les accords à 4 sons',d:'Positions transposables à 4 sons, renversements ; les modes de la gamme majeure ; arpèges Maj7, 7, m7, m7♭5, dim7 en position. Motifs : tierces alternées, arpège brisé par 3.',
   A:[['positions-4',null,'Positions à 4 sons, fondamentale corde 6',null,{gmode:'',gfilt:'q6',intro:'Toutes les natures d\'accords à 4 sons, fondamentale sur la corde 6. Choisis la tonalité.'}],['positions-4',null,'Positions à 4 sons, fondamentale corde 5',null,{gmode:'',gfilt:'q5',intro:'Toutes les natures d\'accords à 4 sons, fondamentale sur la corde 5. Choisis la tonalité.'}],['renversements',null,'Positions à 4 sons, fondamentale corde 4',null,{chap:'pos4',gmode:'',gfilt:'c4',intro:'Toutes les natures d\'accords à 4 sons, fondamentale sur la corde 4 (cordes 4 à 1). Choisis la tonalité.'}],'renversements'],G:[['modes']],R:[['maj7','nodiag'],['7','nodiag'],['m7','nodiag'],['m7b5','nodiag'],['dim7','nodiag']]},
  {t:'Tout le manche',d:'Triades sur les cordes 3 à 6, accords enrichis ; la gamme majeure et la mineure naturelle sur tout le manche (7 positions) ; arpèges sur 3 octaves en diagonale. Motifs : quartes, arpège brisé par 4.',
@@ -2143,9 +2144,11 @@ const LEVELS=[null,
  {t:'Triades ouvertes, drop 2 et mineur mélodique',d:'Triades ouvertes, drop 2 ; les modes du mineur mélodique et du mineur harmonique ; les arpèges issus du mineur mélodique. Motifs : quintes, sixtes, arpèges avec sauts.',
   A:['triades-ouv','triades-ouv-min','triades-ouv-dim','drop2'],G:[['melodique',null,'Mineur mélodique et ses modes'],['harmonique',null,'Mineur harmonique et ses modes']],R:['mmaj7','maj7s5','7s11','7s5']},
  {t:'Jazz avancé',d:'Drop 3, drop 2+4, triades avec basse étrangère ; gammes symétriques ; arpèges avec enclosures. Tous les motifs, dont les septièmes et les broderies chromatiques.',
-  A:['drop3','drop24','slash'],G:[['symetriques']],R:['enc-maj7','enc-7','enc-m7','enc-m7b5','enc-dim7']},
+  A:['drop3','drop24','slash'],G:[['symetriques']],R:[...[['maj-min-complet','pcomp','Majeur et mineur'],['maj7','nodiag','Maj7'],['7','nodiag','7'],['m7','nodiag','m7'],['m7b5','nodiag','m7♭5'],['dim7','nodiag','dim7']].map(([i,f,t])=>[i,f,t,null,{mset:'mot',g:'Motifs : majeur, mineur et accords à 4 sons'}]),
+    ...[['mmaj7','m(Maj7)'],['maj7s5','Maj7♯5'],['7s11','7♯11'],['7s5','7♯5']].map(([i,t])=>[i,'nodiag',t,null,{mset:'mot',g:'Motifs : arpèges du mineur mélodique'}]),
+    ...[['maj-min-complet','pcomp','Majeur et mineur'],['maj7','nodiag','Maj7'],['7','nodiag','7'],['m7','nodiag','m7'],['m7b5','nodiag','m7♭5'],['dim7','nodiag','dim7'],['mmaj7','nodiag','m(Maj7)'],['maj7s5','nodiag','Maj7♯5'],['7s11','nodiag','7♯11'],['7s5','nodiag','7♯5']].map(([i,f,t])=>[i,f,t,null,{pgen:true,gen:1,g:'Générateur de motifs'}])]},
  {t:'Harmonisation des gammes',d:'On monte la gamme degré par degré avec ses accords, ses arpèges ou ses modes : gamme majeure, mineur mélodique, mineur harmonique, en triades puis en accords à 4 sons. Tout le matériau des niveaux précédents reste en révision.',
-  A:[],R:[],G:[['modes',null,'Gamme majeure et ses modes',null,{mset:'mot'}],['melodique',null,'Mineur mélodique et ses modes',null,{mset:'mot'}],['harmonique',null,'Mineur harmonique et ses modes',null,{mset:'mot'}],['penta','pent5','Pentatoniques',null,{mset:'mot'}],['symetriques',null,'Gammes symétriques',null,{mset:'mot'}],
+  A:[],R:['enc-maj7','enc-7','enc-m7','enc-m7b5','enc-dim7'],G:[['modes',null,'Gamme majeure et ses modes',null,{mset:'mot'}],['melodique',null,'Mineur mélodique et ses modes',null,{mset:'mot'}],['harmonique',null,'Mineur harmonique et ses modes',null,{mset:'mot'}],['penta','pent5','Pentatoniques',null,{mset:'mot'}],['symetriques',null,'Gammes symétriques',null,{mset:'mot'}],
     ...[['modes','Gamme majeure et ses modes'],['melodique','Mineur mélodique et ses modes'],['harmonique','Mineur harmonique et ses modes'],['penta','Pentatoniques','pent5'],['symetriques','Gammes symétriques']].map(([id,t,fl])=>[id,fl||null,t,null,{pgen:true,g:'Générateur de motifs',gen:1}])]},
  {t:'Approches chromatiques et enclosures',d:'Chaque note de la gamme approchée par un demi-ton (par en dessous, par au-dessus), broderies chromatiques et enclosures.',
   A:[],R:[],G:[['modes',null,'Gamme majeure et ses modes',null,{mset:'chr'}],['melodique',null,'Mineur mélodique et ses modes',null,{mset:'chr'}],['harmonique',null,'Mineur harmonique et ses modes',null,{mset:'chr'}],['penta','pent5','Pentatoniques',null,{mset:'chr'}]]}];
@@ -2156,11 +2159,11 @@ const LEVELS=[null,
   const TABS={G:{id:'gammes',t:'Gammes'},A:{id:'accords',t:'Accords'},R:{id:'arpeges',t:'Arpèges'}},out={G:[],A:[],R:[]};
   // Gammes : 9 niveaux (harmonisation au niveau 5, motifs au niveau 8, approches chromatiques au niveau 9) ; Accords et Arpèges : 8 niveaux
   for(let n=1;n<LEVELS.length;n++){const L=LEVELS[n];mat[n]={G:[],A:[],R:[]};
-    ['A','G','R'].forEach(k=>{const its=out[k];if(k==='R'&&n>8)return;
+    ['A','G','R'].forEach(k=>{const its=out[k];
       // gammes : chaque gamme a sa propre page ; accords et arpèges : une page avec un menu déroulant
-      L[k].forEach(sp=>{const c=clone(k,sp,n);if(!c)return;mat[n][k].push(c);its.push({...c,id:'n'+n+'-'+c.src,g:c.g!==undefined?c.g:k==='G'?null:({A:'Les accords',R:'Les arpèges'})[k],st:c.t,niv:n});});
-      const hn=k==='G'?5:8;
-      if(n===hn)its.push({id:'n'+hn+'-harmo-'+({G:'gam',A:'acc',R:'arp'})[k],niv:hn,t:({G:'La gamme à partir de chaque degré',A:'Accords par degrés',R:'Arpèges par degrés'})[k],view:'game',game:'harmo',hmat:({G:'gam',A:'acc',R:'arp'})[k]});
+      L[k].forEach(sp=>{const c=clone(k,sp,n);if(!c)return;mat[n][k].push(c);its.push({...c,id:'n'+n+'-'+c.src,g:c.g!==undefined?c.g:k==='A'?'Les accords':null,st:c.t,niv:n});});
+      const hn=k==='G'?5:k==='R'?9:8;
+      if(n===hn)its.push({id:'n'+hn+'-harmo-'+({G:'gam',A:'acc',R:'arp'})[k],niv:hn,t:({G:'La gamme à partir de chaque degré',A:'Accords par degrés',R:'Arpèges degré par degré'})[k],view:'game',game:'harmo',hmat:({G:'gam',A:'acc',R:'arp'})[k]});
       if(k==='A'&&n===9)its.push({id:'n9-quartes',niv:9,t:'Accords en quartes par degrés',view:'game',game:'harmo',hmat:'acc',quart:true,desc:'On monte la gamme degré par degré, avec sur chaque degré un accord en quartes : on empile les quartes de la gamme (Do Fa Si, puis Ré Sol Do…), à 3 sons (1 4 7) ou à 4 sons (1 4 7 3). Les quartes justes et la quarte augmentée (sur le IV) se jouent sur des cordes voisines. Gamme majeure, mineur mélodique ou mineur harmonique.'});
       its.push({id:'n'+n+'-hasard',niv:n,t:'🎲 Exercice au hasard',view:'game',game:'hasard'});
       if(k==='A'&&n<9){its.push({id:'n'+n+'-enchainements',niv:n,t:'Enchaînements',view:'game',game:'accords'});
@@ -2170,7 +2173,7 @@ const LEVELS=[null,
 // intitulés des niveaux, onglet par onglet
 const LT={gammes:[null,'Gamme majeure et pentatonique mineure','Mineure naturelle, pentatonique majeure, chromatique','Les pentatoniques sur tout le manche','Les modes de la gamme majeure','La gamme à partir de chaque degré','Mineur mélodique, mineur harmonique et leurs modes','Gammes symétriques','Les motifs : intervalles, triades, alternés, générateur','Approches chromatiques et enclosures'],
   accords:[null,'Accords ouverts et power chords','Accords de 7, octaves et jazz shells','Le barré : positions transposables et triades','Accords à 4 sons et renversements','Triades sur tout le manche, accords enrichis','Triades ouvertes et drop 2','Drop 3, drop 2+4, triades avec basse étrangère','Accords par degrés','Accords en quartes (3 et 4 sons)'],
-  arpeges:[null,'Majeur et mineur sur une octave','Arpèges de 7','Majeur et mineur en position complète','Arpèges à 4 sons','Sur 3 octaves en diagonale','Arpèges du mineur mélodique','Enclosures','Les arpèges de la gamme (harmonisation)']};
+  arpeges:[null,'Majeur et mineur sur une octave','Arpège 7','Majeur et mineur en position complète','Arpèges à 4 sons','Sur 3 octaves en diagonale (3 et 4 sons)','Arpèges issus du mineur mélodique','Les motifs et le générateur','Enclosures','Arpèges degré par degré']};
 let CURTAB=null;
 let CUR={},EMB=false; // EMB : le jeu au métronome est affiché sous le schéma (gammes, modes, arpèges)
 const PANELS=['schemas','jeux','notes','presentation','mains','accordeur','metronome'];
@@ -2196,7 +2199,7 @@ function route(){
   const FILTS={majmin:f=>f.acc===''||f.acc==='m',quatre:f=>!(f.acc===''||f.acc==='m'),
     g1:f=>['Gamme majeure','Pentatonique mineure'].includes(f.n),g2:f=>!['Gamme majeure','Pentatonique mineure'].includes(f.n),diag:f=>!!f.diag,
     oct:f=>f.groupe==='Une octave',oct65:f=>f.groupe==='Une octave'&&/corde [65]$/.test(f.n),full:f=>f.groupe==='Position complète'||!!f.diag,nodiag:f=>!f.diag,
-    gmaj:f=>f.groupe==='Modes de la gamme majeure',gmm:f=>f.groupe==='Modes du mineur mélodique',gmh:f=>f.groupe==='Modes du mineur harmonique',gsym:f=>f.groupe==='Gammes symétriques',pmin:f=>/^Pentatonique mineure(, position \d \(| en diagonale)/.test(f.n),pmaj:f=>/^Pentatonique majeure(, position \d \(| en diagonale)/.test(f.n),pent5:f=>/^Pentatonique \S+, position \d \(/.test(f.n)};
+    gmaj:f=>f.groupe==='Modes de la gamme majeure',gmm:f=>f.groupe==='Modes du mineur mélodique',gmh:f=>f.groupe==='Modes du mineur harmonique',gsym:f=>f.groupe==='Gammes symétriques',pmin:f=>/^Pentatonique mineure(, position \d \(| en diagonale)/.test(f.n),pmaj:f=>/^Pentatonique majeure(, position \d \(| en diagonale)/.test(f.n),pcomp:f=>f.groupe==='Position complète',pent5:f=>/^Pentatonique \S+, position \d \(/.test(f.n)};
   Object.assign(VIEW,{filt:FILTS[it.filt]||null,grps:it.grps||null,grid:it.grid||null,gridIntro:it.intro||'',niv:it.niv||0,gmode:it.gmode||'',gridFilt:{c6:f=>/corde 6/.test(f.groupe),c5:f=>/corde 5/.test(f.groupe),pw:f=>/^Power/.test(f.n),oct:f=>/^Octave/.test(f.n),majmin:f=>f.acc===''||f.acc==='m',quatre:f=>!(f.acc===''||f.acc==='m'),q6:f=>!(f.acc===''||f.acc==='m')&&/corde 6/.test(f.n),q5:f=>!(f.acc===''||f.acc==='m')&&/corde 5/.test(f.n),c4:()=>true,mi:f=>/Mi/.test(f.groupe||''),la:f=>/La/.test(f.groupe||'')}[it.gfilt]||(()=>true)});
   const panel=it.view==='schema'?'schemas':it.view==='game'?'jeux':it.view;
   PANELS.forEach(p=>$('p-'+p).classList.toggle('on',p===panel));
