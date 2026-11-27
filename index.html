@@ -297,7 +297,7 @@ label.chk input{width:18px;height:18px;accent-color:var(--accent)}
 </section>
 
 </main>
-<footer class="meta" style="max-width:1100px;margin:0 auto;padding:0 20px 30px;text-align:center">Boîte à outils guitare · <span id="appver">version 96</span><br><span style="font-size:12px">Sons : guitare et basse <a href="https://www.karoryfer.com/karoryfer-samples" target="_blank" rel="noopener">Karoryfer Samples</a> (CC BY 3.0) · batterie Virtuosity Drums et contrebasse <a href="https://github.com/sgossner/VSCO-2-CE" target="_blank" rel="noopener">VSCO 2</a> (CC0)</span></footer>
+<footer class="meta" style="max-width:1100px;margin:0 auto;padding:0 20px 30px;text-align:center">Boîte à outils guitare · <span id="appver">version 97</span><br><span style="font-size:12px">Sons : guitare et basse <a href="https://www.karoryfer.com/karoryfer-samples" target="_blank" rel="noopener">Karoryfer Samples</a> (CC BY 3.0) · batterie Virtuosity Drums et contrebasse <a href="https://github.com/sgossner/VSCO-2-CE" target="_blank" rel="noopener">VSCO 2</a> (CC0)</span></footer>
 <script src="contenu/formes.js"></script>
 <script>
 'use strict';
@@ -771,6 +771,7 @@ function rhythmItems(wr,sub,padSlots,kt,sig,b0,i0){
     const cur=st[n.p]!==undefined?st[n.p]:(sig?sigAltOf(sig,L):0),showAcc=n.a!==cur;st[n.p]=n.a;
     items.push({i:i0+items.length,p:n.p,a:n.a,name:n.name,lab:n.lab,enc:n.enc,showAcc,d,d12,bar,beat:(q%bl)/sub,key:kt});});
   let q=wr.length;const end=wr.length+padSlots;
+  if(sub>1&&wr.length&&(wr.length-1)%sub===0&&padSlots>=sub-1){const it=items[items.length-1];it.d=1;it.d12=12;for(let k=0;k<sub-1;k++)map.push(it.i);q+=sub-1;}
   while(q<end){const bar=b0+Math.floor(q/bl),bs=q%bl,beat=bs/sub,rest=(dd,slots)=>{for(let k=0;k<slots;k++)map.push(i0+items.length);items.push({i:i0+items.length,rest:true,p:34,d:dd,d12:Math.round(dd*12),bar,beat,name:'silence',key:kt});q+=slots;};
     if(bs%sub){rest(d,1);continue;}                       // jusqu'au temps suivant
     const left=Math.min(end-q,bl-bs)/sub;                  // temps restant dans la mesure
@@ -1330,11 +1331,12 @@ const GAMES=[
     const drawT=(T,cur)=>{const A=T.pl.concat(T.ext||[]);drawBoard($('gBoard'),{from:Math.max(0,Math.min(...A.map(n=>n.fr))-1),to:Math.max(Math.max(...A.map(n=>n.fr))+1,Math.min(...A.map(n=>n.fr))+4),
        notes:T.pl.concat(T.ext||[]).map(n=>({s:n.s,fr:n.fr,m:n.m,root:n.l==='1',txt:n.l,hollow:!!n.ext,ring:cur&&n.s===cur.s&&n.fr===cur.fr,dim:cur&&!(n.s===cur.s&&n.fr===cur.fr)})),label:'Schéma'});};
     // même tonalité et même doigté à chaque tour : on écrit le tour une seule fois, avec une barre de reprise
+    const LBLS=!!f0.arp&&!/^(enc|ap|3b)/.test(curMot()||'');
     const sameT=()=>!cyc&&tour(1).pl.map(n=>n.s+':'+n.fr).join()===tour(0).pl.map(n=>n.s+':'+n.fr).join();
     const staffT=(T,p)=>{$('gStaff').hidden=false;
       if(sameT()){const T0=tour(0),L=T0.R.items,get=i=>L[i]||{bar:1e9,p:34,rest:true,d:1,d12:12,beat:0};
-        $('gStaff').innerHTML=drawStaff(get,T.R.map[p]-T.i0,L[0].key,false,SWING&&sub===2,false,{labels:!!f0.arp,lastBar:L[L.length-1].bar,repeat:true});return;}
-      $('gStaff').innerHTML=drawStaff(getS,T.R.map[p],T.R.items[0].key,false,SWING&&sub===2,false,{labels:!!f0.arp,lines:(T.seq.length+T.pad)/(4*sub)<=4?1:2});}; // une seule ligne quand le tour tient en 4 mesures
+        $('gStaff').innerHTML=drawStaff(get,T.R.map[p]-T.i0,L[0].key,false,SWING&&sub===2,false,{labels:LBLS,lastBar:L[L.length-1].bar,repeat:true});return;}
+      $('gStaff').innerHTML=drawStaff(getS,T.R.map[p],T.R.items[0].key,false,SWING&&sub===2,false,{labels:LBLS,lines:(T.seq.length+T.pad)/(4*sub)<=4?1:2});}; // une seule ligne quand le tour tient en 4 mesures
     // accord d'accompagnement : celui de l'arpège, ou l'accord de 4 sons contenu dans la gamme
     const cInfo=fz=>{const ivs=fz.notes.map(n=>n[2]),has=l=>ivs.includes(l);
     const third=has('♭3')&&!has('3')?'♭3':'3',fifth=has('5')?'5':has('♭5')?'♭5':has('♯5')?'♯5':'5',sev=has('7')?'7':has('♭7')?'♭7':has('𝄫7')?'𝄫7':has('6')?'6':'♭7';
@@ -1426,6 +1428,7 @@ const GAMES=[
   opts:()=>opt('gHSc','Gamme',[['maj','Gamme majeure'],['mel','Mineur mélodique'],['harm','Mineur harmonique']],'maj')
     +(CUR.hmat==='gam'?'':opt('gHTy','Accords',CUR.quart?[['tri','En quartes à 3 sons (1 4 7)'],['q','En quartes à 4 sons (1 4 7 3)']]:[['tri','Triades (3 sons)'],['q','Accords à 4 sons']],'tri'))
     +(CUR.hmat?'':opt('gHMat','On joue',[['acc','Les accords'],['arp','Les arpèges'],['gam','La gamme de chaque degré']],'acc'))
+    +(CUR.hmat==='arp'?opt('gHPos','Doigté',[['pos','En position'],['6','Le long de la corde 6'],['5','Le long de la corde 5'],['4','Le long de la corde 4'],['3','Le long de la corde 3']],'pos'):'')
     +(CUR.hmat==='arp'?opt('gHMot','Motif',[['up','Arpège montant (jusqu\'à la 7e), puis degré suivant'],['alt','Alterné : un degré en montant, le suivant en descendant'],['ar','Aller-retour sur chaque degré'],['b3','Arpège brisé par 3'],['b4','Arpège brisé par 4']],'up'):'')
     +(CUR.hmat&&CUR.hmat!=='acc'?opt('gHSub','Valeurs',[[1,'Noires'],[2,'Croches'],[3,'Triolets'],[4,'Doubles croches']],2):'')
     +opt('gKey','Tonalité de départ',KEYS.map((k,i)=>[i,k[0]]),0)
@@ -1439,12 +1442,19 @@ const GAMES=[
     const ARPI=d=>mot==='up'?up:mot==='alt'?(d%2?[...up].reverse():up):mot==='ar'?up.concat(up.slice(1,-1).reverse()):mot==='b3'?[].concat(...up.map(i=>[i,i+1,i+2])):[].concat(...up.map(i=>[i,i+1,i+2,i+3]));
     const IDX=sub===3?[0,1,2,3,4,5,6,7,6,5,4,3,2,1,0]:[0,1,2,3,4,5,6,7];
     const LEN=mat==='acc'?4:mat==='arp'?ARPI(0).length:IDX.length;
-    const tourOf=n=>{if(tours[n])return tours[n];const key=keys(n),H=harmDegrees(sc,key,four,qrt),f6=mod(H.T[1]-TUN[6],12),b=f6<=5?6:5,r0=b===6?f6:mod(H.T[1]-TUN[5],12);
-      const degs=H.deg.map(D=>{const r=r0+(D.oct?12:HSC[sc].st[D.d]),R0=TUN[b]+r,L0=D.root[2];let line,notes;
+    const hp=mat==='arp'?(val('gHPos')||'pos'):'';
+    const tourOf=n=>{if(tours[n])return tours[n];const key=keys(n),H=harmDegrees(sc,key,four,qrt),f6=mod(H.T[1]-TUN[6],12),B=/^[3-6]$/.test(hp)?+hp:f6<=5?6:5,r00=mod(H.T[1]-TUN[B],12);
+      // en position : la main reste autour de la tonique (cases P-1 à P+3), chaque arpège part de sa fondamentale la plus grave dans la position
+      let prevM=-1;
+      const degs=H.deg.map(D=>{let b=B,r=r00+(D.oct?12:HSC[sc].st[D.d]),W=r;
+        if(hp==='pos'){const pc=mod(H.T[1]+(D.oct?0:HSC[sc].st[D.d]),12),P=r00,C=[];
+          [6,5,4,3,2].forEach(s2=>{const x=mod(pc-TUN[s2],12);[x,x+12].forEach(fr=>{if(fr>=Math.max(0,P-1)&&fr<=P+3)C.push({s:s2,fr,m:TUN[s2]+fr});});});
+          C.sort((a,c)=>a.m-c.m);const pk=C.find(c=>c.m>prevM)||C[C.length-1];if(pk){b=pk.s;r=pk.fr;W=P;prevM=pk.m;}}
+        const R0=TUN[b]+r,L0=D.root[2];let line,notes;
         if(mat==='acc'){notes=harmVoicing(D,b,r,four);line=notes;}
         else{const T=[0,1,2].map(o=>D.ints.map(x=>x+12*o)).flat(),ST=[0,1,2].map(o=>[0,2,4,6].slice(0,nT).map(x=>x+7*o)).flat(),idx=mat==='arp'?ARPI(D.d):IDX,MD=D.mode.concat([12]);
           const ms=mat==='arp'?idx.map(i=>R0+T[i]):idx.map(i=>R0+MD[i]);
-          const pl=harmLine([...new Set(ms)].sort((a,b)=>a-b),b,r,mat==='arp'?3:2),byM={}; // gammes : majeur sur la fondamentale, main en position (cases r-1 à r+2)pl.forEach(p=>byM[p.m]=p);
+          const pl=harmLine([...new Set(ms)].sort((a,b)=>a-b),b,hp==='pos'?W:r,mat==='arp'?3:2),byM={};pl.forEach(p=>byM[p.m]=p); // gammes : majeur sur la fondamentale, main en position (cases r-1 à r+2)
           line=ms.map((m,k)=>{const semi=m-R0,step=mat==='arp'?ST[T.indexOf(semi)]:MD.indexOf(semi);
             return {...byM[m],m,l:mat==='arp'?HLAB[mod(semi,12)]:labOf(mod(semi,12),mod(step,7)+1),L:(L0+step)%7};});notes=pl.map(p=>{const q=line.find(x=>x.m===p.m);return {...p,l:q.l};});}
         return {...D,b,r,notes,line,key};});
@@ -2148,7 +2158,7 @@ const LEVELS=[null,
     ...[['mmaj7','m(Maj7)'],['maj7s5','Maj7♯5'],['7s11','7♯11'],['7s5','7♯5']].map(([i,t])=>[i,'nodiag',t,null,{mset:'mot',g:'Motifs : arpèges du mineur mélodique'}]),
     ...[['maj-min-complet','pcomp','Majeur et mineur'],['maj7','nodiag','Maj7'],['7','nodiag','7'],['m7','nodiag','m7'],['m7b5','nodiag','m7♭5'],['dim7','nodiag','dim7'],['mmaj7','nodiag','m(Maj7)'],['maj7s5','nodiag','Maj7♯5'],['7s11','nodiag','7♯11'],['7s5','nodiag','7♯5']].map(([i,f,t])=>[i,f,t,null,{pgen:true,gen:1,g:'Générateur de motifs'}])]},
  {t:'Harmonisation des gammes',d:'On monte la gamme degré par degré avec ses accords, ses arpèges ou ses modes : gamme majeure, mineur mélodique, mineur harmonique, en triades puis en accords à 4 sons. Tout le matériau des niveaux précédents reste en révision.',
-  A:[],R:['enc-maj7','enc-7','enc-m7','enc-m7b5','enc-dim7'],G:[['modes',null,'Gamme majeure et ses modes',null,{mset:'mot'}],['melodique',null,'Mineur mélodique et ses modes',null,{mset:'mot'}],['harmonique',null,'Mineur harmonique et ses modes',null,{mset:'mot'}],['penta','pent5','Pentatoniques',null,{mset:'mot'}],['symetriques',null,'Gammes symétriques',null,{mset:'mot'}],
+  A:[],R:[['maj-min-complet','pcomp','Majeur et mineur',null,{enc:true,g:'Arpèges avec enclosures'}],...[['enc-maj7','Maj7'],['enc-7','7'],['enc-m7','m7'],['enc-m7b5','m7♭5'],['enc-dim7','dim7']].map(([i,t])=>[i,null,t,null,{g:'Arpèges avec enclosures'}])],G:[['modes',null,'Gamme majeure et ses modes',null,{mset:'mot'}],['melodique',null,'Mineur mélodique et ses modes',null,{mset:'mot'}],['harmonique',null,'Mineur harmonique et ses modes',null,{mset:'mot'}],['penta','pent5','Pentatoniques',null,{mset:'mot'}],['symetriques',null,'Gammes symétriques',null,{mset:'mot'}],
     ...[['modes','Gamme majeure et ses modes'],['melodique','Mineur mélodique et ses modes'],['harmonique','Mineur harmonique et ses modes'],['penta','Pentatoniques','pent5'],['symetriques','Gammes symétriques']].map(([id,t,fl])=>[id,fl||null,t,null,{pgen:true,g:'Générateur de motifs',gen:1}])]},
  {t:'Approches chromatiques et enclosures',d:'Chaque note de la gamme approchée par un demi-ton (par en dessous, par au-dessus), broderies chromatiques et enclosures.',
   A:[],R:[],G:[['modes',null,'Gamme majeure et ses modes',null,{mset:'chr'}],['melodique',null,'Mineur mélodique et ses modes',null,{mset:'chr'}],['harmonique',null,'Mineur harmonique et ses modes',null,{mset:'chr'}],['penta','pent5','Pentatoniques',null,{mset:'chr'}]]}];
