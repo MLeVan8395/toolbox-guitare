@@ -297,7 +297,7 @@ label.chk input{width:18px;height:18px;accent-color:var(--accent)}
 </section>
 
 </main>
-<footer class="meta" style="max-width:1100px;margin:0 auto;padding:0 20px 30px;text-align:center">Boîte à outils guitare · <span id="appver">version 99</span><br><span style="font-size:12px">Sons : guitare et basse <a href="https://www.karoryfer.com/karoryfer-samples" target="_blank" rel="noopener">Karoryfer Samples</a> (CC BY 3.0) · batterie Virtuosity Drums et contrebasse <a href="https://github.com/sgossner/VSCO-2-CE" target="_blank" rel="noopener">VSCO 2</a> (CC0)</span></footer>
+<footer class="meta" style="max-width:1100px;margin:0 auto;padding:0 20px 30px;text-align:center">Boîte à outils guitare · <span id="appver">version 100</span><br><span style="font-size:12px">Sons : guitare et basse <a href="https://www.karoryfer.com/karoryfer-samples" target="_blank" rel="noopener">Karoryfer Samples</a> (CC BY 3.0) · batterie Virtuosity Drums et contrebasse <a href="https://github.com/sgossner/VSCO-2-CE" target="_blank" rel="noopener">VSCO 2</a> (CC0)</span></footer>
 <script src="contenu/formes.js"></script>
 <script>
 'use strict';
@@ -844,6 +844,7 @@ function encSeq(asc,mot){
   const loc=has('♭5')&&(has('♭7')||has('𝄫7')),sc=[...new Set(labs.concat([loc&&!has('𝄫7')?'♭2':'2','4',loc?'♭6':'6']).concat(has('𝄫7')?['7']:[]))];
   const frs=asc.map(n=>n.fr),lo=Math.min(...frs),hi=Math.max(...frs),ext={};
   const at=(m,t,deg)=>{let c=[1,2,3,4,5,6].map(s=>({s,fr:m-TUN[s]})).filter(c=>c.fr>=0&&c.fr<=22);
+    if(!c.length)return null; // sous la corde à vide : pas de note d'approche
     const w0=c.filter(c=>c.fr>=lo&&c.fr<=hi),w=c.filter(c=>c.fr>=lo-1&&c.fr<=hi+1);if(w0.length)c=w0;else if(w.length)c=w;
     const pk=c.reduce((a,b)=>{const da=Math.abs(a.s-t.s)*3+Math.abs(a.fr-t.fr),db=Math.abs(b.s-t.s)*3+Math.abs(b.fr-t.fr);return db<da?b:a;});
     const sm=mod(m-rpc,12),ds=Array.isArray(deg)?deg:[deg],acc=d=>{let a=mod(sm-MAJDEG[d],12);if(a>6)a-=12;return Math.abs(a);},
@@ -857,19 +858,19 @@ function encSeq(asc,mot){
     if(mot==='apb')return [at(t.m-1,t,[dDn(t),d0])];if(mot==='aph')return [at(t.m+1,t,[dUp(t),d0])];
     return mot==='enc1'?[at(up(t),t,upDeg(t,up(t))),at(t.m-1,t,[dDn(t),d0])]:mot==='enc2'?[at(t.m+1,t,[dUp(t),d0]),at(t.m-1,t,[dDn(t),d0])]:[at(t.m-2,t,[dDn(t),d2,d0]),at(t.m-1,t,[dDn(t),d0])];};
   const T=asc.concat(asc.slice(0,-1).reverse()),seq=[T[0]];
-  for(let k=1;k<T.length;k++)seq.push(...enc(T[k]),T[k]);
+  for(let k=1;k<T.length;k++)seq.push(...enc(T[k]).filter(Boolean),T[k]);
   return {seq,ext:Object.values(ext),group:0};}
 // tierces avec broderie chromatique : Do Si Do Mi, Ré Do♯ Ré Fa… (et en descendant : Do Si Do La…)
 function broSeq(asc){
   const eu=extendScale(asc,2,1),ed=extendScale(asc,1,-1),L=[...ed].reverse().concat(asc,eu),o0=ed.length,tI=o0+asc.length-1;
   const r=asc.find(n=>n.l==='1')||asc[0],rpc=mod(r.m-(SEMI[r.l]||0),12),frs=asc.map(n=>n.fr),lo=Math.min(...frs),hi=Math.max(...frs),ext={};
   const nb=t=>{const m=t.m-1,d0=degOf(t.l),dd=mod(d0-2,7)+1,sm=mod(m-rpc,12),ac=d=>{let a=mod(sm-MAJDEG[d],12);if(a>6)a-=12;return Math.abs(a);},d=ac(dd)<=ac(d0)?dd:d0;
-    let c=[1,2,3,4,5,6].map(s=>({s,fr:m-TUN[s]})).filter(c=>c.fr>=0&&c.fr<=22);const w=c.filter(c=>c.fr>=lo-1&&c.fr<=hi+1);if(w.length)c=w;
+    let c=[1,2,3,4,5,6].map(s=>({s,fr:m-TUN[s]})).filter(c=>c.fr>=0&&c.fr<=22);if(!c.length)return null;const w=c.filter(c=>c.fr>=lo-1&&c.fr<=hi+1);if(w.length)c=w;
     const pk=c.reduce((a,b)=>(Math.abs(b.s-t.s)*3+Math.abs(b.fr-t.fr))<(Math.abs(a.s-t.s)*3+Math.abs(a.fr-t.fr))?b:a);
     const n={s:pk.s,fr:pk.fr,m,l:labOf(sm,d),ext:true,enc:true};if(!asc.some(x=>x.s===n.s&&x.fr===n.fr))ext[n.s+':'+n.fr]=n;return n;};
   const seq=[];let top=o0;
-  for(let q=o0;q<=tI&&q+2<L.length;q++){seq.push(L[q],nb(L[q]),L[q],L[q+2]);top=q;}
-  for(let q=top+1;q-2>=Math.max(0,o0-1)&&q>o0;q--)seq.push(L[q],nb(L[q]),L[q],L[q-2]);seq.push(L[o0]);
+  const NB=q=>nb(L[q])||L[q];for(let q=o0;q<=tI&&q+2<L.length;q++){seq.push(L[q],NB(q),L[q],L[q+2]);top=q;}
+  for(let q=top+1;q-2>=Math.max(0,o0-1)&&q>o0;q--)seq.push(L[q],NB(q),L[q],L[q-2]);seq.push(L[o0]);
   return {seq,ext:eu.concat(ed,Object.values(ext)),group:4};}
 // ---- Générateur de patterns : motif libre en degrés (1 = note de départ, 2 = la suivante, 0 = celle d'en dessous) ----
 function parsePat(t){const v=String(t||'').split(/[\s,;.\-]+/).filter(x=>/^\d+$/.test(x)).map(Number);return v.length>=2&&v.length<=8&&new Set(v).size>1?v:null;}
@@ -1453,7 +1454,7 @@ const GAMES=[
     const IDX=sub===3?[0,1,2,3,4,5,6,7,6,5,4,3,2,1,0]:[0,1,2,3,4,5,6,7];
     const LEN=mat==='acc'?4:mat==='arp'?ARPI(0).length:IDX.length;
     const hp=mat==='arp'?(val('gHPos')||'pos'):'';
-    const tourOf=n=>{if(tours[n])return tours[n];const key=keys(n),H=harmDegrees(sc,key,four,qrt),f6=mod(H.T[1]-TUN[6],12),B=/^[3-6]$/.test(hp)?+hp:f6<=5?6:5,r00=mod(H.T[1]-TUN[B],12);
+    const tourOf=n=>{if(tours[n])return tours[n];const key=keys(n),H=harmDegrees(sc,key,four,qrt),f6=mod(H.T[1]-TUN[6],12),B=/^[3-6]$/.test(hp)?+hp:f6<=5?6:5,r00=mod(H.T[1]-TUN[B],12)+(/^[3-6]$/.test(hp)&&mod(H.T[1]-TUN[B],12)<3?12:0);
       // en position : la main reste autour de la tonique (cases P-1 à P+3), chaque arpège part de sa fondamentale la plus grave dans la position
       let prevM=-1;
       const degs=H.deg.map(D=>{let b=B,r=r00+(D.oct?12:HSC[sc].st[D.d]),W=r;
