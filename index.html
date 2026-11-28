@@ -113,6 +113,7 @@ label.chk input{width:18px;height:18px;accent-color:var(--accent)}
 .beats i.on.first{background:var(--root);border-color:var(--root)}
 .gamebar{display:flex;flex-wrap:wrap;gap:10px 16px;align-items:center;margin-top:14px}
 .tempo .seg button{padding:6px 12px}
+.qr{margin-top:12px}.qr svg{width:min(240px,70vw);height:auto;background:#fff;border-radius:10px;padding:6px;display:block}.qr .lbl{display:block;margin-top:4px;font-size:.85rem;color:var(--muted)}
 .bpm{font-variant-numeric:tabular-nums;font-weight:700;min-width:5.5em;display:inline-block}
 .prose p{max-width:68ch}
 .prose h3{margin-top:18px}
@@ -229,6 +230,18 @@ label.chk input{width:18px;height:18px;accent-color:var(--accent)}
   </div>
 </section>
 
+<section class="panel" id="p-partager" aria-labelledby="h-share">
+  <h2 id="h-share">Partager</h2>
+  <div class="card" style="margin-bottom:14px"><h3 style="margin-top:0">Partager l'appli</h3>
+    <p class="lead">Pour que tes élèves ouvrent la Boîte à outils guitare sur leur téléphone ou leur tablette : fais-leur scanner le QR code, ou envoie le lien.</p>
+    <div class="row" style="gap:10px;flex-wrap:wrap"><button type="button" class="primary" id="shApp">📤 Envoyer le lien</button><button type="button" id="cpApp">Copier le lien</button><span class="meta" id="shAppMsg"></span></div>
+    <div class="qr" id="qrApp"></div></div>
+  <div class="card"><h3 style="margin-top:0">Partager une page</h3>
+    <p class="lead">Le lien ouvre directement la dernière page que tu as consultée : <b id="shPageNm"></b>. Pratique pour donner un exercice précis à travailler à la maison.</p>
+    <div class="row" style="gap:10px;flex-wrap:wrap"><button type="button" class="primary" id="shPage">📤 Envoyer le lien de la page</button><button type="button" id="cpPage">Copier le lien</button><span class="meta" id="shPageMsg"></span></div>
+    <div class="qr" id="qrPage"></div></div>
+</section>
+
 <section class="panel" id="p-metronome" aria-labelledby="h-met">
   <h2 id="h-met">Métronome</h2>
   <p class="lead">Règle le tempo, la mesure et la subdivision. Le premier temps de chaque mesure est accentué.</p>
@@ -297,7 +310,7 @@ label.chk input{width:18px;height:18px;accent-color:var(--accent)}
 </section>
 
 </main>
-<footer class="meta" style="max-width:1100px;margin:0 auto;padding:0 20px 30px;text-align:center">Boîte à outils guitare · <span id="appver">version 108</span><br><span style="font-size:12px">Sons : guitare et basse <a href="https://www.karoryfer.com/karoryfer-samples" target="_blank" rel="noopener">Karoryfer Samples</a> (CC BY 3.0) · batterie Virtuosity Drums et contrebasse <a href="https://github.com/sgossner/VSCO-2-CE" target="_blank" rel="noopener">VSCO 2</a> (CC0)</span></footer>
+<footer class="meta" style="max-width:1100px;margin:0 auto;padding:0 20px 30px;text-align:center">Boîte à outils guitare · <span id="appver">version 109</span><br><span style="font-size:12px">Sons : guitare et basse <a href="https://www.karoryfer.com/karoryfer-samples" target="_blank" rel="noopener">Karoryfer Samples</a> (CC BY 3.0) · batterie Virtuosity Drums et contrebasse <a href="https://github.com/sgossner/VSCO-2-CE" target="_blank" rel="noopener">VSCO 2</a> (CC0)</span></footer>
 <script src="contenu/formes.js"></script>
 <script>
 'use strict';
@@ -2167,7 +2180,8 @@ const MENU=[
    {id:'enc-m7',g:'Arpèges avec enclosures',st:'m7',niv:4,enc:true,t:'m7 avec enclosures',view:'schema',chap:'arp-m7',filt:'nodiag'},{id:'enc-m7b5',g:'Arpèges avec enclosures',st:'m7♭5',niv:4,enc:true,t:'m7♭5 avec enclosures',view:'schema',chap:'arp-m7b5',filt:'nodiag'},
    {id:'enc-dim7',g:'Arpèges avec enclosures',st:'dim7',niv:4,enc:true,t:'dim7 avec enclosures',view:'schema',chap:'arp-dim7',filt:'nodiag'}]},
  {id:'accordeur',t:'Accordeur',items:[{id:'guitare',t:'Accordeur',view:'accordeur'}]},
- {id:'metronome',t:'Métronome',items:[{id:'tempo',t:'Métronome',view:'metronome'}]}
+ {id:'metronome',t:'Métronome',items:[{id:'tempo',t:'Métronome',view:'metronome'}]},
+ {id:'partager',t:'📤 Partager',items:[{id:'lien',t:'Partager',view:'partager'}]}
 ];
 // ==== Parcours en 7 niveaux : chaque niveau réunit accords, gammes et arpèges, les révisions des niveaux précédents et les jeux ====
 // arpèges : une page par niveau, avec un menu déroulant pour la nature de l'accord
@@ -2218,7 +2232,7 @@ const LT={gammes:[null,'Gamme majeure et pentatonique mineure','Mineure naturell
   arpeges:[null,'Majeur et mineur sur une octave','Arpège 7','Majeur et mineur en position complète','Arpèges à 4 sons','Sur 3 octaves en diagonale (3 et 4 sons)','Arpèges issus du mineur mélodique','Les motifs et le générateur','Enclosures','Arpèges degré par degré']};
 let CURTAB=null;
 let CUR={},EMB=false; // EMB : le jeu au métronome est affiché sous le schéma (gammes, modes, arpèges)
-const PANELS=['schemas','jeux','notes','presentation','mains','accordeur','metronome'];
+const PANELS=['schemas','jeux','notes','presentation','mains','accordeur','metronome','partager'];
 function findRoute(h){
   for(const tab of MENU){if(h===tab.id)return [tab,tab.items[0]];for(const it of tab.items)if(h===tab.id+'-'+it.id)return [tab,it];}
   return null;
@@ -2255,9 +2269,26 @@ function route(){
   if(it.view==='notes')renderNotes();
   if(it.view!=='accordeur')tunerStop();
   if(it.view==='metronome')mtInit();else mtStop();
+  if(it.view==='partager')renderShare();else LASTPAGE={h:tab.id+'-'+it.id,t:tab.t+(it.niv?' · niveau '+it.niv:'')+' · '+(it.st||it.t)};
   if(PENDING)hzApply(it);
   window.scrollTo(0,0);
 }
+// ---- Partager : lien de l'appli, lien de la dernière page consultée, QR codes (comme la Groovebox) ----
+let LASTPAGE=null;
+const APP_URL=/github\.io$/.test(location.hostname)?location.origin+location.pathname.replace(/index\.html$/,''):'https://mlevan8395.github.io/toolbox-guitare/';
+let qrLib=null;function loadQR(){return qrLib||(qrLib=new Promise((ok,ko)=>{const s=document.createElement('script');s.src='lib/qrcode.js';s.onload=()=>ok(window.qrcode);s.onerror=ko;document.head.appendChild(s);}));}
+async function drawQR(el,url,label){el.innerHTML='';try{const q=(await loadQR())(0,'L');q.addData(url,'Byte');q.make();el.innerHTML=q.createSvgTag({cellSize:4,margin:2,scalable:true})+'<span class="lbl">'+esc(label)+'</span>';}catch(e){el.innerHTML='<span class="meta">QR code indisponible.</span>';}}
+async function shareOrCopy(data,msgEl){try{if(navigator.share){await navigator.share(data);return;}}catch(e){if(e.name==='AbortError')return;}
+  try{await navigator.clipboard.writeText(data.url);msgEl.textContent='Lien copié : colle-le dans un message ou un mail.';}catch(e){msgEl.textContent=data.url;}}
+async function copyLink(url,msgEl){try{await navigator.clipboard.writeText(url);msgEl.textContent='Lien copié.';}catch(e){msgEl.textContent=url;}}
+const pageURL=()=>APP_URL+'#'+(LASTPAGE?LASTPAGE.h:'presentation');
+function renderShare(){$('shAppMsg').textContent='';$('shPageMsg').textContent='';drawQR($('qrApp'),APP_URL,'Ouvrir la Boîte à outils guitare');
+  $('shPageNm').textContent=LASTPAGE?LASTPAGE.t:'la présentation';drawQR($('qrPage'),pageURL(),'Ouvrir cette page');}
+document.addEventListener('click',e=>{const id=e.target&&e.target.id;
+  if(id==='shApp')shareOrCopy({title:'Boîte à outils guitare',text:'La Boîte à outils guitare : gammes, accords, arpèges, jeux au métronome, accordeur.',url:APP_URL},$('shAppMsg'));
+  if(id==='cpApp')copyLink(APP_URL,$('shAppMsg'));
+  if(id==='shPage')shareOrCopy({title:'Boîte à outils guitare',text:'À travailler : '+(LASTPAGE?LASTPAGE.t:''),url:pageURL()},$('shPageMsg'));
+  if(id==='cpPage')copyLink(pageURL(),$('shPageMsg'));});
 function setHand(g){LEFTY=g;store.set('main',g?'G':'D');$('hD').setAttribute('aria-pressed',!g);$('hG').setAttribute('aria-pressed',g);if(CUR.view==='schema')renderShape();if(CUR.view==='notes')renderNotes();if(CUR.view==='game'&&!RUN.on)preview();}
 function setThemeBtn(){const l=document.documentElement.getAttribute('data-theme')==='light';$('theme').textContent=l?'☾ Sombre':'☀ Clair';}
 
